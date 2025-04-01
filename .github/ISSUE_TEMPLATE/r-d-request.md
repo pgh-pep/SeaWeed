@@ -1,5 +1,5 @@
 ---
-name: R&D
+name: R&D Request
 about: Researching software, speccing hardware
 title: ''
 labels: R&D
