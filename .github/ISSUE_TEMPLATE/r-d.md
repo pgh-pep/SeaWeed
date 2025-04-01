@@ -1,0 +1,17 @@
+---
+name: R&D
+about: Researching software, speccing hardware
+title: ''
+labels: R&D
+assignees: ''
+
+---
+
+**Idea Description**
+Brief overview of proposed idea
+
+**Potential Paths**
+Possible Paths to explore
+
+**Contraints/Additional context**
+Necessary constraints and information
