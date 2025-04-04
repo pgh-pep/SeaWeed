@@ -1,4 +1,4 @@
-# Seaweed
+# SeaWeed
 
 Recommended File Structure
 ```
