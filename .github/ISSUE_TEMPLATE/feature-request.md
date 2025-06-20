@@ -2,16 +2,16 @@
 name: Feature Request
 about: Adding new feature
 title: ''
-labels: enhancement
+labels: feature
 assignees: ''
 
 ---
 
-**Description of desired feature**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+**Feature Description**
+A clear and concise description of what the problem is.
 
 **Potential Paths**
 Possible paths to consider
 
-**Additional context**
+**Constraints/Additional context**
 Add any other context or screenshots about the feature request here.

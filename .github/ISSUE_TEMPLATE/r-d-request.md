@@ -13,5 +13,5 @@ Brief overview of proposed idea
 **Potential Paths**
 Possible Paths to explore
 
-**Contraints/Additional context**
+**Constraints/Additional Context**
 Necessary constraints and information
