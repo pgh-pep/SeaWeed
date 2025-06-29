@@ -1,19 +1,23 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>seaweed_perception</name>
+  <name>seaweed_interfaces</name>
   <version>0.0.0</version>
-  <description>The seaweed_perception package</description>
+  <description>The seaweed_interfaces package</description>
   <maintainer email="vap77@pitt.edu">varun</maintainer>
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
-  <depend>rclcpp</depend>
-  <depend>rclpy</depend>
-  <depend>cv_bridge</depend>
-  <depend>sensor_msgs</depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <depend>action_msgs</depend>
   <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>
     <build_type>ament_cmake</build_type>
