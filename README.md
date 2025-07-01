@@ -1,6 +1,6 @@
 # SeaWeed
 
-Recommended File Structure
+## Recommended File Structure
 ```
 ~/pep
 └───vrx_ws 
@@ -11,3 +11,21 @@ Recommended File Structure
 │   └───src
 │       └───SeaWeed
 ```
+
+## Simulation
+
+# Install Gazebo Garden
+TBD
+
+# Install the VRX simulator:
+```sh
+mkdir -p ~/pep/vrx_ws/src
+cd ~/pep/vrx_ws/src
+git clone git@github.com:pgh-pep/vrx.git --branch humble
+cd ~/pep/vrx_ws
+colcon build --merge-install
+
+# Can manually source in terminal or add to ~/.bashrc to be sourced automatically
+source ~/pep/vrx_ws/install/setup.bash
+```
+
