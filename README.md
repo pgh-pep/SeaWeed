@@ -3,14 +3,23 @@
 ## Recommended File Structure
 ```
 ~/pep
-└───vrx_ws 
 └───seaweed_ws   (colcon build HERE)
 │   └───build    (auto-generated w/ colcon)
 │   └───install  (auto-generated w/ colcon)
 │   └───log      (auto-generated w/ colcon)
 │   └───src
-│       └───SeaWeed
+│       └───SeaWeed (Clone HERE)
+└───vrx_ws       (colcon build HERE)
+│   └───build    (auto-generated w/ colcon)
+│   └───install  (auto-generated w/ colcon)
+│   └───log      (auto-generated w/ colcon)
+│   └───src
+│       └───vrx    (Clone HERE)
+
 ```
+
+## Installation
+add scripts to install seaweed, building, and sourcing
 
 ## Simulation
 
