@@ -2,8 +2,7 @@
 
 ## Launch Files
 
-must source both vrx and seaweed
-
+Note: To use simulation/visualization tools, you need to source both `seaweed_ws` and `vrx_ws`.
 
 To visualize URDFs generated via VRX w/ rviz:
 
