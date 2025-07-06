@@ -1,15 +1,19 @@
 import os
 
-import xacro
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 
 
 def launch_setup(context, *args, **kwargs):
     description_directory = get_package_share_directory("seaweed_description")
+    sim_directory = get_package_share_directory("seaweed_sim")
+    vrx_gz_directory = get_package_share_directory("vrx_gz")
+    
 
     model = context.perform_substitution(LaunchConfiguration("model"))
 
@@ -20,33 +24,23 @@ def launch_setup(context, *args, **kwargs):
             model_path = os.path.join(description_directory, "urdf", "diff_thrust_wamv", "wamv_target.urdf")
         case _:
             model_path = os.path.join(description_directory, "urdf", "x_drive_wamv", "wamv_target.urdf")
-
-    robot_description = xacro.process_file(model_path).toxml()
-
-    joint_state_publisher_gui_node = Node(
-        package="joint_state_publisher_gui",
-        executable="joint_state_publisher_gui",
-        name="joint_state_publisher_gui",
-        parameters=[
-            {
-                "use_gui": LaunchConfiguration("use_gui"),
-            }
-        ],
+    
+    vrx_sim_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([
+            vrx_gz_directory, '/launch/competition.launch.py'
+        ]),
+        launch_arguments={
+            # "world": "nbpark",
+            "world": "sydney_regatta",
+            "urdf": model_path,
+            "extra_gz_args": "-v 0",
+            "spawn_pose": "-532.0,162.0,0.0,0.0,0.0,1.0"    # Original spawn
+            # "spawn_pose": "--500.0,162.0,0.0,0.0,0.0,1.0"
+        }.items()
     )
 
-    robot_state_publisher_node = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        name="robot_state_publisher",
-        parameters=[
-            {
-                "use_sim_time": LaunchConfiguration("use_sim_time"),
-                "robot_description": robot_description,
-            }
-        ],
-    )
 
-    rviz_config_file = os.path.join(description_directory, "rviz", "display_wamv.rviz")
+    rviz_config_file = os.path.join(sim_directory, "rviz", "gazebo.rviz")
 
     rviz = Node(
         package="rviz2",
@@ -57,8 +51,7 @@ def launch_setup(context, *args, **kwargs):
     )
 
     return [
-        joint_state_publisher_gui_node,
-        robot_state_publisher_node,
+        vrx_sim_launch,
         rviz,
     ]
 
@@ -68,7 +61,7 @@ def generate_launch_description():
 
     use_sim_time_arg = DeclareLaunchArgument(
         name="use_sim_time",
-        default_value="False",
+        default_value="true",
     )
 
     use_gui_arg = DeclareLaunchArgument(name="use_gui", default_value="true")
