@@ -13,7 +13,6 @@ def launch_setup(context, *args, **kwargs):
     description_directory = get_package_share_directory("seaweed_description")
     sim_directory = get_package_share_directory("seaweed_sim")
     vrx_gz_directory = get_package_share_directory("vrx_gz")
-    
 
     model = context.perform_substitution(LaunchConfiguration("model"))
 
@@ -24,19 +23,17 @@ def launch_setup(context, *args, **kwargs):
             model_path = os.path.join(description_directory, "urdf", "diff_thrust_wamv", "wamv_target.urdf")
         case _:
             model_path = os.path.join(description_directory, "urdf", "x_drive_wamv", "wamv_target.urdf")
-    
+
     vrx_sim_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([
-            vrx_gz_directory, '/launch/competition.launch.py'
-        ]),
+        PythonLaunchDescriptionSource([vrx_gz_directory, "/launch/competition.launch.py"]),
         launch_arguments={
             # "world": "nbpark",
             "world": "sydney_regatta",
             "urdf": model_path,
             "extra_gz_args": "-v 0",
-            "spawn_pose": "-532.0,162.0,0.0,0.0,0.0,1.0"    # Original spawn
+            "spawn_pose": "-532.0,162.0,0.0,0.0,0.0,1.0",  # Original spawn
             # "spawn_pose": "--500.0,162.0,0.0,0.0,0.0,1.0"
-        }.items()
+        }.items(),
     )
 
 
