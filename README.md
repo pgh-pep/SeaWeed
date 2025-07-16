@@ -37,4 +37,3 @@ colcon build --merge-install
 # Can manually source in terminal or add to ~/.bashrc to be sourced automatically
 source ~/pep/vrx_ws/install/setup.bash
 ```
-
