@@ -64,14 +64,21 @@ def launch_setup(context, *args, **kwargs):
 
 
 def generate_launch_description():
-    robot_model_arg = DeclareLaunchArgument(name="model", default_value="x_drive", choices=["x_drive", "diff_thrust"])
+    robot_model_arg = DeclareLaunchArgument(
+        name="model",
+        default_value="x_drive",
+        choices=["x_drive", "diff_thrust"],
+    )
 
     use_sim_time_arg = DeclareLaunchArgument(
         name="use_sim_time",
         default_value="False",
     )
 
-    use_gui_arg = DeclareLaunchArgument(name="use_gui", default_value="true")
+    use_gui_arg = DeclareLaunchArgument(
+        name="use_gui",
+        default_value="true",
+    )
 
     return LaunchDescription(
         [

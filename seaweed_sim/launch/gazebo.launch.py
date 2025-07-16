@@ -36,7 +36,6 @@ def launch_setup(context, *args, **kwargs):
         }.items(),
     )
 
-
     rviz_config_file = os.path.join(sim_directory, "rviz", "gazebo.rviz")
 
     rviz = Node(

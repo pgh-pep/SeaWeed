@@ -1,6 +1,6 @@
 # To use:
 #
-#     pre-commit run -a
+#     pre-commit run --all-files
 #
 # Or:
 #
@@ -19,10 +19,21 @@ repos:
       - id: check-case-conflict
       - id: check-docstring-first
       - id: check-merge-conflict
-      - id: check-symlinks
       - id: check-xml
       - id: check-yaml
       - id: debug-statements
       - id: end-of-file-fixer
       - id: mixed-line-ending
       - id: trailing-whitespace
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.403
+    hooks:
+      - id: pyright
+        additional_dependencies: [typing_extensions]
+        args: [--level=error]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.3
+    hooks:
+      - id: ruff-check
+        args: [ --fix ]
+      - id: ruff-format

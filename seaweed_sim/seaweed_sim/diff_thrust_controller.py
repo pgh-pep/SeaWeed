@@ -30,7 +30,10 @@ class DiffThrustController(Node):
         self.enabled = False
 
         timer_period = 1 / 10  # 10 hz
-        self.timer = self.create_timer(timer_period, self.update_thrusters)
+        self.timer = self.create_timer(
+            timer_period,
+            self.update_thrusters,
+        )
 
         self.get_logger().info("Diff thrust node started")
 
@@ -111,9 +114,8 @@ class DiffThrustController(Node):
         self.back_right_pub.publish(back_right_msg)
 
 
-def main(args=None):
+def main(args=None):  # type: ignore
     rclpy.init(args=args)
-
     try:
         node = DiffThrustController()
         rclpy.spin(node)

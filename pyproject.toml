@@ -1,0 +1,28 @@
+[tool.pyright]
+typeCheckingMode = "strict"
+
+reportMissingParameterType = "error"
+reportMissingReturnType = "error"
+reportUnknownParameterType = "none"
+reportUnknownArgumentType = "none"
+
+reportAny = "error"
+
+reportUnknownMemberType = "none"
+reportUnknownVariableType = "none"
+
+reportUntypedFunctionDecorator = "none"
+reportUntypedClassDecorator = "none"
+reportUntypedBaseClass = "none"
+reportMissingTypeStubs = "none"
+
+reportIncompatibleMethodOverride = "error"
+reportIncompatibleVariableOverride = "error"
+reportUninitializedInstanceVariable = "error"
+
+ignore = [
+    "**/*.launch.py",
+]
+
+[tool.ruff]
+line-length = 120
