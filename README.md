@@ -1,39 +1,20 @@
 # SeaWeed
 
-## Recommended File Structure
-```
-~/pep
-└───seaweed_ws   (colcon build HERE)
-│   └───build    (auto-generated w/ colcon)
-│   └───install  (auto-generated w/ colcon)
-│   └───log      (auto-generated w/ colcon)
-│   └───src
-│       └───SeaWeed (Clone HERE)
-└───vrx_ws       (colcon build HERE)
-│   └───build    (auto-generated w/ colcon)
-│   └───install  (auto-generated w/ colcon)
-│   └───log      (auto-generated w/ colcon)
-│   └───src
-│       └───vrx    (Clone HERE)
+SeaWeed is Pitt Electric Propulsion's ASV modular software stack meant for the RoboBoat competition.
 
-```
+We are currently utilizing ROS2 Humble and VRX for marine simulations.
 
-## Installation
-add scripts to install seaweed, building, and sourcing
 
-## Simulation
+![alt text](https://www.sustainable.pitt.edu/wp-content/uploads/2022/08/Pitt-Electric-Propulsion-Logo.png)
 
-# Install Gazebo Garden
-TBD
+The collaborative codebase for Pitt Electric Propulsion's Autonomous Project (Fall 2024 -- Present)
 
-# Install the VRX simulator:
-```sh
-mkdir -p ~/pep/vrx_ws/src
-cd ~/pep/vrx_ws/src
-git clone git@github.com:pgh-pep/vrx.git --branch humble
-cd ~/pep/vrx_ws
-colcon build --merge-install
+## About Us
 
-# Can manually source in terminal or add to ~/.bashrc to be sourced automatically
-source ~/pep/vrx_ws/install/setup.bash
-```
+Pitt Electric Propulsion is the University of Pittsburgh's first electric vehicle team. We are a student-run not-for-profit engineering team interested in the future of electric vehicle and transportation technology. We compete annually in the American Society of Naval Engineers' [Promoting Electric Propulsion for Small Craft Competition](https://www.navalengineers.org/Education/Promoting-Electric-Propulsion-PEP). In addition to this autonomous electric boat, we are developing an electric C-Stock racing boat. Please visit our website or contact us to learn more about the team!
+
+To contact us: <br />
+- Website: [https://www.pittelectricpropulsion.com/](https://www.pittelectricpropulsion.com/) <br />
+- Email: pittsburghpep@gmail.com <br />
+- LinkedIn: https://www.linkedin.com/company/pittsburgh-electric-propulsion <br />
+- Instagram: https://www.instagram.com/pitt.pep/ <br />
