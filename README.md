@@ -11,7 +11,7 @@ The collaborative codebase for Pitt Electric Propulsion's Autonomous Project (Fa
 
 ## About Us
 
-Pitt Electric Propulsion is the University of Pittsburgh's first electric vehicle team. We are a student-run not-for-profit engineering team interested in the future of electric vehicle and transportation technology. We compete annually in the American Society of Naval Engineers' [Promoting Electric Propulsion for Small Craft Competition](https://www.navalengineers.org/Education/Promoting-Electric-Propulsion-PEP). In addition to this autonomous electric boat, we are developing an electric C-Stock racing boat. Please visit our website or contact us to learn more about the team!
+Pitt Electric Propulsion is the University of Pittsburgh's first electric vehicle team. We are a student-run not-for-profit engineering team interested in the future of electric vehicle and transportation technology. We compete annually in the American Society of Naval Engineers' [Promoting Electric Propulsion for Small Craft Competition](https://www.navalengineers.org/Education/Promoting-Electric-Propulsion-PEP) and RoboNation's [RoboBoat](https://roboboat.org/) competition. In addition to this autonomous electric boat, we are developing an electric C-Stock racing boat. Please visit our website or contact us to learn more about the team!
 
 To contact us: <br />
 - Website: [https://www.pittelectricpropulsion.com/](https://www.pittelectricpropulsion.com/) <br />
