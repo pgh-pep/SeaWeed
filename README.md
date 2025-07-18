@@ -2,7 +2,7 @@
 
 SeaWeed is Pitt Electric Propulsion's ASV modular software stack meant for the RoboBoat competition.
 
-We are currently utilizing ROS2 Humble and VRX for marine simulations.
+We are currently utilizing ROS2 Humble and Open Robotics' [VRX](https://github.com/osrf/vrx) tool for marine simulations.
 
 
 ![alt text](https://www.sustainable.pitt.edu/wp-content/uploads/2022/08/Pitt-Electric-Propulsion-Logo.png)
