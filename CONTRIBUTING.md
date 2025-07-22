@@ -52,11 +52,11 @@ To add simulation capabilities, clone the VRX simulator:
 mkdir -p ~/pep/vrx_ws/src
 cd ~/pep/vrx_ws/src
 git clone git@github.com:pgh-pep/vrx.git --branch humble
-cd ~/pep/vrx_ws
 ```
 
 Install VRX dependencies:
 ```sh
+cd ~/pep/vrx_ws
 rosdep install --from-paths src --ignore-src -r -y --rosdistro humble
 ```
 
