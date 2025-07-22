@@ -19,28 +19,53 @@
 │       └───vrx    (Clone HERE)
 ```
 
-To develop & run Seaweed (without simulation):
+### Installing SeaWeed
+
+Clone the SeaWeed repository:
 ```sh
 mkdir -p ~/pep/seaweed_ws/src
 cd ~/pep/seaweed_ws/src
 git clone git@github.com:pgh-pep/SeaWeed.git
+```
+
+Install dependencies:
+```sh
 cd ~/pep/seaweed_ws
 rosdep install --from-paths src --ignore-src -r -y --rosdistro humble
 pip install -r requirements.txt
+```
+
+Builld w/ colcon:
+```sh
 colcon build --symlink-install
 ```
 
-To add simulation capabilities using the VRX simulator:
+NOTE: For developers new to ROS, you technically need to rebuild whenever you edit a file. However, by creating symlinks, we only need to rebuild whenever we add a file. Regardless, a lot of issues you will run into can be solved by deleting the old build (`sudo rm -rf ~/pep/seaweed_ws/build ~/pep/seaweed_ws/install ~/pep/seaweed_ws/log`) and rebuilding w/ colcon.
+
+### Installing VRX Simulator
+
+
+To add simulation capabilities, clone the VRX simulator:
 ```sh
 mkdir -p ~/pep/vrx_ws/src
 cd ~/pep/vrx_ws/src
 git clone git@github.com:pgh-pep/vrx.git --branch humble
 cd ~/pep/vrx_ws
+```
+
+Install VRX dependencies:
+```sh
 rosdep install --from-paths src --ignore-src -r -y --rosdistro humble
+```
+
+Build w/ colcon:
+```sh
 colcon build --merge-install
 ```
 
-You can either manually source the workspaces every time you launch a new terminal or just add to `~/.bashrc` once to be sourced automatically
+### Sourcing Workspaces
+
+You can either manually source the workspaces every time you launch a new terminal or source automatically using your `~/.bashrc`:
 ```sh
 echo "source ~/pep/seaweed_ws/install/setup.bash" >> ~/.bashrc
 echo "source ~/pep/vrx_ws/install/setup.bash" >> ~/.bashrc
