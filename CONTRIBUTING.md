@@ -36,8 +36,9 @@ cd ~/pep/seaweed_ws/src/SeaWeed
 pip install -r requirements.txt
 ```
 
-Builld w/ colcon:
+Builld w/ colcon (Always build in the workspace directory):
 ```sh
+cd ~/pep/seaweed_ws
 colcon build --symlink-install
 ```
 
