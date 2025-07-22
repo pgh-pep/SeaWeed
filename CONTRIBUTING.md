@@ -32,6 +32,7 @@ Install dependencies:
 ```sh
 cd ~/pep/seaweed_ws
 rosdep install --from-paths src --ignore-src -r -y --rosdistro humble
+cd ~/pep/seaweed_ws/src/SeaWeed
 pip install -r requirements.txt
 ```
 
