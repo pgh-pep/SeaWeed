@@ -128,8 +128,8 @@ Install Gazebo Garden:
 ```sh
 sudo curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null
-sudo apt-get update
-sudo apt-get install gz-garden ros-humble-ros-gzgarden ros-humble-xacro python3-sdformat13
+sudo apt update
+sudo apt install gz-garden ros-humble-ros-gzgarden ros-humble-xacro python3-sdformat13
 ```
 
 Reinstall Gazebo 11 (if desired):
@@ -137,7 +137,7 @@ Reinstall Gazebo 11 (if desired):
 ```sh
 sudo add-apt-repository ppa:openrobotics/gazebo11-gz-cli
 sudo apt update
-sudo apt-get install gazebo11
+sudo apt install gazebo11
 sudo apt install ros-humble-gazebo-ros-pkgs
 ```
 
