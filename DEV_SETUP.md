@@ -130,8 +130,6 @@ sudo curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyr
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null
 sudo apt-get update
 sudo apt-get install gz-garden ros-humble-ros-gzgarden ros-humble-xacro python3-sdformat13
-
-sudo apt-get install ros-humble-ros-gzgarden
 ```
 
 Reinstall Gazebo 11 (if desired):
@@ -142,3 +140,5 @@ sudo apt update
 sudo apt-get install gazebo11
 sudo apt install ros-humble-gazebo-ros-pkgs
 ```
+
+Once all dependencies are installed, [`CONTRIBUTION.md`](https://github.com/pgh-pep/SeaWeed/blob/main/CONTRIBUTING.md) has build instructions.

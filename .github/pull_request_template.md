@@ -1,6 +1,6 @@
 # Description
 
-Please include a summary of the changes and the related issue. Please also include relevant motivation and context. List any dependencies that are required for this change.
+Please include a summary of the changes and the related issue.
 
 Fixes # (issue)
 
@@ -12,4 +12,4 @@ Please describe the tests that you ran to verify your changes. Provide instructi
 
 - [ ] No compilation/runtime issues
 - [ ] Updated necessary dependencies in respective `package.xml`
-- [ ] Updated corresponding README docs to provide information/CLI to use new feature (notably info about launch files w/ params)
+- [ ] Updated corresponding `README` docs to provide information to use new feature (specifically info about launch files & their params)

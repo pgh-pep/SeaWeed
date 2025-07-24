@@ -46,7 +46,6 @@ NOTE: For developers new to ROS, you technically need to rebuild whenever you ed
 
 ### Installing VRX Simulator
 
-
 To add simulation capabilities, clone the VRX simulator:
 ```sh
 mkdir -p ~/pep/vrx_ws/src
