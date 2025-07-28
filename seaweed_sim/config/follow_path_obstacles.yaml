@@ -1,0 +1,18 @@
+obstacles:
+  - name: "round_1"
+    type: "mb_round_buoy"
+    color: "black"
+    pose: [-520, 180, 0, 0, 1.57, 0]  # [x, y, z, roll, pitch, yaw]
+    radius: 0.5
+    
+  # - name: "round_2"
+  #   type: "mb_round_buoy"
+  #   color: "black"
+  #   pose: [-500, 200, 0, 0, 0, 0]
+  #   radius: 0.3
+    
+  - name: "marker_1"
+    type: "mb_marker_buoy"
+    color: "black"
+    pose: [-480, 160, 0, 0, 0, 1.57]
+    radius: 0.2

@@ -74,9 +74,9 @@ sudo apt install ros-humble-desktop -y
 ROS must be sourced every time the terminal is launched. Install additional dependencies and, in the `~/.bashrc` file, automatically source ROS and colcon autocompletion.
 
 ```sh
-sudo apt install python3-colcon-common-extensions python3-rosdep2 libsdl1.2-dev sh-completion nano python3-pip python-is-python3 -y
+sudo apt install python3-colcon-common-extensions python3-rosdep2 libsdl1.2-dev bash-completion nano python3-pip python-is-python3 -y
 echo "source /opt/ros/humble/setup.sh" >> ~/.bashrc
-echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.sh" >> ~/.bashrc
+echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> ~/.bashrc
 source ~/.bashrc
 sudo rosdep init
 ```

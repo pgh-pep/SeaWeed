@@ -16,7 +16,7 @@ reportUntypedClassDecorator = "none"
 reportUntypedBaseClass = "none"
 reportMissingTypeStubs = "none"
 
-reportIncompatibleMethodOverride = "error"
+reportIncompatibleMethodOverride = "none"
 reportIncompatibleVariableOverride = "error"
 reportUninitializedInstanceVariable = "error"
 

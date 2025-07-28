@@ -14,6 +14,12 @@ def launch_setup(context, *args, **kwargs):
     sim_directory = get_package_share_directory("seaweed_sim")
     vrx_gz_directory = get_package_share_directory("vrx_gz")
 
+    local_world_path = os.path.join(sim_directory, "worlds")
+    vrx_worlds_path = os.path.join(vrx_gz_directory, "worlds")
+
+    resource_path = os.environ.get("GZ_SIM_RESOURCE_PATH", "")
+    os.environ["GZ_SIM_RESOURCE_PATH"] = f"{local_world_path}:{resource_path}:{vrx_worlds_path}"
+
     model = context.perform_substitution(LaunchConfiguration("model"))
 
     match model:
@@ -24,15 +30,15 @@ def launch_setup(context, *args, **kwargs):
         case _:
             model_path = os.path.join(description_directory, "urdf", "x_drive_wamv", "wamv_target.urdf")
 
+    world = context.perform_substitution(LaunchConfiguration("world"))
+
     vrx_sim_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([vrx_gz_directory, "/launch/competition.launch.py"]),
         launch_arguments={
-            # "world": "nbpark",
-            "world": "sydney_regatta",
+            "world": world,
             "urdf": model_path,
-            "extra_gz_args": "-v 0",
-            "spawn_pose": "-532.0,162.0,0.0,0.0,0.0,1.0",  # Original spawn
-            # "spawn_pose": "--500.0,162.0,0.0,0.0,0.0,1.0"
+            "extra_gz_args": "-v 0",  # verbose levels from 0 to 4
+            "spawn_pose": "-532.0,162.0,0.0,0.0,0.0,1.0",  # Original spawn point for sydney_regatta
         }.items(),
     )
 
@@ -55,6 +61,17 @@ def launch_setup(context, *args, **kwargs):
 def generate_launch_description():
     robot_model_arg = DeclareLaunchArgument(name="model", default_value="x_drive", choices=["x_drive", "diff_thrust"])
 
+    world_arg = DeclareLaunchArgument(
+        name="world",
+        default_value="sydney_regatta",
+        choices=[
+            "sydney_regatta",
+            "sydney_regatta_empty",
+            "nbpark",
+            "follow_path",
+        ],
+    )
+
     use_sim_time_arg = DeclareLaunchArgument(
         name="use_sim_time",
         default_value="true",
@@ -67,6 +84,7 @@ def generate_launch_description():
             robot_model_arg,
             use_sim_time_arg,
             use_gui_arg,
+            world_arg,
             OpaqueFunction(function=launch_setup),
         ]
     )
