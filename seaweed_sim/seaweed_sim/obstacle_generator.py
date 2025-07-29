@@ -67,14 +67,11 @@ class ObstacleGenerator:
         radius_elem = ET.SubElement(cylinder, "radius")
         radius_elem.text = str(radius)
 
-        length_multiplier = obstacle.get("length_multiplier", 2.0)
-        length = radius * length_multiplier
+        length = radius * .325  # constant used from existing vrx worlds
         length_elem = ET.SubElement(cylinder, "length")
         length_elem.text = str(length)
 
-    def create_sphere_geo(
-        self, geometry_parent: ET.Element, config: Dict[str, Any], obstacle: Dict[str, Any]
-    ) -> None:
+    def create_sphere_geo(self, geometry_parent: ET.Element, config: Dict[str, Any], obstacle: Dict[str, Any]) -> None:
         """Create sphere geometry element."""
         sphere = ET.SubElement(geometry_parent, "sphere")
 
