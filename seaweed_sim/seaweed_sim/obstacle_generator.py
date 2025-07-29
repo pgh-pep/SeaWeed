@@ -67,7 +67,7 @@ class ObstacleGenerator:
         radius_elem = ET.SubElement(cylinder, "radius")
         radius_elem.text = str(radius)
 
-        length = radius * .325  # constant used from existing vrx worlds
+        length = radius * 0.325  # constant used from existing vrx worlds
         length_elem = ET.SubElement(cylinder, "length")
         length_elem.text = str(length)
 
