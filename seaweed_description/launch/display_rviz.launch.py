@@ -12,14 +12,13 @@ def launch_setup(context, *args, **kwargs):
     description_directory = get_package_share_directory("seaweed_description")
 
     model = context.perform_substitution(LaunchConfiguration("model"))
-
     match model:
         case "x_drive":
             model_path = os.path.join(description_directory, "urdf", "x_drive_wamv", "wamv_target.urdf")
         case "diff_thrust":
             model_path = os.path.join(description_directory, "urdf", "diff_thrust_wamv", "wamv_target.urdf")
         case _:
-            model_path = os.path.join(description_directory, "urdf", "x_drive_wamv", "wamv_target.urdf")
+            model_path = os.path.join(description_directory, "urdf", "diff_thrust_wamv", "wamv_target.urdf")
 
     robot_description = xacro.process_file(model_path).toxml()
 
@@ -27,11 +26,12 @@ def launch_setup(context, *args, **kwargs):
         package="joint_state_publisher_gui",
         executable="joint_state_publisher_gui",
         name="joint_state_publisher_gui",
-        parameters=[
-            {
-                "use_gui": LaunchConfiguration("use_gui"),
-            }
-        ],
+    )
+
+    joint_state_publisher_node = Node(
+        package="joint_state_publisher",
+        executable="joint_state_publisher",
+        name="joint_state_publisher",
     )
 
     robot_state_publisher_node = Node(
@@ -42,11 +42,26 @@ def launch_setup(context, *args, **kwargs):
             {
                 "use_sim_time": LaunchConfiguration("use_sim_time"),
                 "robot_description": robot_description,
+                "frame_prefix": "wamv/",
             }
         ],
     )
 
-    rviz_config_file = os.path.join(description_directory, "rviz", "display_wamv.rviz")
+    nodes = [
+        robot_state_publisher_node,
+    ]
+
+    rviz_config_arg = context.perform_substitution(LaunchConfiguration("rviz_config"))
+    match rviz_config_arg:
+        case "visualize_model":
+            rviz_config_file = os.path.join(description_directory, "rviz", "display_wamv.rviz")
+            nodes.append(joint_state_publisher_gui_node)
+        case "debug":
+            rviz_config_file = os.path.join(description_directory, "rviz", "debug_dashboard.rviz")
+            nodes.append(joint_state_publisher_node)
+        case _:
+            rviz_config_file = os.path.join(description_directory, "rviz", "display_wamv.rviz")
+            nodes.append(joint_state_publisher_gui_node)
 
     rviz = Node(
         package="rviz2",
@@ -56,17 +71,15 @@ def launch_setup(context, *args, **kwargs):
         arguments=["-d", rviz_config_file],
     )
 
-    return [
-        joint_state_publisher_gui_node,
-        robot_state_publisher_node,
-        rviz,
-    ]
+    nodes.append(rviz)
+
+    return nodes
 
 
 def generate_launch_description():
     robot_model_arg = DeclareLaunchArgument(
         name="model",
-        default_value="x_drive",
+        default_value="diff_thrust",
         choices=["x_drive", "diff_thrust"],
     )
 
@@ -75,16 +88,17 @@ def generate_launch_description():
         default_value="False",
     )
 
-    use_gui_arg = DeclareLaunchArgument(
-        name="use_gui",
-        default_value="true",
+    rviz_config_arg = DeclareLaunchArgument(
+        name="rviz_config",
+        default_value="visualize_model",
+        choices=["visualize_model", "debug"],
     )
 
     return LaunchDescription(
         [
             robot_model_arg,
             use_sim_time_arg,
-            use_gui_arg,
+            rviz_config_arg,
             OpaqueFunction(function=launch_setup),
         ]
     )

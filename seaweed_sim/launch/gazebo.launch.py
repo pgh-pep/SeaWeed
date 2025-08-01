@@ -28,7 +28,7 @@ def launch_setup(context, *args, **kwargs):
         case "diff_thrust":
             model_path = os.path.join(description_directory, "urdf", "diff_thrust_wamv", "wamv_target.urdf")
         case _:
-            model_path = os.path.join(description_directory, "urdf", "x_drive_wamv", "wamv_target.urdf")
+            model_path = os.path.join(description_directory, "urdf", "diff_thrust_wamv", "wamv_target.urdf")
 
     world = context.perform_substitution(LaunchConfiguration("world"))
 
@@ -59,7 +59,9 @@ def launch_setup(context, *args, **kwargs):
 
 
 def generate_launch_description():
-    robot_model_arg = DeclareLaunchArgument(name="model", default_value="x_drive", choices=["x_drive", "diff_thrust"])
+    robot_model_arg = DeclareLaunchArgument(
+        name="model", default_value="diff_thrust", choices=["x_drive", "diff_thrust"]
+    )
 
     world_arg = DeclareLaunchArgument(
         name="world",

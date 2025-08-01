@@ -11,6 +11,13 @@ ros2 launch seaweed_description display_rviz.launch.py model:=x_drive
 ros2 launch seaweed_description display_rviz.launch.py model:=diff_thrust
 ```
 
+To open a debugging dashboard to replay rosbags w/ rviz (can do manually, but this has a displayed robot model for visualization purposes):
+
+```sh
+ros2 launch seaweed_description display_rviz.launch.py rviz_config:=debug
+```
+
+
 
 
 Generated URDFs using VRX toolkit:

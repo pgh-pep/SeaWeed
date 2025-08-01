@@ -32,6 +32,7 @@ Install dependencies:
 ```sh
 cd ~/pep/seaweed_ws
 rosdep install --from-paths src --ignore-src -r -y --rosdistro humble
+sudo apt install ros-humble-joint-state-publisher-gui
 cd ~/pep/seaweed_ws/src/SeaWeed
 pip install -r requirements.txt
 ```
@@ -39,10 +40,18 @@ pip install -r requirements.txt
 Builld w/ colcon (Always build in the workspace directory):
 ```sh
 cd ~/pep/seaweed_ws
-colcon build --symlink-install
+colcon build --symlink-install --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 ```
 
-NOTE: For developers new to ROS, you technically need to rebuild whenever you edit a file. However, by creating symlinks, we only need to rebuild whenever we add a file. Regardless, a lot of issues you will run into can be solved by deleting the old build (`sudo rm -rf ~/pep/seaweed_ws/build ~/pep/seaweed_ws/install ~/pep/seaweed_ws/log`) and rebuilding w/ colcon.
+### Colcon and IntelliSense
+
+For developers new to ROS, colcon is ROS2's build tool that compiles and packages your scripts. Traditionally you would need to rebuild whenever you edit a file. However, by creating symlinks, we only need to rebuild whenever we add/rename/delete a file. Regardless, a lot of issues you will run into can be solved by deleting the old build (`sudo rm -rf ~/pep/seaweed_ws/build ~/pep/seaweed_ws/install ~/pep/seaweed_ws/log`) and rebuilding w/ colcon.
+
+Likewise, with `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`, we are configuring VSCode's Intellisense to utilize a generated `compile_commands.json` file to locate ROS2 headers. To enable VSCode to use the `compile_commands.json`, add the following to `configurations` of your `.vscode/c_cpp_properties.json`:
+
+```sh
+"compileCommands": "~/pep/seaweed_ws/build/compile_commands.json"
+```
 
 ### Installing VRX Simulator
 
