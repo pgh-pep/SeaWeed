@@ -1,5 +1,9 @@
 # Contributing
 
+## Dependencies
+
+If you need help setting up ROS, Gazebo, Git, or other dependencies, please see [`DEV_SETUP.md`](https://github.com/pgh-pep/SeaWeed/blob/main/DEV_SETUP.md).
+
 ## Recommended File Structure
 
 ```sh
@@ -10,7 +14,7 @@
 │   └───log      (auto-generated w/ colcon)
 │   └───src
 │       └───SeaWeed (Clone HERE)
-│       └───external packages (ex. zed_wrapper, ros-drivers, can be added later)
+│       └───external packages (ex. zed_wrapper, ros-drivers, can be added late
 └───vrx_ws       (colcon build HERE)
 │   └───build    (auto-generated w/ colcon)
 │   └───install  (auto-generated w/ colcon)
