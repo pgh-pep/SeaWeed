@@ -8,6 +8,8 @@
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <depend>robot_localization</depend>
+  <depend>tf2_ros</depend>
 
   <depend>rclpy</depend>
 

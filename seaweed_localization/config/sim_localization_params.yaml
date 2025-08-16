@@ -1,0 +1,116 @@
+navsat_transform_node:
+  ros__parameters:
+    use_sim_time: true
+    frequency: 30.0
+    delay: 0.0
+    wait_for_datum: false
+    broadcast_cartesian_transform: true
+    publish_filtered_gps: true
+    zero_altitude: true
+    use_odometry_yaw: true
+    magnetic_declination_radians: 0.0
+    yaw_offset: 0.0
+
+ekf_filter_node:
+  ros__parameters:
+    use_sim_time: true
+    frequency: 30.0
+    sensor_timeout: 0.1
+    transform_time_offset: 0.0
+    transform_time_offset: 0.0
+    transform_timeout: 0.0
+    two_d_mode: true
+    print_diagnostics: false
+    debug: false
+    # debug_out_file: /home/$USER/pep/seaweed_ws/src/SeaWeed/sim_localization_debug.txt
+    publish_tf: true
+    reset_on_time_jump: true
+
+    odom_frame: odom
+    base_link_frame: wamv/base_link
+    world_frame: odom
+
+    odom0: /odometry/gps
+    odom0_config: [true,  true,  false,   # x, y, z pos (GPS position for x,y)
+                   false, false, false,   # roll, pitch, yaw (yaw from IMU)
+                   false, false, false,   # x, y, z velo
+                   false, false, false,   # roll, pitch, yaw velo
+                   false, false, false]   # x, y, z accel
+    odom0_differential: false
+    odom0_relative: false
+    odom0_queue_size: 10
+
+
+    # Note: Figure out if using odom roll/pitch w/ pcl or raw imu (leaning towards raw imu)
+    imu0: /wamv/sensors/imu/imu/data
+    imu0_config: [false, false, false,   # x, y, z pos
+                  false, false, true,    # roll, pitch, yaw
+                  false, false, false,   # x, y, z velo
+                  false, false, true,    # roll, pitch, yaw velo
+                  true,  true,  false]   # x, y, z accel (use x,y accelerometer readings)
+    imu0_differential: false
+    imu0_relative: false
+    imu0_queue_size: 10
+    imu0_remove_gravitational_acceleration: true
+
+    use_control: false
+
+  # # Which velocities are being controlled. Order is vx, vy, vz, vroll, vpitch, vyaw.
+  #   control_config: [true, false, false, false, false, true]
+  # # Places limits on how large the acceleration term will be. Should match your robot's kinematics.
+  #   acceleration_limits: [1.3, 0.0, 0.0, 0.0, 0.0, 3.4]
+  # # Acceleration and deceleration limits are not always the same for robots.
+  #   deceleration_limits: [1.3, 0.0, 0.0, 0.0, 0.0, 4.5]
+  # # If your robot cannot instantaneously reach its acceleration limit, the permitted change can be controlled with these gains
+  #   acceleration_gains: [0.8, 0.0, 0.0, 0.0, 0.0, 0.9]
+  # # If your robot cannot instantaneously reach its deceleration limit, the permitted change can be controlled with these gains
+    # deceleration_gains: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+
+  # [ADVANCED] The process noise covariance matrix can be difficult to tune, and can vary for each application, so it is
+  # exposed as a configuration parameter. This matrix represents the noise we add to the total error after each
+  # prediction step. The better the omnidirectional motion model matches your system, the smaller these values can be.
+  # However, if users find that a given variable is slow to converge, one approach is to increase the
+  # process_noise_covariance diagonal value for the variable in question, which will cause the filter's predicted error
+  # to be larger, which will cause the filter to trust the incoming measurement more during correction. The values are
+  # ordered as x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az. Defaults to the matrix below if
+  # unspecified.
+  # Note: the specification of covariance matrices can be cumbersome, so all matrix parameters in this package support
+  # both full specification or specification of only the diagonal values.
+
+    process_noise_covariance: [0.05,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                0.0,    0.05,   0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                0.0,    0.0,    0.06,   0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                0.0,    0.0,    0.0,    0.03,   0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                0.0,    0.0,    0.0,    0.0,    0.03,   0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                0.0,    0.0,    0.0,    0.0,    0.0,    0.06,   0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.025,   0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.025,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.04,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.01,   0.0,    0.0,    0.0,    0.0,    0.0,
+                                0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.01,   0.0,    0.0,    0.0,    0.0,
+                                0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.02,   0.0,    0.0,    0.0,
+                                0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.01,   0.0,    0.0,
+                                0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.01,   0.0,
+                                0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.015]
+
+    # [ADVANCED] This represents the initial value for the state estimate error covariance matrix. Setting a diagonal
+    # value (variance) to a large value will result in rapid convergence for initial measurements of the variable in
+    # question. Users should take care not to use large values for variables that will not be measured directly. The values
+    # are ordered as x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az. Defaults to the diagonal values below
+    # if unspecified. In this example, we specify only the diagonal of the matrix.
+
+    initial_estimate_covariance: [1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,     0.0,    0.0,    0.0,
+                                  0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,     0.0,    0.0,    0.0,
+                                  0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,     0.0,    0.0,    0.0,
+                                  0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,     0.0,    0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,     0.0,    0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,     0.0,     0.0,     0.0,    0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,     0.0,     0.0,     0.0,    0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,     0.0,     0.0,     0.0,    0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,     0.0,     0.0,     0.0,    0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,    0.0,     0.0,     0.0,    0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     1e-9,    0.0,     0.0,    0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     1e-9,    0.0,    0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,     1e-9,   0.0,    0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,     0.0,    1e-9,   0.0,
+                                  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,     0.0,    0.0,    1e-9]
