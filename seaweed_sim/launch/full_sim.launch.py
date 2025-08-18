@@ -6,13 +6,16 @@ from launch.actions import DeclareLaunchArgument, OpaqueFunction, IncludeLaunchD
 from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
+from launch.conditions import IfCondition
 
 
 def launch_setup(context, *args, **kwargs):
     description_directory = get_package_share_directory("seaweed_description")
     sim_directory = get_package_share_directory("seaweed_sim")
     vrx_gz_directory = get_package_share_directory("vrx_gz")
+    localization_directory = get_package_share_directory("seaweed_localization")
 
+    # GAZEBO SIMULATION
     local_world_directory = os.path.join(sim_directory, "worlds")
     vrx_worlds_directory = os.path.join(vrx_gz_directory, "worlds")
 
@@ -42,7 +45,59 @@ def launch_setup(context, *args, **kwargs):
         }.items(),
     )
 
-    rviz_config_file = os.path.join(sim_directory, "rviz", "gazebo.rviz")
+    # LOCALIZATION
+    sim_localization_params = os.path.join(localization_directory, "config", "sim_localization_params.yaml")
+
+    world = "sydney_regatta"
+    # manually determined init point; turn into a ros param to pick between more worlds as needed
+    locations = {"sydney_regatta": (-33.7226, 150.6741)}
+    lat, lon = locations[world]
+
+    navsat_transform_node = Node(
+        package="robot_localization",
+        executable="navsat_transform_node",
+        remappings=[
+            ("gps/fix", "/wamv/sensors/gps/gps/fix"),
+        ],
+        parameters=[
+            sim_localization_params,
+            # {"datum": [lat, lon, 0.0]},  # comment out to set origin at first gps reading
+        ],
+    )
+
+    ekf_node = Node(
+        package="robot_localization",
+        executable="ekf_node",
+        parameters=[sim_localization_params],
+    )
+
+    # Assume no sensor drift
+    static_transform_publisher_node = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        name="static_map_to_odom_publisher",
+        arguments=[
+            "--x",
+            "0",
+            "--y",
+            "0",
+            "--z",
+            "0",
+            "--roll",
+            "0",
+            "--pitch",
+            "0",
+            "--yaw",
+            "0",
+            "--frame-id",
+            "map",
+            "--child-frame-id",
+            "odom",
+        ],
+    )
+
+    # VISUALIZATION/TESTING
+    rviz_config_file = os.path.join(sim_directory, "rviz", "gazebo_full.rviz")
 
     rviz = Node(
         package="rviz2",
@@ -51,10 +106,14 @@ def launch_setup(context, *args, **kwargs):
         name="rviz2",
         output="screen",
         arguments=["-d", rviz_config_file],
+        condition=IfCondition(LaunchConfiguration("rviz")),
     )
 
     return [
         vrx_sim_launch,
+        ekf_node,
+        navsat_transform_node,
+        static_transform_publisher_node,
         rviz,
     ]
 
@@ -80,7 +139,8 @@ def generate_launch_description():
         default_value="true",
     )
 
-    use_gui_arg = DeclareLaunchArgument(name="use_gui", default_value="true")
+    use_gui_arg = DeclareLaunchArgument(name="use_gui", default_value="true")  # unused
+    rviz_arg = DeclareLaunchArgument("rviz", default_value="true", choices=["true", "false"])
 
     return LaunchDescription(
         [
@@ -88,6 +148,7 @@ def generate_launch_description():
             use_sim_time_arg,
             use_gui_arg,
             world_arg,
+            rviz_arg,
             OpaqueFunction(function=launch_setup),
         ]
     )

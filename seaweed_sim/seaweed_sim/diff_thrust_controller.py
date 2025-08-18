@@ -117,10 +117,8 @@ class DiffThrustController(Node):
 def main(args=None):  # type: ignore
     rclpy.init(args=args)
     try:
-        node = DiffThrustController()
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
+        diff_thrust_controller = DiffThrustController()
+        rclpy.spin(diff_thrust_controller)
     finally:
         rclpy.shutdown()
 
