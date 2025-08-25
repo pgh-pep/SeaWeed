@@ -17,17 +17,16 @@ install(PROGRAMS
 )
 
 # Cpp Nodes
-# ament_auto_add_executable(
-#     cpp_exe_name
-#     ${PROJECT_NAME}/cpp_node.cpp
-#     ${PROJECT_NAME}/other_cpp_file.cpp
-#     ...
-# )
+ament_auto_add_executable(
+    surface_scan_node
+    ${PROJECT_NAME}/surface_scan_node.cpp
+)
 
-# target_link_libraries(cpp_exe_name non_ROS_dependencies)
+# Only need if have non-ROS dependencies:
+# target_link_libraries(cpp_exe_name dependency)
 
 install(TARGETS
-    # cpp_exe_name
+    surface_scan_node
     DESTINATION lib/${PROJECT_NAME}
 )
 
