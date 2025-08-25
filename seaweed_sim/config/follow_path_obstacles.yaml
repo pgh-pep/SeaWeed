@@ -16,3 +16,45 @@ obstacles:
     color: "black"
     pose: [-530, 190, .25, 0, 0, 0]
     radius: 1.0
+
+  - name: "marker_2"
+    type: "mb_marker_buoy"
+    color: "black"
+    pose: [-530, 195, .25, 0, 0, 0]
+    radius: 1.0
+
+  - name: "marker_3"
+    type: "mb_marker_buoy"
+    color: "black"
+    pose: [-530, 200, .25, 0, 0, 0]
+    radius: 1.0
+
+  - name: "marker_4"
+    type: "mb_marker_buoy"
+    color: "black"
+    pose: [-530, 205, .25, 0, 0, 0]
+    radius: 1.0
+
+  - name: "marker_5"
+    type: "mb_marker_buoy"
+    color: "black"
+    pose: [-510, 190, .25, 0, 0, 0]
+    radius: 1.0
+
+  - name: "marker_6"
+    type: "mb_marker_buoy"
+    color: "black"
+    pose: [-510, 195, .25, 0, 0, 0]
+    radius: 1.0
+
+  - name: "marker_7"
+    type: "mb_marker_buoy"
+    color: "black"
+    pose: [-510, 200, .25, 0, 0, 0]
+    radius: 1.0
+
+  - name: "marker_8"
+    type: "mb_marker_buoy"
+    color: "black"
+    pose: [-510, 205, .25, 0, 0, 0]
+    radius: 1.0
