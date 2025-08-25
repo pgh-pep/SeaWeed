@@ -10,6 +10,9 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <depend>rclpy</depend>
+  <depend>robot_localization</depend>
+  <depend>rviz_satellite</depend>
+
 
   <export>
     <build_type>ament_cmake</build_type>

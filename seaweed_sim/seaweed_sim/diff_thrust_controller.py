@@ -3,7 +3,7 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TwistStamped
 from std_msgs.msg import Float64
 from typing import Dict
 from seaweed_sim.joy_enum import JoyEnum
@@ -21,7 +21,7 @@ class DiffThrustController(Node):
         self.back_right_pub = self.create_publisher(Float64, f"{ns}/back_right/thrust", 10)
 
         self.joy_sub = self.create_subscription(Joy, "/joy", self.joy_callback, 1)
-        self.cmd_vel_sub = self.create_subscription(Twist, "/cmd_vel", self.cmd_vel_callback, 1)
+        self.cmd_vel_sub = self.create_subscription(TwistStamped, "/cmd_vel", self.cmd_vel_callback, 1)
 
         self.max_thrust = 1000.0
         self.left_multiplier = 0
@@ -53,12 +53,12 @@ class DiffThrustController(Node):
             self.left_multiplier = 0
             self.right_multiplier = 0
 
-    def cmd_vel_callback(self, msg: Twist) -> None:
+    def cmd_vel_callback(self, msg: TwistStamped) -> None:
         # Normalize inputs to [-1, 1]
         max_linear_vel = 2.0
         max_angular_vel = 1.0
-        forward = msg.linear.x / max_linear_vel
-        turn = msg.angular.z / max_angular_vel
+        forward = msg.twist.linear.x / max_linear_vel
+        turn = msg.twist.angular.z / max_angular_vel
 
         self.left_multiplier = max(-1.0, min(1.0, forward - turn))
         self.right_multiplier = max(-1.0, min(1.0, forward + turn))

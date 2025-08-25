@@ -2,9 +2,8 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, OpaqueFunction, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from launch.conditions import IfCondition
 
@@ -79,14 +78,14 @@ def launch_setup(context, *args, **kwargs):
         ekf_node,
         navsat_transform_node,
         static_transform_publisher_node,
-        # rviz,
+        rviz,
     ]
 
 
 def generate_launch_description():
     return LaunchDescription(
         [
-            DeclareLaunchArgument("rviz", default_value="true", choices=["true", "false"]),
+            DeclareLaunchArgument("rviz", default_value="false", choices=["true", "false"]),
             OpaqueFunction(function=launch_setup),
         ]
     )
