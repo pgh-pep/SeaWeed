@@ -85,6 +85,14 @@ echo "source ~/pep/seaweed_ws/install/setup.bash" >> ~/.bashrc
 echo "source ~/pep/vrx_ws/install/setup.bash" >> ~/.bashrc
 ```
 
+### Checking Installation
+
+To ensure all dependencies are install correctly, attempt to run the simulation:
+```sh
+ros2 launch seaweed_sim full_sim.launch.py
+```
+
+
 ## Development Steps
 
 1) Find an issue you want to pick up in the [issue board](https://github.com/orgs/pgh-pep/projects/4) and assign yourself to it (Reach out to Varun for questions)
