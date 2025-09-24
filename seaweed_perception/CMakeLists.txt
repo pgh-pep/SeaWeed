@@ -13,6 +13,7 @@ ament_python_install_package(${PROJECT_NAME})
 # Python Nodes:
 install(PROGRAMS
     # ${PROJECT_NAME}/my_node.py
+    ${PROJECT_NAME}/yolo_node.py
     DESTINATION lib/${PROJECT_NAME}
 )
 
