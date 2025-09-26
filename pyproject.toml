@@ -20,6 +20,8 @@ reportIncompatibleMethodOverride = "none"
 reportIncompatibleVariableOverride = "error"
 reportUninitializedInstanceVariable = "error"
 
+reportAssignmentType = "none"
+
 ignore = [
     "**/*.launch.py",
 ]

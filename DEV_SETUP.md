@@ -39,9 +39,7 @@ Select `Connect to WSL using Distro` and select `Ubuntu-22.04`.
 
 This will open VSCode in your newly made WSL environment.
 
-
 ### 2) ROS Installation
-
 
 Open the bash terminal of your newly installed distro by opening the Ubuntu app.
 
@@ -52,6 +50,7 @@ sudo apt update && sudo apt upgrade -y
 ```
 
 Add the ROS 2 apt repository to your system:
+
 ```sh
 sudo apt install software-properties-common
 sudo add-apt-repository universe
@@ -62,11 +61,13 @@ sudo dpkg -i /tmp/ros2-apt-source.deb
 ```
 
 Update and upgrade apt repository again:
+
 ```sh
 sudo apt update && sudo apt-get upgrade -y
 ```
 
 Install ROS2 Humble:
+
 ```sh
 sudo apt install ros-humble-desktop -y
 ```
@@ -103,11 +104,9 @@ cat ~/.ssh/id_ed25519.pub
 
 Add the key to your [github account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account): `Settings > SSH and GPG Keys > New SSH Key`
 
-
 ## Installing Gazebo Garden
 
 For additional information regarding the Gazebo versions, URDFs, bridges & related topics, visit the [PEP Docs](https://github.com/pgh-pep/pep_resources/blob/main/Simulation/gazebo.md).
-
 
 If you already have ROS2 Humble installed, you might already have Gazebo 11 and Gazebo/Ignition Fortress installed. We need to remove conflicting Gazebo versions first to prevent library conflicts:
 

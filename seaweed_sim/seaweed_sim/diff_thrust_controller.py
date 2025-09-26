@@ -3,7 +3,7 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TwistStamped
 from std_msgs.msg import Float64
 from typing import Dict
 from seaweed_sim.joy_enum import JoyEnum
@@ -21,7 +21,7 @@ class DiffThrustController(Node):
         self.back_right_pub = self.create_publisher(Float64, f"{ns}/back_right/thrust", 10)
 
         self.joy_sub = self.create_subscription(Joy, "/joy", self.joy_callback, 1)
-        self.cmd_vel_sub = self.create_subscription(Twist, "/cmd_vel", self.cmd_vel_callback, 1)
+        self.cmd_vel_sub = self.create_subscription(TwistStamped, "/cmd_vel", self.cmd_vel_callback, 1)
 
         self.cmd_vel_pub = self.create_publisher(Twist, "/cmd_vel", 10)
         self.max_thrust = 1000.0
@@ -60,17 +60,24 @@ class DiffThrustController(Node):
             tw.linear.x  = 0.0
             tw.angular.z = 0.0
         self.cmd_vel_pub.publish(tw)
+        
+        
+    
+    def cmd_vel_callback(self, msg: TwistStamped) -> None:
+        # Normalize inputs to [-1, 1]
+        max_linear_vel = 2.0
+        max_angular_vel = 1.0
+        forward = msg.twist.linear.x / max_linear_vel
+        turn = msg.twist.angular.z / max_angular_vel
 
+        self.left_multiplier = max(-1.0, min(1.0, forward - turn))
+        self.right_multiplier = max(-1.0, min(1.0, forward + turn))
 
-
-    def cmd_vel_callback(self, msg: Twist) -> None:
-        forward = msg.linear.x  / self.max_linear_vel  if self.max_linear_vel  != 0 else 0.0
-        turn = msg.angular.z / self.max_angular_vel if self.max_angular_vel != 0 else 0.0
-
-        forward = max(-1.0, min(1.0, forward))
-        turn    = max(-1.0, min(1.0, turn))
-
-        if abs(forward) <= 0.001 and abs(turn) <= 0.001:
+        # Min threshold
+        if abs(forward) > 0.001 or abs(turn) > 0.001:
+            self.enabled = True
+        else:
+          
             self.enabled = False
             self.left_multiplier  = 0.0
             self.right_multiplier = 0.0
@@ -129,10 +136,8 @@ class DiffThrustController(Node):
 def main(args=None):  # type: ignore
     rclpy.init(args=args)
     try:
-        node = DiffThrustController()
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
+        diff_thrust_controller = DiffThrustController()
+        rclpy.spin(diff_thrust_controller)
     finally:
         rclpy.shutdown()
 
