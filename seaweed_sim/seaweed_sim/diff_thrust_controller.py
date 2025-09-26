@@ -23,9 +23,18 @@ class DiffThrustController(Node):
         self.joy_sub = self.create_subscription(Joy, "/joy", self.joy_callback, 1)
         self.cmd_vel_sub = self.create_subscription(TwistStamped, "/cmd_vel", self.cmd_vel_callback, 1)
 
+        self.cmd_vel_pub = self.create_publisher(Twist, "/cmd_vel", 10)
         self.max_thrust = 1000.0
-        self.left_multiplier = 0
-        self.right_multiplier = 0
+        self.left_multiplier  = 0.0
+        self.right_multiplier = 0.0
+        self.enabled = False
+
+        self.max_linear_vel  = float(self.declare_parameter("max_linear_vel", 2.0).value)   # m/s
+        self.max_angular_vel = float(self.declare_parameter("max_angular_vel", 1.0).value)  # rad/s
+        self.joy_max_lin_speed = float(self.declare_parameter("joy_max_lin_speed", 2.0).value)
+        self.joy_max_ang_speed = float(self.declare_parameter("joy_max_ang_speed", 1.0).value)
+
+
 
         self.enabled = False
 
@@ -38,21 +47,22 @@ class DiffThrustController(Node):
         self.get_logger().info("Diff thrust node started")
 
     def joy_callback(self, msg: Joy) -> None:
-        if msg.axes[JoyEnum.RIGHT_TRIGGER] == 1:
-            self.enabled = False
+
+        enabled = (msg.axes[JoyEnum.RIGHT_TRIGGER] != 1)
+
+        tw = Twist()
+        if enabled:
+            forward = msg.axes[JoyEnum.LEFT_STICK_Y] if len(msg.axes) > JoyEnum.LEFT_STICK_Y else 0.0
+            turn    = msg.axes[JoyEnum.LEFT_STICK_X] if len(msg.axes) > JoyEnum.LEFT_STICK_X else 0.0
+            tw.linear.x  = float(forward) * self.joy_max_lin_speed
+            tw.angular.z = float(turn)    * self.joy_max_ang_speed
         else:
-            self.enabled = True
-
-        if self.enabled:
-            forward = msg.axes[JoyEnum.LEFT_STICK_Y]
-            turn = msg.axes[JoyEnum.LEFT_STICK_X]
-
-            self.left_multiplier = max(-1.0, min(1.0, forward - turn))
-            self.right_multiplier = max(-1.0, min(1.0, forward + turn))
-        else:
-            self.left_multiplier = 0
-            self.right_multiplier = 0
-
+            tw.linear.x  = 0.0
+            tw.angular.z = 0.0
+        self.cmd_vel_pub.publish(tw)
+        
+        
+    
     def cmd_vel_callback(self, msg: TwistStamped) -> None:
         # Normalize inputs to [-1, 1]
         max_linear_vel = 2.0
@@ -67,9 +77,18 @@ class DiffThrustController(Node):
         if abs(forward) > 0.001 or abs(turn) > 0.001:
             self.enabled = True
         else:
+          
             self.enabled = False
-            self.left_multiplier = 0
-            self.right_multiplier = 0
+            self.left_multiplier  = 0.0
+            self.right_multiplier = 0.0
+            return
+
+        self.enabled = True
+        left  = forward - turn
+        right = forward + turn
+
+        self.left_multiplier  = max(-1.0, min(1.0, left))
+        self.right_multiplier = max(-1.0, min(1.0, right))
 
     def update_thrusters(self) -> None:
         # Normalize multipliers
