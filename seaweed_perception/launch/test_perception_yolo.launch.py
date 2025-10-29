@@ -3,9 +3,9 @@ import os
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess
 from launch_ros.actions import Node
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 
-load_dotenv()
+load_dotenv(find_dotenv())
 
 ROSBAG_DIR = os.getenv("ROSBAG_DIR")
 if not ROSBAG_DIR:

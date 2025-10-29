@@ -26,7 +26,8 @@ class YOLONode(Node):
         )
         self.subscription  # prevent unused variable warning
         # load a model
-        self.model = YOLO("models/yolo11n.pt")  # load a pretrained model
+        self.model = YOLO("models/best.pt")  # load a pretrained model
+
         # create a publisher
         self.publisher_ = self.create_publisher(Detection, "detections", 10)
 
