@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 
-import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String # Or the message type you're using
 from launch_ros.actions import Node
 from launch import LaunchDescription
+
 
 def generate_launch_description():
     nmea_navsat = Node(
@@ -12,14 +11,14 @@ def generate_launch_description():
         executable="nmea_serial_driver",
         name="gps_serial_driver",
         output="screen",
-        parameters=[ # Change these
+        parameters=[  # Change these
             {"port": "/dev/ttyUSB0"},
-            {"baud": 38400}, 
+            {"baud": 38400},
         ],
         remappings=[
-            ('/fix', '/gps/fix'),
-            ('/vel', '/gps/vel'),
-            ('/time_reference', '/gps/time_reference'),
+            ("/fix", "/gps/fix"),
+            ("/vel", "/gps/vel"),
+            ("/time_reference", "/gps/time_reference"),
         ],
         # arguments=["--ros-args", "--log-level", "debug"],
     )
@@ -29,17 +28,14 @@ def generate_launch_description():
         executable="rtcm_serial",
         name="rtcm_serial_driver",
         output="screen",
-        parameters=[ # change these
-            {"port": "/dev/ttyTHS1"}, 
-            {"baud": 38400}, 
+        parameters=[  # change these
+            {"port": "/dev/ttyTHS1"},
+            {"baud": 38400},
         ],
         remappings=[
-            ('/rtcm/corrections', '/gps/rtcm/corrections'),
+            ("/rtcm/corrections", "/gps/rtcm/corrections"),
         ],
         # arguments=["--ros-args", "--log-level", "debug"],
     )
-    
-    return LaunchDescription([
-        nmea_navsat,
-        rtcm_serial
-    ])
+
+    return LaunchDescription([nmea_navsat, rtcm_serial])
