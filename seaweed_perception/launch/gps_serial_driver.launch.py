@@ -13,7 +13,7 @@ def generate_launch_description():
         name="gps_serial_driver",
         output="screen",
         parameters=[ # Change these
-            {"port": "/dev/ttyUSB0"}, 
+            {"port": "/dev/ttyUSB0"},
             {"baud": 38400}, 
         ],
         remappings=[
@@ -23,7 +23,23 @@ def generate_launch_description():
         ],
         # arguments=["--ros-args", "--log-level", "debug"],
     )
+
+    rtcm_serial = Node(
+        package="seaweed_perception",
+        executable="rtcm_serial",
+        name="rtcm_serial_driver",
+        output="screen",
+        parameters=[ # change these
+            {"port": "/dev/ttyTHS1"}, 
+            {"baud": 38400}, 
+        ],
+        remappings=[
+            ('/rtcm/corrections', '/gps/rtcm/corrections'),
+        ],
+        # arguments=["--ros-args", "--log-level", "debug"],
+    )
     
     return LaunchDescription([
         nmea_navsat,
+        rtcm_serial
     ])
