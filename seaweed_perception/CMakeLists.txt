@@ -13,6 +13,8 @@ ament_python_install_package(${PROJECT_NAME})
 # Python Nodes:
 install(PROGRAMS
     # ${PROJECT_NAME}/my_node.py
+    seaweed_perception/rgb_publisher_node.py
+    seaweed_perception/depth_publisher_node.py
     DESTINATION lib/${PROJECT_NAME}
 )
 

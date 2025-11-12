@@ -14,7 +14,10 @@
   <depend>cv_bridge</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
-
+  <depend>launch</depend>
+  <depend>launch_ros</depend>
+  <depend>zed_wrapper</depend>
+  
   <export>
     <build_type>ament_cmake</build_type>
   </export>
