@@ -8,26 +8,29 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
+find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
+
+find_package(PCL REQUIRED)
+
+# Cpp Nodes
+ament_auto_add_executable(
+    test_node
+    ${PROJECT_NAME}/test_node.cpp
+)
+
+target_link_libraries(test_node ${PCL_LIBRARIES})
+
+install(TARGETS
+    test_node
+    DESTINATION lib/${PROJECT_NAME}
+)
+
 ament_python_install_package(${PROJECT_NAME})
 
 # Python Nodes:
 install(PROGRAMS
     # ${PROJECT_NAME}/file.py
-    DESTINATION lib/${PROJECT_NAME}
-)
-
-# Cpp Nodes
-# ament_auto_add_executable(
-#     cpp_exe_name
-#     ${PROJECT_NAME}/cpp_node.cpp
-#     ${PROJECT_NAME}/other_cpp_file.cpp
-#     ...
-# )
-
-# target_link_libraries(cpp_exe_name non_ROS_dependencies)
-
-install(TARGETS
-    # cpp_exe_name
     DESTINATION lib/${PROJECT_NAME}
 )
 
