@@ -25,8 +25,6 @@
 #include <tf2/convert.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 
-using namespace std::chrono_literals;
-
 class TestNode : public rclcpp::Node {
 public:
     TestNode() : Node("test_node") {
@@ -61,6 +59,7 @@ private:
         pcl::PointCloud<pcl::PointXYZ>::Ptr downsampled_pc(new pcl::PointCloud<pcl::PointXYZ>);
         pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_pc_unboxed(new pcl::PointCloud<pcl::PointXYZ>);
         pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_pc_with_boat(new pcl::PointCloud<pcl::PointXYZ>);
+        pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_pc_with_outliers(new pcl::PointCloud<pcl::PointXYZ>);
         pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_pc(new pcl::PointCloud<pcl::PointXYZ>);
 
         // INPUT
@@ -71,7 +70,8 @@ private:
         downsample(transformed_pc, downsampled_pc);
         remove_water_plane(downsampled_pc, obstacle_pc_unboxed);
         filter_box(obstacle_pc_unboxed, obstacle_pc_with_boat);
-        filter_boat(obstacle_pc_with_boat, obstacle_pc);
+        filter_boat(obstacle_pc_with_boat, obstacle_pc_with_outliers);
+        filter_outliers(obstacle_pc_with_outliers, obstacle_pc);
 
         // DEBUG OUTPUT
         debug_pointcloud(obstacle_pc, base_link);
