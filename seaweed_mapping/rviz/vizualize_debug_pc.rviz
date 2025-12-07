@@ -115,6 +115,20 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
+    - Class: rviz_default_plugins/Marker
+      Enabled: true
+      Name: Marker
+      Namespaces:
+        seaweed_mapping_labels: true
+        seaweed_mapping_text_labels: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /pointcloud_markers
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -161,7 +175,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 12.558639526367188
+      Distance: 6.507720947265625
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -176,10 +190,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7203967571258545
+      Pitch: 0.37039679288864136
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.5554096698760986
+      Yaw: 3.180415391921997
     Saved: ~
 Window Geometry:
   Displays:

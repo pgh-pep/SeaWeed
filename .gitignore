@@ -17,6 +17,9 @@ build_isolated/
 devel_isolated/
 log/
 
+basic_sim_readings/
+stationary_basic_sim_readings/
+
 .vscode
 .clang-tidy
 

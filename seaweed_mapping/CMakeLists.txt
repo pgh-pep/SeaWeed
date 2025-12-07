@@ -5,6 +5,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+cmake_policy(SET CMP0074 NEW)
+
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
@@ -15,14 +17,15 @@ find_package(PCL REQUIRED)
 
 # Cpp Nodes
 ament_auto_add_executable(
-    test_node
-    ${PROJECT_NAME}/test_node.cpp
+    euclidian_clustering_node
+    ${PROJECT_NAME}/euclidian_clustering_node.cpp
+    ${PROJECT_NAME}/mapping_utils.cpp
 )
 
-target_link_libraries(test_node ${PCL_LIBRARIES})
+target_link_libraries(euclidian_clustering_node ${PCL_LIBRARIES})
 
 install(TARGETS
-    test_node
+    euclidian_clustering_node
     DESTINATION lib/${PROJECT_NAME}
 )
 

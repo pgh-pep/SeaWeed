@@ -22,16 +22,16 @@ def launch_setup(context, *args, **kwargs):
         arguments=["-d", rviz_config_file],
     )
 
-    test_node = Node(
+    euclidian_clustering_node = Node(
         package="seaweed_mapping",
-        executable="test_node",
-        name="test_node",
+        executable="euclidian_clustering_node",
+        name="euclidian_clustering_node",
         output="screen",
         parameters=[{}],
     )
 
     return [
-        test_node,
+        euclidian_clustering_node,
         rviz,
     ]
 
