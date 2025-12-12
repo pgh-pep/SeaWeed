@@ -16,8 +16,13 @@ EuclidianClusteringNode::EuclidianClusteringNode()
     debug_pointcloud_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>("/debug/pointcloud", 10);
     marker_pub = this->create_publisher<visualization_msgs::msg::Marker>("/pointcloud_markers", 1);
 
+    cluster_topic = "/debug/clusters";
+    cluster_pub = this->create_publisher<geometry_msgs::msg::PoseArray>(cluster_topic, 10);
+
     tf_buffer = std::make_shared<tf2_ros::Buffer>(this->get_clock());
     tf_listener = std::make_shared<tf2_ros::TransformListener>(*tf_buffer);
+
+    clusters = new std::vector<Point>;
 
     RCLCPP_INFO(this->get_logger(), "started euclidian clustering node");
 }
@@ -48,7 +53,8 @@ void EuclidianClusteringNode::pc_callback(const sensor_msgs::msg::PointCloud2::S
     filter_outliers(obstacle_pc_with_outliers, obstacle_pc);
 
     // CLUSTERING
-    scaled_euclidian_clustering(obstacle_pc, clustering_tolerance, min_cluster_points);
+    scaled_euclidian_clustering(obstacle_pc, clustering_tolerance, min_cluster_points, clusters);
+    publish_clusters(clusters, cluster_topic, cluster_pub, this->get_clock());
 
     // DEBUG OUTPUT
     mapping_utils::debug_pointcloud(obstacle_pc, base_link, debug_pointcloud_pub, this->get_clock(),
@@ -136,7 +142,8 @@ void EuclidianClusteringNode::filter_outliers(pcl::PointCloud<pcl::PointXYZ>::Pt
 }
 
 void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ>::Ptr pc,
-                                                   float _clustering_tolerance, int _min_clustering_points) {
+                                                   float _clustering_tolerance, int _min_clustering_points,
+                                                   std::vector<Point>* _clusters) {
     pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
     tree->setInputCloud(pc);
 
@@ -151,6 +158,7 @@ void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ
 
     std::vector<sensor_msgs::msg::PointCloud2::SharedPtr> pc2_clusters;
     std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> clusters;
+    Point point;
 
     int i = 0;
     for (const auto& cluster : cluster_indices) {
@@ -167,7 +175,9 @@ void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ
         RCLCPP_INFO(this->get_logger(), "cluster  #%i: x=%.2f, y=%.2f, z=%.2f, points=%lu", i, centroid_x,
                     centroid_y, centroid_z, cluster.indices.size());
         mapping_utils::create_marker(centroid_x, centroid_y, centroid_z, i, base_link, marker_pub, "bro");
-
+        point.x = centroid_x;
+        point.y = centroid_y;
+        _clusters->push_back(point);
         i++;
     }
     // mapping_utils::reset_markers(base_link, marker_pub);
@@ -175,8 +185,8 @@ void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ
 }
 
 void EuclidianClusteringNode::scaled_euclidian_clustering(pcl::PointCloud<pcl::PointXYZ>::Ptr pc,
-                                                          float _clustering_tolerance,
-                                                          int _min_clustering_points) {
+                                                          float _clustering_tolerance, int _min_clustering_points,
+                                                          std::vector<Point>* _clusters) {
     pcl::PointCloud<pcl::PointXYZ>::Ptr scaled_pc(new pcl::PointCloud<pcl::PointXYZ>);
     *scaled_pc = *pc;
 
@@ -184,7 +194,33 @@ void EuclidianClusteringNode::scaled_euclidian_clustering(pcl::PointCloud<pcl::P
         point.z *= 0.3;
     }
 
-    euclidian_clustering(scaled_pc, _clustering_tolerance, _min_clustering_points);
+    euclidian_clustering(scaled_pc, _clustering_tolerance, _min_clustering_points, _clusters);
+}
+
+void EuclidianClusteringNode::publish_clusters(
+    std::vector<Point>* _clusters, std::string cluster_frame,
+    rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr publisher, rclcpp::Clock::SharedPtr clock) {
+    geometry_msgs::msg::PoseArray::SharedPtr msg = std::make_shared<geometry_msgs::msg::PoseArray>();
+
+    msg->header.frame_id = cluster_frame;
+    msg->header.stamp = clock->now();
+
+    for (const Point& point : *_clusters) {
+        geometry_msgs::msg::Pose pose;
+        pose.position.x = point.x;
+        pose.position.y = point.y;
+        pose.position.z = 0.0;
+
+        pose.orientation.x = 0.0;
+        pose.orientation.y = 0.0;
+        pose.orientation.z = 0.0;
+        pose.orientation.w = 1.0;
+
+        msg->poses.push_back(pose);
+    }
+
+    publisher->publish(*msg);
+    _clusters->clear();
 }
 
 int main(int argc, char* argv[]) {

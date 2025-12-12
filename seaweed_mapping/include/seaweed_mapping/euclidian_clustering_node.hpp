@@ -15,6 +15,8 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 
+#include <geometry_msgs/msg/pose_array.hpp>
+#include <geometry_msgs/msg/pose.hpp>
 #include <pcl_ros/transforms.hpp>
 #include <rclcpp/qos.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -22,6 +24,7 @@
 #include <tf2/convert.hpp>
 #include <tf2/transform_datatypes.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
+#include <vector>
 #include <visualization_msgs/msg/marker.hpp>
 
 #include "rclcpp/rclcpp.hpp"
@@ -35,21 +38,35 @@ private:
     rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud_sub;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr debug_pointcloud_pub;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub;
+    rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr cluster_pub;
+
+    struct Point {
+        float x;
+        float y;
+    };
+
+    std::vector<Point>* clusters;
 
     // TF2
     std::shared_ptr<tf2_ros::Buffer> tf_buffer;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener;
 
-    // params
+    // PARAMS (make ros params later)
     float box_range;
     float leaf_size;
     float clustering_tolerance;
     int min_cluster_points;
+    std::string cluster_topic;
 
     const std::string base_link;
 
     // Callbacks
     void pc_callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
+
+    // PUBLISH
+    void publish_clusters(std::vector<Point>* _clusters, std::string cluster_frame,
+                          rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr publisher,
+                          rclcpp::Clock::SharedPtr clock);
 
     // FILTERS
     void downsample(pcl::PointCloud<pcl::PointXYZ>::Ptr unfiltered_pc,
@@ -68,9 +85,8 @@ private:
                          pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_pc);
 
     // CLUSTERING
-    void euclidian_clustering(pcl::PointCloud<pcl::PointXYZ>::Ptr pc, float clustering_tolerance,
-                              int min_clustering_points);
-
+    void euclidian_clustering(pcl::PointCloud<pcl::PointXYZ>::Ptr pc, float _clustering_tolerance,
+                              int _min_clustering_points, std::vector<Point>* _clusters);
     void scaled_euclidian_clustering(pcl::PointCloud<pcl::PointXYZ>::Ptr pc, float clustering_tolerance,
-                                     int min_clustering_points);
+                                     int min_clustering_points, std::vector<Point>* _clusters);
 };
