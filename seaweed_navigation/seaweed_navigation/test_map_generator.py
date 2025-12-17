@@ -81,7 +81,7 @@ class TestMapGenerator(Node):
         t = TransformStamped()
         t.header.stamp = self.get_clock().now().to_msg()
         t.header.frame_id = "map"
-        t.child_frame_id = "base_link"
+        t.child_frame_id = "wamv/base_link"
 
         t.transform.translation.x = 0.5
         t.transform.translation.y = 0.5
