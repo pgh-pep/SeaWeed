@@ -41,8 +41,8 @@ class TestMapGenerator(Node):
         self.grid = np.full((self.map_height, self.map_width), 0, dtype=np.int8)
 
         # ADD TEST OBSTACLES HERE
-        # self.generate_rect(1, 1, 5, 5)
-        # self.generate_rect(0, 0, 10, 10)
+        self.generate_rect(100, 100, 40, 40)
+        self.generate_rect(300, 300, 75, 30)
 
         # self.publish_test_robot_tf()
         self.generate_map_timer = self.create_timer(0.1, self.timer_callback)
@@ -63,19 +63,21 @@ class TestMapGenerator(Node):
     def generate_line(self, x: int, y: int, dist: int, direction: Direction):
         if direction == Direction.HORIZONTAL:
             for i in range(dist):
-                self.grid[x + i, y] = 100
+                if 0 <= y < self.map_height and 0 <= x + i < self.map_width:
+                    self.grid[y, x + i] = 100
         elif direction == Direction.VERTICAL:
             for i in range(dist):
-                self.grid[x, y + i] = 100
+                if 0 <= y + i < self.map_height and 0 <= x < self.map_width:
+                    self.grid[y + i, x] = 100
 
     def generate_rect(self, x: int, y: int, l: int, w: int):
         # l -> horizontal, w -> vertical
         self.generate_line(x, y, l, Direction.HORIZONTAL)
         self.generate_line(x, y + w, l, Direction.HORIZONTAL)
-        self.generate_line(x, y, l, Direction.VERTICAL)
-        self.generate_line(x + l, y, l, Direction.VERTICAL)
+        self.generate_line(x, y, w, Direction.VERTICAL)
+        self.generate_line(x + l, y, w, Direction.VERTICAL)
 
-    def publish_test_robot_tf(self): 
+    def publish_test_robot_tf(self):
         t = TransformStamped()
         t.header.stamp = self.get_clock().now().to_msg()
         t.header.frame_id = "map"
