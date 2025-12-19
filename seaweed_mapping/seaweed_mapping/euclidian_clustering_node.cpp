@@ -17,12 +17,14 @@ EuclidianClusteringNode::EuclidianClusteringNode()
     marker_pub = this->create_publisher<visualization_msgs::msg::Marker>("/pointcloud_markers", 1);
 
     cluster_topic = "/debug/clusters";
+    cluster_frame = "/odom";
     cluster_pub = this->create_publisher<geometry_msgs::msg::PoseArray>(cluster_topic, 10);
 
     tf_buffer = std::make_shared<tf2_ros::Buffer>(this->get_clock());
     tf_listener = std::make_shared<tf2_ros::TransformListener>(*tf_buffer);
 
-    clusters = new std::vector<Point>;
+    clusters = {};
+    scale = 0.3;
 
     RCLCPP_INFO(this->get_logger(), "started euclidian clustering node");
 }
@@ -48,13 +50,13 @@ void EuclidianClusteringNode::pc_callback(const sensor_msgs::msg::PointCloud2::S
     // FILTERING
     filter_box(transformed_pc, cropped_pc, box_range);
     downsample(cropped_pc, downsampled_pc, leaf_size);
-    remove_water_plane(downsampled_pc, obstacle_pc_with_boat);
+    plane_RANSAC(downsampled_pc, obstacle_pc_with_boat);
     filter_boat(obstacle_pc_with_boat, obstacle_pc_with_outliers);
     filter_outliers(obstacle_pc_with_outliers, obstacle_pc);
 
     // CLUSTERING
-    scaled_euclidian_clustering(obstacle_pc, clustering_tolerance, min_cluster_points, clusters);
-    publish_clusters(clusters, cluster_topic, cluster_pub, this->get_clock());
+    scaled_euclidian_clustering(obstacle_pc, clustering_tolerance, scale, min_cluster_points);
+    publish_clusters(this->get_clock());
 
     // DEBUG OUTPUT
     mapping_utils::debug_pointcloud(obstacle_pc, base_link, debug_pointcloud_pub, this->get_clock(),
@@ -69,8 +71,8 @@ void EuclidianClusteringNode::downsample(pcl::PointCloud<pcl::PointXYZ>::Ptr unf
     voxel_filter.filter(*filtered_pc);
 }
 
-void EuclidianClusteringNode::remove_water_plane(pcl::PointCloud<pcl::PointXYZ>::Ptr unfiltered_pc,
-                                                 pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_pc) {
+void EuclidianClusteringNode::plane_RANSAC(pcl::PointCloud<pcl::PointXYZ>::Ptr unfiltered_pc,
+                                           pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_pc) {
     pcl::SACSegmentation<pcl::PointXYZ> seg;
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane(new pcl::PointCloud<pcl::PointXYZ>());
 
@@ -142,8 +144,7 @@ void EuclidianClusteringNode::filter_outliers(pcl::PointCloud<pcl::PointXYZ>::Pt
 }
 
 void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ>::Ptr pc,
-                                                   float _clustering_tolerance, int _min_clustering_points,
-                                                   std::vector<Point>* _clusters) {
+                                                   float _clustering_tolerance, int _min_clustering_points) {
     pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
     tree->setInputCloud(pc);
 
@@ -156,8 +157,8 @@ void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ
     eucl_clustering_extraction.setInputCloud(pc);
     eucl_clustering_extraction.extract(cluster_indices);
 
-    std::vector<sensor_msgs::msg::PointCloud2::SharedPtr> pc2_clusters;
-    std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> clusters;
+    // std::vector<sensor_msgs::msg::PointCloud2::SharedPtr> pc2_clusters;
+    // std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> clusters;
     Point point;
 
     int i = 0;
@@ -174,38 +175,37 @@ void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ
 
         RCLCPP_INFO(this->get_logger(), "cluster  #%i: x=%.2f, y=%.2f, z=%.2f, points=%lu", i, centroid_x,
                     centroid_y, centroid_z, cluster.indices.size());
-        mapping_utils::create_marker(centroid_x, centroid_y, centroid_z, i, base_link, marker_pub, "bro");
+        mapping_utils::create_marker(centroid_x, centroid_y, centroid_z, i, base_link, marker_pub,
+                                     mapping_utils::Color::RED, "cluster");
         point.x = centroid_x;
         point.y = centroid_y;
-        _clusters->push_back(point);
+        clusters.push_back(point);
         i++;
     }
-    // mapping_utils::reset_markers(base_link, marker_pub);
+    mapping_utils::reset_markers(base_link, marker_pub);
     RCLCPP_INFO(this->get_logger(), "Found '%i' clusters", i);
 }
 
 void EuclidianClusteringNode::scaled_euclidian_clustering(pcl::PointCloud<pcl::PointXYZ>::Ptr pc,
-                                                          float _clustering_tolerance, int _min_clustering_points,
-                                                          std::vector<Point>* _clusters) {
+                                                          float _clustering_tolerance, float _scale,
+                                                          int _min_clustering_points) {
     pcl::PointCloud<pcl::PointXYZ>::Ptr scaled_pc(new pcl::PointCloud<pcl::PointXYZ>);
     *scaled_pc = *pc;
 
     for (auto& point : scaled_pc->points) {
-        point.z *= 0.3;
+        point.z *= _scale;
     }
 
-    euclidian_clustering(scaled_pc, _clustering_tolerance, _min_clustering_points, _clusters);
+    euclidian_clustering(scaled_pc, _clustering_tolerance, _min_clustering_points);
 }
 
-void EuclidianClusteringNode::publish_clusters(
-    std::vector<Point>* _clusters, std::string cluster_frame,
-    rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr publisher, rclcpp::Clock::SharedPtr clock) {
+void EuclidianClusteringNode::publish_clusters(rclcpp::Clock::SharedPtr clock) {
     geometry_msgs::msg::PoseArray::SharedPtr msg = std::make_shared<geometry_msgs::msg::PoseArray>();
 
     msg->header.frame_id = cluster_frame;
     msg->header.stamp = clock->now();
 
-    for (const Point& point : *_clusters) {
+    for (const Point& point : clusters) {
         geometry_msgs::msg::Pose pose;
         pose.position.x = point.x;
         pose.position.y = point.y;
@@ -219,8 +219,8 @@ void EuclidianClusteringNode::publish_clusters(
         msg->poses.push_back(pose);
     }
 
-    publisher->publish(*msg);
-    _clusters->clear();
+    cluster_pub->publish(*msg);
+    clusters.clear();
 }
 
 int main(int argc, char* argv[]) {

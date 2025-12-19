@@ -1,9 +1,40 @@
 #include "seaweed_mapping/mapping_utils.hpp"
 
-#include <pcl_ros/transforms.hpp>
 #include <tf2/exceptions.h>
 
+#include <pcl_ros/transforms.hpp>
+
 namespace mapping_utils {
+
+std_msgs::msg::ColorRGBA get_rgba_color(Color color, float alpha) {
+    std_msgs::msg::ColorRGBA rgba;
+    rgba.a = alpha;
+
+    switch (color) {
+        case RED:
+            rgba.r = 1.0f;
+            rgba.g = 0.0f;
+            rgba.b = 0.0f;
+            break;
+        case GREEN:
+            rgba.r = 0.0f;
+            rgba.g = 1.0f;
+            rgba.b = 0.0f;
+            break;
+        case BLUE:
+            rgba.r = 0.0f;
+            rgba.g = 0.0f;
+            rgba.b = 1.0f;
+            break;
+        default:
+            rgba.r = 1.0f;
+            rgba.g = 1.0f;
+            rgba.b = 1.0f;
+            break;
+    }
+
+    return rgba;
+}
 
 void ros_to_pcl(const sensor_msgs::msg::PointCloud2::SharedPtr& pc_msg,
                 pcl::PointCloud<pcl::PointXYZ>::Ptr& pc_pcl) {
@@ -44,11 +75,11 @@ void debug_pointcloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& pc, const std::
 
     publisher->publish(*debug_pc_msg);
 
-    RCLCPP_INFO(logger, "pub debug pc w/ %zu points", pc->size());
+    RCLCPP_DEBUG(logger, "pub debug pc w/ %zu points", pc->size());
 }
 
-void create_marker(float x, float y, float z, int id, const std::string& frame,
-                   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr publisher,
+void create_marker(const float& x, const float& y, const float& z, const int& id, const std::string& frame,
+                   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr publisher, const Color& color,
                    const std::string& label) {
     visualization_msgs::msg::Marker marker;
 
@@ -73,10 +104,8 @@ void create_marker(float x, float y, float z, int id, const std::string& frame,
     marker.scale.y = 0.1;
     marker.scale.z = 0.1;
 
-    marker.color.r = 0.0f;
-    marker.color.g = 1.0f;
-    marker.color.b = 0.0f;
-    marker.color.a = 1.0;
+    std_msgs::msg::ColorRGBA rgba = get_rgba_color(color);
+    marker.color = rgba;
 
     marker.lifetime = rclcpp::Duration::from_nanoseconds(0);
 
@@ -96,7 +125,7 @@ void create_marker(float x, float y, float z, int id, const std::string& frame,
 
         text_marker.pose.position.x = x;
         text_marker.pose.position.y = y;
-        text_marker.pose.position.z = z + .5;
+        text_marker.pose.position.z = z + 0.5;
         text_marker.pose.orientation.x = 0.0;
         text_marker.pose.orientation.y = 0.0;
         text_marker.pose.orientation.z = 0.0;
