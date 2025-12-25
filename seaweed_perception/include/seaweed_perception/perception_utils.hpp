@@ -10,9 +10,19 @@
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 
-namespace mapping_utils {
+namespace perception_utils {
 
 enum Color { RED, GREEN, BLUE };
+struct Point {
+    float x;
+    float y;
+};
+
+struct Detection {
+    Point point;
+    rclcpp::Time timestamp;
+    int num_detections;
+};
 
 std_msgs::msg::ColorRGBA get_rgba_color(Color color, float alpha = 1.0f);
 
@@ -38,4 +48,4 @@ void create_marker(const float& x, const float& y, const float& z, const int& id
 void reset_markers(const std::string& frame,
                    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr publisher);
 
-}  // namespace mapping_utils
+}  // namespace perception_utils

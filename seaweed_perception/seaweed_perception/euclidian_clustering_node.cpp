@@ -1,6 +1,6 @@
-#include "seaweed_mapping/euclidian_clustering_node.hpp"
+#include "seaweed_perception/euclidian_clustering_node.hpp"
 
-#include "seaweed_mapping/mapping_utils.hpp"
+#include "seaweed_perception/perception_utils.hpp"
 
 EuclidianClusteringNode::EuclidianClusteringNode()
     : Node("euclidian_clustering_node"),
@@ -44,8 +44,8 @@ void EuclidianClusteringNode::pc_callback(const sensor_msgs::msg::PointCloud2::S
     pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_pc(new pcl::PointCloud<pcl::PointXYZ>);
 
     // INPUT
-    mapping_utils::ros_to_pcl(msg, pc);
-    mapping_utils::transform_pc(pc, transformed_pc, base_link, tf_buffer, this->get_logger());
+    perception_utils::ros_to_pcl(msg, pc);
+    perception_utils::transform_pc(pc, transformed_pc, base_link, tf_buffer, this->get_logger());
 
     // FILTERING
     filter_box(transformed_pc, cropped_pc, box_range);
@@ -59,7 +59,7 @@ void EuclidianClusteringNode::pc_callback(const sensor_msgs::msg::PointCloud2::S
     publish_clusters(this->get_clock());
 
     // DEBUG OUTPUT
-    mapping_utils::debug_pointcloud(obstacle_pc, base_link, debug_pointcloud_pub, this->get_clock(),
+    perception_utils::debug_pointcloud(obstacle_pc, base_link, debug_pointcloud_pub, this->get_clock(),
                                     this->get_logger());
 }
 
@@ -159,7 +159,7 @@ void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ
 
     // std::vector<sensor_msgs::msg::PointCloud2::SharedPtr> pc2_clusters;
     // std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> clusters;
-    Point point;
+    perception_utils::Point point;
 
     int i = 0;
     for (const auto& cluster : cluster_indices) {
@@ -175,14 +175,14 @@ void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ
 
         RCLCPP_INFO(this->get_logger(), "cluster  #%i: x=%.2f, y=%.2f, z=%.2f, points=%lu", i, centroid_x,
                     centroid_y, centroid_z, cluster.indices.size());
-        mapping_utils::create_marker(centroid_x, centroid_y, centroid_z, i, base_link, marker_pub,
-                                     mapping_utils::Color::RED, "cluster");
+        perception_utils::create_marker(centroid_x, centroid_y, centroid_z, i, base_link, marker_pub,
+                                     perception_utils::Color::RED, "cluster");
         point.x = centroid_x;
         point.y = centroid_y;
         clusters.push_back(point);
         i++;
     }
-    mapping_utils::reset_markers(base_link, marker_pub);
+    perception_utils::reset_markers(base_link, marker_pub);
     RCLCPP_INFO(this->get_logger(), "Found '%i' clusters", i);
 }
 
@@ -205,7 +205,7 @@ void EuclidianClusteringNode::publish_clusters(rclcpp::Clock::SharedPtr clock) {
     msg->header.frame_id = cluster_frame;
     msg->header.stamp = clock->now();
 
-    for (const Point& point : clusters) {
+    for (const perception_utils::Point& point : clusters) {
         geometry_msgs::msg::Pose pose;
         pose.position.x = point.x;
         pose.position.y = point.y;

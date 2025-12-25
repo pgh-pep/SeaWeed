@@ -9,9 +9,9 @@ from launch_ros.actions import Node
 
 
 def launch_setup(context, *args, **kwargs):
-    mapping_directory = get_package_share_directory("seaweed_mapping")
+    perception_directory = get_package_share_directory("seaweed_perception")
 
-    rviz_config_file = os.path.join(mapping_directory, "rviz", "vizualize_debug_pc.rviz")
+    rviz_config_file = os.path.join(perception_directory, "rviz", "vizualize_debug_pc.rviz")
 
     rviz = Node(
         package="rviz2",
@@ -23,7 +23,7 @@ def launch_setup(context, *args, **kwargs):
     )
 
     euclidian_clustering_node = Node(
-        package="seaweed_mapping",
+        package="seaweed_perception",
         executable="euclidian_clustering_node",
         name="euclidian_clustering_node",
         output="screen",

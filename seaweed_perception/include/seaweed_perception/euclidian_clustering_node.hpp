@@ -27,6 +27,8 @@
 #include <vector>
 #include <visualization_msgs/msg/marker.hpp>
 
+#include "seaweed_perception/perception_utils.hpp"
+
 #include "rclcpp/rclcpp.hpp"
 
 class EuclidianClusteringNode : public rclcpp::Node {
@@ -40,12 +42,7 @@ private:
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub;
     rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr cluster_pub;
 
-    struct Point {
-        float x;
-        float y;
-    };
-
-    std::vector<Point> clusters;
+    std::vector<perception_utils::Point> clusters;
 
     // TF2
     std::shared_ptr<tf2_ros::Buffer> tf_buffer;

@@ -119,8 +119,8 @@ Visualization Manager:
       Enabled: true
       Name: Marker
       Namespaces:
-        seaweed_mapping_labels: true
-        seaweed_mapping_text_labels: true
+        seaweed_perception_labels: true
+        seaweed_perception_text_labels: true
       Topic:
         Depth: 5
         Durability Policy: Volatile

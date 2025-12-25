@@ -1,10 +1,10 @@
-#include "seaweed_mapping/mapping_utils.hpp"
+#include "seaweed_perception/perception_utils.hpp"
 
 #include <tf2/exceptions.h>
 
 #include <pcl_ros/transforms.hpp>
 
-namespace mapping_utils {
+namespace perception_utils {
 
 std_msgs::msg::ColorRGBA get_rgba_color(Color color, float alpha) {
     std_msgs::msg::ColorRGBA rgba;
@@ -86,7 +86,7 @@ void create_marker(const float& x, const float& y, const float& z, const int& id
     marker.header.frame_id = frame;
     marker.header.stamp = rclcpp::Clock().now();
 
-    marker.ns = "seaweed_mapping_labels";
+    marker.ns = "seaweed_perception_labels";
     marker.id = id;
 
     marker.type = visualization_msgs::msg::Marker::SPHERE;
@@ -117,7 +117,7 @@ void create_marker(const float& x, const float& y, const float& z, const int& id
         text_marker.header.frame_id = frame;
         text_marker.header.stamp = rclcpp::Clock().now();
 
-        text_marker.ns = "seaweed_mapping_text_labels";
+        text_marker.ns = "seaweed_perception_text_labels";
         text_marker.id = id;
 
         text_marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
@@ -153,12 +153,12 @@ void reset_markers(const std::string& frame,
     marker.header.frame_id = frame;
     marker.header.stamp = rclcpp::Clock().now();
 
-    marker.ns = "seaweed_mapping_labels";
+    marker.ns = "seaweed_perception_labels";
     marker.action = visualization_msgs::msg::Marker::DELETEALL;
     publisher->publish(marker);
 
-    marker.ns = "seaweed_mapping_text_labels";
+    marker.ns = "seaweed_perception_text_labels";
     publisher->publish(marker);
 }
 
-}  // namespace mapping_utils
+}  // namespace perception_utils
