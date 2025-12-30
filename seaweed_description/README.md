@@ -21,6 +21,7 @@ ros2 launch seaweed_description display_rviz.launch.py rviz_config:=debug
 
 
 Generated URDFs using VRX toolkit:
+Note: I manually removed `wamv/` in all links due to launch ns repetition
 ```sh
 # in seaweed_ws
 ros2 launch vrx_gazebo generate_wamv.launch.py component_yaml:=`pwd`/src/SeaWeed/seaweed_description/urdf/x_drive_wamv/x_drive_component_config.yaml thruster_yaml:=`pwd`/src/SeaWeed/seaweed_description/urdf/x_drive_wamv/x_drive_thruster_config.yaml wamv_target:=`pwd`/src/SeaWeed/seaweed_description/urdf/x_drive_wamv/wamv_target.urdf wamv_locked:=False
