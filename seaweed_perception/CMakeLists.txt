@@ -33,7 +33,23 @@ ament_python_install_package(${PROJECT_NAME})
 
 # Python Nodes:
 install(PROGRAMS
-    # ${PROJECT_NAME}/file.py
+    # ${PROJECT_NAME}/my_node.py
+    ${PROJECT_NAME}/yolo_node.py
+    DESTINATION lib/${PROJECT_NAME}
+)
+
+# Cpp Nodes
+# ament_auto_add_executable(
+#     cpp_exe_name
+#     ${PROJECT_NAME}/cpp_node.cpp
+#     ${PROJECT_NAME}/other_cpp_file.cpp
+#     ...
+# )
+
+# target_link_libraries(cpp_exe_name non_ROS_dependencies)
+
+install(TARGETS
+    # cpp_exe_name
     DESTINATION lib/${PROJECT_NAME}
 )
 

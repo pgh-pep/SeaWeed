@@ -14,6 +14,10 @@
   <depend>cv_bridge</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
+  <exec_depend>opencv-python</exec_depend>
+  <exec_depend>numpy</exec_depend>
+  <exec_depend>ultralytics</exec_depend>
+  <exec_depend>ros2launch</exec_depend>
 
   <depend>nav_msgs</depend>
   <depend>visualization_msgs</depend>
