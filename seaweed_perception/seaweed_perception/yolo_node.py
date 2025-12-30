@@ -1,125 +1,188 @@
 #!/usr/bin/env python3
-"""Detect the objects in the image from the camera stream using ultralytics YOLO model."""
 
-from typing import Optional, List
+import os
 import time
+
+import torch
+
+from ament_index_python import get_package_share_directory
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Header
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 
-import cv2
+
+# import cv2
+import numpy as np
+from numpy.typing import NDArray
+
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
-
-from ultralytics import YOLO
-
 from seaweed_interfaces.msg import BoundingBox, Detection
 
+from ultralytics import YOLO
+from ultralytics.engine.results import Results
+from ultralytics.utils.plotting import Annotator
 
+
+# TODO: TensorRT if on jetson (need to generate tensor engine,
+# select that as model instead of .pt if on jetson, easy way to detect if on jetson
+# is if we are using ):
+# https://docs.ultralytics.com/guides/nvidia-jetson/#install-onnxruntime-gpu_2
 class YOLONode(Node):
-    """ROS2 node that uses YOLO model to detect objects in images from a camera stream."""
-
     def __init__(self):
         super().__init__("yolo_node")
-        self.subscription = self.create_subscription(
-            Image, "/wamv/sensors/cameras/camera_sensor/image_raw", self.camera_callback, 10
+
+        self.declare_parameter("image_topic", "/wamv/sensors/cameras/camera_sensor/image_raw")
+        self.declare_parameter("model", "best.pt")
+        self.declare_parameter("check_for_cuda", False)
+        self.declare_parameter("debug_w_visualizer", True)
+
+        perception_prefix = get_package_share_directory("seaweed_perception")
+
+        self.image_topic = str(self.get_parameter("image_topic").value)
+        model = str(self.get_parameter("model").value)
+        self.debug_w_visualizer = bool(self.get_parameter("debug_w_visualizer").value)
+        self.check_for_cuda = bool(self.get_parameter("check_for_cuda").value)
+
+        self.model_path = os.path.join(perception_prefix, "models", model)
+
+        self.YOLO = YOLO(self.model_path)
+
+        self.cv_bridge = CvBridge()
+
+        self.camera_frame = "camera_frame"
+
+        # NOTE: will add standardized QOS config file in utils
+        image_qos = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=5,
         )
-        self.subscription  # prevent unused variable warning
-        # load a model
-        self.model = YOLO("models/best.pt")  # load a pretrained model
 
-        # create a publisher
-        self.publisher_ = self.create_publisher(Detection, "detections", 10)
+        self.image_sub = self.create_subscription(
+            Image,
+            self.image_topic,
+            self.image_callback,
+            image_qos,
+        )
 
-    def camera_callback(self, msg: Image):
-        self.get_logger().info("Receiving video frame")
-        # convert ROS Image message to OpenCV image
-        bridge = CvBridge()
+        self.yolo_timer = self.create_timer(0.05, self.yolo_callback)  # 20 hz
+        self.confidence = 0.3
+
+        self.latest_image: NDArray[np.uint8] | None = None
+        self.height: int = 0
+        self.width: int = 0
+
+        self.device = "cuda" if self.check_for_cuda and torch.cuda.is_available() else "cpu"
+
+        self.detection_pub = self.create_publisher(Detection, "/cv_detections", 10)
+        self.debug_yolo_pub = self.create_publisher(Image, "/debug/yolo", image_qos)
+        
+        self.get_logger().info(f"YOLO node w/ {model} on {self.device}")
+
+
+    def image_callback(self, msg: Image) -> None:
         try:
-            cv_image = bridge.imgmsg_to_cv2(msg, "bgr8")
+            self.latest_image = self.cv_bridge.imgmsg_to_cv2(msg, "bgr8")
+            self.height, self.width = self.latest_image.shape[:2]
         except CvBridgeError as e:
-            self.get_logger().error(str(e))
-            return  # Exit the callback if image conversion fails
+            self.get_logger().error(f"image callback error: {str(e)}")
 
-        # Get image dimensions
-        height, width = cv_image.shape[:2]
+    def yolo_callback(self) -> None:
+        if self.latest_image is None:
+            return
 
-        # perform inference on the image
-        start_time = time.time()
-        results = self.model(cv_image)
-        inference_time = time.time() - start_time
+        start_time: float = time.time()
 
-        # since we do inference on a single image frame, we need only get the first result
-        single_result = results[0]
+        predictions: list[Results] = self.YOLO.predict(
+            source=self.latest_image,
+            verbose=False,
+            stream=False,
+            conf=self.confidence,
+            device=self.device,
+        )
 
-        # Create Detection message
+        inference_time: float = time.time() - start_time
+
+        results: Results = predictions[0]
+
         detection_msg = Detection()
 
-        # Set header with timestamp
         detection_msg.header = Header()
         detection_msg.header.stamp = self.get_clock().now().to_msg()
-        detection_msg.header.frame_id = "camera_frame"
+        detection_msg.header.frame_id = self.camera_frame
 
-        # Set image information
-        detection_msg.image_width = width
-        detection_msg.image_height = height
-        detection_msg.inference_time = inference_time
+        detection_msg.image_width = self.width
+        detection_msg.image_height = self.height
+        # detection_msg.inference_time = inference_time
 
-        # Process detections
         detection_msg.detections = []
 
-        if single_result.boxes is not None and len(single_result.boxes) > 0:
-            for box in single_result.boxes:
-                # Create BoundingBox message
+        if results.boxes is not None and len(results.boxes) > 0:
+            for box in results.boxes:
                 bbox = BoundingBox()
 
-                # Extract box coordinates (xyxy format)
+                # box coordinates in xyxy format
+                x1: float
+                y1: float
+                x2: float
+                y2: float
+
                 x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
 
-                # Convert to top-left corner and width/height
+                # top-left corner and width/height
                 bbox.x = float(x1)
                 bbox.y = float(y1)
                 bbox.width = float(x2 - x1)
                 bbox.height = float(y2 - y1)
 
-                # Normalized coordinates (center and size)
-                bbox.x_normalized = float((x1 + x2) / 2 / width)
-                bbox.y_normalized = float((y1 + y2) / 2 / height)
-                bbox.width_normalized = float((x2 - x1) / width)
-                bbox.height_normalized = float((y2 - y1) / height)
+                bbox.x_normalized = float((x1 + x2) / 2 / self.width)
+                bbox.y_normalized = float((y1 + y2) / 2 / self.height)
+                bbox.width_normalized = float((x2 - x1) / self.width)
+                bbox.height_normalized = float((y2 - y1) / self.height)
 
-                # Class information
                 bbox.class_id = int(box.cls.item())
-                bbox.class_name = single_result.names[bbox.class_id]
+                bbox.label = results.names[bbox.class_id]
                 bbox.confidence = float(box.conf.item())
+                
+                # self.get_logger().info(f"{bbox.class_id}, {bbox.label}")
 
                 detection_msg.detections.append(bbox)
 
-        # Log detection info
         self.get_logger().info(f"Detected {len(detection_msg.detections)} objects in {inference_time:.3f}s")
-        for detection in detection_msg.detections:
-            self.get_logger().info(f"  - {detection.class_name}: {detection.confidence:.2f}")
+        # for detection in detection_msg.detections:
+        #     self.get_logger().info(f"  - {detection.class_name}: {detection.confidence:.2f}")
 
-        # Publish the detection message
-        self.publisher_.publish(detection_msg)
+        self.detection_pub.publish(detection_msg)
 
-        # show results on the image
-        cv_image = single_result.plot()
-        # display the image with detections
+        if self.debug_w_visualizer:
+            annotator = Annotator(self.latest_image)
+            if results.boxes is not None:
+                for box in results.boxes:
+                    xyxy = box.xyxy[0].cpu().numpy()
+                    cls = int(box.cls.item())
+                    conf = float(box.conf.item())
+                    label = f"{results.names[cls]} {conf:.2f}"
+                    annotator.box_label(xyxy, label)
 
-        cv2.imshow("Image window", cv_image)
-        cv2.waitKey(3)
+            debug_image = annotator.result()
+            self.publish_debug_image(debug_image)
+
+    def publish_debug_image(self, debug_image: NDArray[np.uint8]) -> None:
+        debug_msg: Image = self.cv_bridge.cv2_to_imgmsg(debug_image, encoding="bgr8")
+        debug_msg.header.stamp = self.get_clock().now().to_msg()
+        debug_msg.header.frame_id = self.camera_frame
+        self.debug_yolo_pub.publish(debug_msg)
 
 
-def main(args: Optional[List[str]] = None):
+def main(args=None):  # type: ignore
     rclpy.init(args=args)
-    yolo_node = YOLONode()
-    rclpy.spin(yolo_node)
-    # Destroy the node explicitly
-    # (optional - otherwise it will be done automatically
-    # when the garbage collector destroys the node object)
-    yolo_node.destroy_node()
-    rclpy.shutdown()
+    try:
+        yolo_node = YOLONode()
+        rclpy.spin(yolo_node)
+    finally:
+        rclpy.shutdown()
 
 
 if __name__ == "__main__":

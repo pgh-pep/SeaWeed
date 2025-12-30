@@ -1,5 +1,5 @@
 # Single detected object
-string class_name          # Human-readable class name (e.g., "person", "car")
+string label              # Human-readable class name (e.g., "person", "car")
 int32 class_id            # Class ID from model
 float64 confidence        # Detection confidence score [0.0, 1.0]
 
