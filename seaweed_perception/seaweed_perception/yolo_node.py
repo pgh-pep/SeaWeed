@@ -33,7 +33,7 @@ class YOLONode(Node):
     def __init__(self):
         super().__init__("yolo_node")
 
-        self.declare_parameter("image_topic", "/wamv/sensors/cameras/camera_sensor/image_raw")
+        self.declare_parameter("image_topic", "/wamv/sensors/cameras/camera_sensor/optical/image_raw")
         self.declare_parameter("model", "best.pt")
         self.declare_parameter("use_cuda", False)
         self.declare_parameter("debug_w_visualizer", True)
@@ -78,9 +78,8 @@ class YOLONode(Node):
 
         self.detection_pub = self.create_publisher(Detection, "/cv_detections", 10)
         self.debug_yolo_pub = self.create_publisher(Image, "/debug/yolo", image_qos)
-        
-        self.get_logger().info(f"YOLO node w/ {model} on {self.device}")
 
+        self.get_logger().info(f"YOLO node w/ {model} on {self.device}")
 
     def image_callback(self, msg: Image) -> None:
         try:
@@ -145,7 +144,7 @@ class YOLONode(Node):
                 bbox.class_id = int(box.cls.item())
                 bbox.label = results.names[bbox.class_id]
                 bbox.confidence = float(box.conf.item())
-                
+
                 # self.get_logger().info(f"{bbox.class_id}, {bbox.label}")
 
                 detection_msg.detections.append(bbox)
