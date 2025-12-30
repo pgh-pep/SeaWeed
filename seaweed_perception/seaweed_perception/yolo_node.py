@@ -35,7 +35,7 @@ class YOLONode(Node):
 
         self.declare_parameter("image_topic", "/wamv/sensors/cameras/camera_sensor/image_raw")
         self.declare_parameter("model", "best.pt")
-        self.declare_parameter("check_for_cuda", False)
+        self.declare_parameter("use_cuda", False)
         self.declare_parameter("debug_w_visualizer", True)
 
         perception_prefix = get_package_share_directory("seaweed_perception")
@@ -43,7 +43,7 @@ class YOLONode(Node):
         self.image_topic = str(self.get_parameter("image_topic").value)
         model = str(self.get_parameter("model").value)
         self.debug_w_visualizer = bool(self.get_parameter("debug_w_visualizer").value)
-        self.check_for_cuda = bool(self.get_parameter("check_for_cuda").value)
+        self.use_cuda = bool(self.get_parameter("use_cuda").value)
 
         self.model_path = os.path.join(perception_prefix, "models", model)
 
@@ -74,7 +74,7 @@ class YOLONode(Node):
         self.height: int = 0
         self.width: int = 0
 
-        self.device = "cuda" if self.check_for_cuda and torch.cuda.is_available() else "cpu"
+        self.device = "cuda" if self.use_cuda and torch.cuda.is_available() else "cpu"
 
         self.detection_pub = self.create_publisher(Detection, "/cv_detections", 10)
         self.debug_yolo_pub = self.create_publisher(Image, "/debug/yolo", image_qos)
