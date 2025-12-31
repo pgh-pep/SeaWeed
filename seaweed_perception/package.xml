@@ -30,6 +30,8 @@
   <depend>pcl_conversions</depend>
   <depend>pcl_ros</depend>
 
+  <depend>seaweed_interfaces</depend>
+
   <export>
     <build_type>ament_cmake</build_type>
   </export>

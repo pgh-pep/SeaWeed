@@ -30,9 +30,16 @@ ament_auto_add_executable(
     ${PROJECT_NAME}/perception_utils.cpp
 )
 
+ament_auto_add_executable(
+    bbox_projection_node
+    ${PROJECT_NAME}/bbox_projection_node.cpp
+    ${PROJECT_NAME}/perception_utils.cpp
+)
+
 install(TARGETS
     euclidian_clustering_node
     cluster_cache
+    bbox_projection_node
     DESTINATION lib/${PROJECT_NAME}
 )
 
