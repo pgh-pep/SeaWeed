@@ -32,7 +32,7 @@ public:
             std::bind(&BBox_Projection_Node::rgb_image_callback, this, std::placeholders::_1));
         depth_image_sub = this->create_subscription<sensor_msgs::msg::Image>(
             depth_image_topic, perception_utils::image_qos,
-            std::bind(&BBox_Projection_Node::rgb_image_callback, this, std::placeholders::_1));
+            std::bind(&BBox_Projection_Node::depth_image_callback, this, std::placeholders::_1));
     };
 
 private:
