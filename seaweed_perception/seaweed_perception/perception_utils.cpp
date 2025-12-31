@@ -6,6 +6,10 @@
 
 namespace perception_utils {
 
+std::ostream& operator<<(std::ostream& os, const Point& point) {
+    return os << "(" << point.x << ", " << point.y << ")";
+}
+
 std_msgs::msg::ColorRGBA get_rgba_color(Color color, float alpha) {
     std_msgs::msg::ColorRGBA rgba;
     rgba.a = alpha;

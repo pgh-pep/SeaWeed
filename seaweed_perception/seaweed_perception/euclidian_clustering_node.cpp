@@ -60,7 +60,7 @@ void EuclidianClusteringNode::pc_callback(const sensor_msgs::msg::PointCloud2::S
 
     // DEBUG OUTPUT
     perception_utils::debug_pointcloud(obstacle_pc, base_link, debug_pointcloud_pub, this->get_clock(),
-                                    this->get_logger());
+                                       this->get_logger());
 }
 
 void EuclidianClusteringNode::downsample(pcl::PointCloud<pcl::PointXYZ>::Ptr unfiltered_pc,
@@ -145,6 +145,11 @@ void EuclidianClusteringNode::filter_outliers(pcl::PointCloud<pcl::PointXYZ>::Pt
 
 void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ>::Ptr pc,
                                                    float _clustering_tolerance, int _min_clustering_points) {
+    if (pc->empty()) {
+        RCLCPP_INFO(this->get_logger(), "Empty point cloud, can't cluster");
+        return;
+    }
+
     pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
     tree->setInputCloud(pc);
 
@@ -176,7 +181,7 @@ void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ
         RCLCPP_INFO(this->get_logger(), "cluster  #%i: x=%.2f, y=%.2f, z=%.2f, points=%lu", i, centroid_x,
                     centroid_y, centroid_z, cluster.indices.size());
         perception_utils::create_marker(centroid_x, centroid_y, centroid_z, i, base_link, marker_pub,
-                                     perception_utils::Color::RED, "cluster");
+                                        perception_utils::Color::RED, "cluster");
         point.x = centroid_x;
         point.y = centroid_y;
         clusters.push_back(point);

@@ -27,9 +27,8 @@
 #include <vector>
 #include <visualization_msgs/msg/marker.hpp>
 
-#include "seaweed_perception/perception_utils.hpp"
-
 #include "rclcpp/rclcpp.hpp"
+#include "seaweed_perception/perception_utils.hpp"
 
 class EuclidianClusteringNode : public rclcpp::Node {
 public:
@@ -55,7 +54,7 @@ private:
     int min_cluster_points;
     std::string cluster_topic;
     std::string cluster_frame;
-    
+
     float scale;
 
     const std::string base_link;
@@ -82,8 +81,8 @@ private:
     // CLUSTERING
     void publish_clusters(rclcpp::Clock::SharedPtr clock);
 
-    void scaled_euclidian_clustering(pcl::PointCloud<pcl::PointXYZ>::Ptr pc, float _clustering_tolerance, float _scale,
-                                     int _min_clustering_points);
+    void scaled_euclidian_clustering(pcl::PointCloud<pcl::PointXYZ>::Ptr pc, float _clustering_tolerance,
+                                     float _scale, int _min_clustering_points);
     void euclidian_clustering(pcl::PointCloud<pcl::PointXYZ>::Ptr pc, float _clustering_tolerance,
                               int _min_clustering_points);
 };
