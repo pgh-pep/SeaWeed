@@ -18,11 +18,18 @@ struct Point {
     float y;
 };
 
+std::ostream& operator<<(std::ostream& os, const Point& p);
+
 struct Detection {
     Point point;
     rclcpp::Time timestamp;
     int num_detections;
 };
+
+// same as rclcpp::SensorDataQoS();
+static const rclcpp::QoS image_qos = rclcpp::QoS(5)
+                                         .reliability(RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT)
+                                         .durability(RMW_QOS_POLICY_DURABILITY_VOLATILE);
 
 std_msgs::msg::ColorRGBA get_rgba_color(Color color, float alpha = 1.0f);
 
