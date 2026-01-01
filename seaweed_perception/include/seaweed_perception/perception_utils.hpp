@@ -7,6 +7,7 @@
 
 #include <pcl_ros/transforms.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 
@@ -16,6 +17,7 @@ enum Color { RED, GREEN, BLUE };
 struct Point {
     float x;
     float y;
+    // float z;
 };
 
 std::ostream& operator<<(std::ostream& os, const Point& p);
@@ -24,6 +26,24 @@ struct Detection {
     Point point;
     rclcpp::Time timestamp;
     int num_detections;
+};
+
+struct CameraIntrinsics {
+    float fx, fy, cx, cy;
+
+    void set_from_cam_info(const sensor_msgs::msg::CameraInfo& msg) {
+        fx = msg.k[0];
+        fy = msg.k[4];
+        cx = msg.k[2];
+        cy = msg.k[5];
+    }
+
+    std::array<float, 3> project_to_3d(int u, int v, float depth) const {
+        float x_c = (u - cx) * depth / fx;
+        float y_c = (v - cy) * depth / fy;
+        float z_c = depth;
+        return {x_c, y_c, z_c};
+    }
 };
 
 // same as rclcpp::SensorDataQoS();
