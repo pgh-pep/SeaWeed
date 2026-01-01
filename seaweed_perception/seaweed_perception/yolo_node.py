@@ -34,7 +34,7 @@ class YOLONode(Node):
         super().__init__("yolo_node")
 
         self.declare_parameter("image_topic", "/wamv/sensors/cameras/camera_sensor/optical/image_raw")
-        self.declare_parameter("model", "best.pt")
+        self.declare_parameter("model", "sim_buoy_matrix.pt")
         self.declare_parameter("use_cuda", False)
         self.declare_parameter("debug_w_visualizer", True)
 
@@ -145,7 +145,10 @@ class YOLONode(Node):
                 bbox.label = results.names[bbox.class_id]
                 bbox.confidence = float(box.conf.item())
 
-                # self.get_logger().info(f"{bbox.class_id}, {bbox.label}")
+                # TO LOG LABELS & CONFIDENCES
+                # conf = float(box.conf.item())
+                # label = results.names[int(box.cls.item())]
+                # self.get_logger().info(f"{label}: {conf:.3f}")
 
                 detection_msg.detections.append(bbox)
 
@@ -156,7 +159,7 @@ class YOLONode(Node):
         self.detection_pub.publish(detection_msg)
 
         if self.debug_w_visualizer:
-            annotator = Annotator(self.latest_image)
+            annotator = Annotator(self.latest_image.copy())
             if results.boxes is not None:
                 for box in results.boxes:
                     xyxy = box.xyxy[0].cpu().numpy()
