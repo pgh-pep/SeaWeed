@@ -27,11 +27,19 @@ def launch_setup(context, *args, **kwargs):
         executable="euclidian_clustering_node",
         name="euclidian_clustering_node",
         output="screen",
-        parameters=[{}],
+        # parameters=[{}],
+    )
+
+    cluster_cache = Node(
+        package="seaweed_perception",
+        executable="cluster_cache_node",
+        name="cluster_cache_node",
+        output="screen",
     )
 
     return [
         euclidian_clustering_node,
+        cluster_cache,
         rviz,
     ]
 

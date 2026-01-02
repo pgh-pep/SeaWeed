@@ -25,8 +25,8 @@ ament_auto_add_executable(
 target_link_libraries(euclidian_clustering_node ${PCL_LIBRARIES})
 
 ament_auto_add_executable(
-    cluster_cache
-    ${PROJECT_NAME}/cluster_cache.cpp
+    cluster_cache_node
+    ${PROJECT_NAME}/cluster_cache_node.cpp
     ${PROJECT_NAME}/perception_utils.cpp
 )
 
@@ -38,7 +38,7 @@ ament_auto_add_executable(
 
 install(TARGETS
     euclidian_clustering_node
-    cluster_cache
+    cluster_cache_node
     bbox_projection_node
     DESTINATION lib/${PROJECT_NAME}
 )
