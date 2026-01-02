@@ -1,7 +1,5 @@
 #include "seaweed_perception/euclidian_clustering_node.hpp"
 
-#include "seaweed_perception/perception_utils.hpp"
-
 EuclidianClusteringNode::EuclidianClusteringNode()
     : Node("euclidian_clustering_node"),
       box_range(10.0),
@@ -14,7 +12,7 @@ EuclidianClusteringNode::EuclidianClusteringNode()
         std::bind(&EuclidianClusteringNode::pc_callback, this, std::placeholders::_1));
 
     debug_pointcloud_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>("/debug/pointcloud", 10);
-    marker_pub = this->create_publisher<visualization_msgs::msg::Marker>("/pointcloud_markers", 1);
+    marker_pub = this->create_publisher<visualization_msgs::msg::MarkerArray>("/debug/markers", 1);
 
     cluster_topic = "/debug/clusters";
     cluster_frame = "/odom";
@@ -162,9 +160,10 @@ void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ
     eucl_clustering_extraction.setInputCloud(pc);
     eucl_clustering_extraction.extract(cluster_indices);
 
-    // std::vector<sensor_msgs::msg::PointCloud2::SharedPtr> pc2_clusters;
-    // std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> clusters;
     perception_utils::Point point;
+
+    visualization_msgs::msg::MarkerArray marker_array;
+    perception_utils::reset_markers(base_link, marker_array.markers);
 
     int i = 0;
     for (const auto& cluster : cluster_indices) {
@@ -180,14 +179,15 @@ void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ
 
         RCLCPP_INFO(this->get_logger(), "cluster  #%i: x=%.2f, y=%.2f, z=%.2f, points=%lu", i, centroid_x,
                     centroid_y, centroid_z, cluster.indices.size());
-        perception_utils::create_marker(centroid_x, centroid_y, centroid_z, i, base_link, marker_pub,
-                                        perception_utils::Color::RED, "cluster");
+        perception_utils::create_marker(centroid_x, centroid_y, centroid_z, i, base_link,
+                                        perception_utils::Color::RED, "cluster", marker_array.markers);
         point.x = centroid_x;
         point.y = centroid_y;
         clusters.push_back(point);
         i++;
     }
-    perception_utils::reset_markers(base_link, marker_pub);
+    marker_pub->publish(marker_array);
+
     RCLCPP_INFO(this->get_logger(), "Found '%i' clusters", i);
 }
 

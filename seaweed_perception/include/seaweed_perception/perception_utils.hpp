@@ -10,6 +10,7 @@
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 namespace perception_utils {
 
@@ -69,10 +70,9 @@ void debug_pointcloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& pc, const std::
                       rclcpp::Clock::SharedPtr clock, rclcpp::Logger logger);
 
 void create_marker(const float& x, const float& y, const float& z, const int& id, const std::string& frame,
-                   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr publisher, const Color& color,
-                   const std::string& label = "");
+                   const Color& color, const std::string& label,
+                   std::vector<visualization_msgs::msg::Marker>& markers);
 
-void reset_markers(const std::string& frame,
-                   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr publisher);
+void reset_markers(const std::string& frame, std::vector<visualization_msgs::msg::Marker>& markers);
 
 }  // namespace perception_utils

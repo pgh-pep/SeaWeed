@@ -25,7 +25,7 @@
 #include <tf2/transform_datatypes.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <vector>
-#include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 #include "rclcpp/rclcpp.hpp"
 #include "seaweed_perception/perception_utils.hpp"
@@ -38,7 +38,7 @@ private:
     // SUB PUB
     rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud_sub;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr debug_pointcloud_pub;
-    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub;
+    rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub;
     rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr cluster_pub;
 
     std::vector<perception_utils::Point> clusters;

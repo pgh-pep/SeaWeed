@@ -83,8 +83,8 @@ void debug_pointcloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& pc, const std::
 }
 
 void create_marker(const float& x, const float& y, const float& z, const int& id, const std::string& frame,
-                   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr publisher, const Color& color,
-                   const std::string& label) {
+                   const Color& color, const std::string& label,
+                   std::vector<visualization_msgs::msg::Marker>& markers) {
     visualization_msgs::msg::Marker marker;
 
     marker.header.frame_id = frame;
@@ -108,12 +108,10 @@ void create_marker(const float& x, const float& y, const float& z, const int& id
     marker.scale.y = 0.1;
     marker.scale.z = 0.1;
 
-    std_msgs::msg::ColorRGBA rgba = get_rgba_color(color);
-    marker.color = rgba;
-
+    marker.color = get_rgba_color(color);
     marker.lifetime = rclcpp::Duration::from_nanoseconds(0);
 
-    publisher->publish(marker);
+    markers.push_back(marker);
 
     if (!label.empty()) {
         visualization_msgs::msg::Marker text_marker;
@@ -143,26 +141,25 @@ void create_marker(const float& x, const float& y, const float& z, const int& id
         text_marker.color.a = 1.0;
 
         text_marker.text = label;
-
         text_marker.lifetime = rclcpp::Duration::from_nanoseconds(0);
 
-        publisher->publish(text_marker);
+        markers.push_back(text_marker);
     }
 }
 
-void reset_markers(const std::string& frame,
-                   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr publisher) {
+void reset_markers(const std::string& frame, std::vector<visualization_msgs::msg::Marker>& markers) {
     visualization_msgs::msg::Marker marker;
 
     marker.header.frame_id = frame;
     marker.header.stamp = rclcpp::Clock().now();
+    marker.id = -1;
 
     marker.ns = "seaweed_perception_labels";
     marker.action = visualization_msgs::msg::Marker::DELETEALL;
-    publisher->publish(marker);
+    markers.push_back(marker);
 
     marker.ns = "seaweed_perception_text_labels";
-    publisher->publish(marker);
+    markers.push_back(marker);
 }
 
 }  // namespace perception_utils
