@@ -83,14 +83,14 @@ void debug_pointcloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& pc, const std::
 }
 
 void create_marker(const float& x, const float& y, const float& z, const int& id, const std::string& frame,
-                   const Color& color, const std::string& label,
+                   std::string ns, const Color& color, const std::string& label,
                    std::vector<visualization_msgs::msg::Marker>& markers) {
     visualization_msgs::msg::Marker marker;
 
     marker.header.frame_id = frame;
     marker.header.stamp = rclcpp::Clock().now();
 
-    marker.ns = "seaweed_perception_labels";
+    marker.ns = ns;
     marker.id = id;
 
     marker.type = visualization_msgs::msg::Marker::SPHERE;
@@ -119,7 +119,7 @@ void create_marker(const float& x, const float& y, const float& z, const int& id
         text_marker.header.frame_id = frame;
         text_marker.header.stamp = rclcpp::Clock().now();
 
-        text_marker.ns = "seaweed_perception_text_labels";
+        text_marker.ns = ns + "_text";
         text_marker.id = id;
 
         text_marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
@@ -147,18 +147,16 @@ void create_marker(const float& x, const float& y, const float& z, const int& id
     }
 }
 
-void reset_markers(const std::string& frame, std::vector<visualization_msgs::msg::Marker>& markers) {
+void reset_markers(const std::string& frame, std::string ns,
+                   std::vector<visualization_msgs::msg::Marker>& markers) {
     visualization_msgs::msg::Marker marker;
 
     marker.header.frame_id = frame;
     marker.header.stamp = rclcpp::Clock().now();
     marker.id = -1;
 
-    marker.ns = "seaweed_perception_labels";
+    marker.ns = ns;
     marker.action = visualization_msgs::msg::Marker::DELETEALL;
-    markers.push_back(marker);
-
-    marker.ns = "seaweed_perception_text_labels";
     markers.push_back(marker);
 }
 

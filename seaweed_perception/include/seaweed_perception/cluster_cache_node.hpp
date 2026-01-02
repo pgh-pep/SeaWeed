@@ -36,4 +36,3 @@ private:
 
     void publish_cache();
 };
-    

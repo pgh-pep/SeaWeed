@@ -70,9 +70,10 @@ void debug_pointcloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& pc, const std::
                       rclcpp::Clock::SharedPtr clock, rclcpp::Logger logger);
 
 void create_marker(const float& x, const float& y, const float& z, const int& id, const std::string& frame,
-                   const Color& color, const std::string& label,
+                   std::string ns, const Color& color, const std::string& label,
                    std::vector<visualization_msgs::msg::Marker>& markers);
 
-void reset_markers(const std::string& frame, std::vector<visualization_msgs::msg::Marker>& markers);
+void reset_markers(const std::string& frame, std::string ns,
+                   std::vector<visualization_msgs::msg::Marker>& markers);
 
 }  // namespace perception_utils

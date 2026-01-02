@@ -29,14 +29,14 @@ void ClusterCacheNode::cluster_callback(const geometry_msgs::msg::PoseArray& msg
                 old_detection.num_detections += 1;
                 is_existing_detection = true;
                 old_detection.timestamp = this->get_clock()->now();
-                RCLCPP_INFO(this->get_logger(), "old cluster, x: %f, y: %f", old_detection.point.x,
-                            old_detection.point.y);
+                // RCLCPP_INFO(this->get_logger(), "old cluster, x: %f, y: %f", old_detection.point.x,
+                //             old_detection.point.y);
 
                 break;
             }
         }
         if (!is_existing_detection) {  // else, must be a new point
-            RCLCPP_INFO(this->get_logger(), "new cluster, x: %f, y: %f", detected_point.x, detected_point.y);
+            // RCLCPP_INFO(this->get_logger(), "new cluster, x: %f, y: %f", detected_point.x, detected_point.y);
             perception_utils::Detection new_detection;
             new_detection.point = detected_point;
             new_detection.timestamp = this->get_clock()->now();
@@ -79,7 +79,7 @@ void ClusterCacheNode::publish_cache() {
     msg.header.frame_id = cluster_frame;
 
     visualization_msgs::msg::MarkerArray marker_array;
-    perception_utils::reset_markers(cluster_frame, marker_array.markers);
+    perception_utils::reset_markers(cluster_frame, "cluster_cache", marker_array.markers);
 
     int i = 0;
     for (const auto& detection : detections_cache) {
@@ -89,11 +89,12 @@ void ClusterCacheNode::publish_cache() {
         msg.poses.push_back(pose);
 
         perception_utils::create_marker(detection.point.x, detection.point.y, 0.0, i, cluster_frame,
-                                        perception_utils::Color::RED, "cluster_cache", marker_array.markers);
+                                        "cluster_cache", perception_utils::Color::RED, "cache",
+                                        marker_array.markers);
         i++;
     }
-
-    // marker_pub->publish(marker_array);
+    RCLCPP_INFO(this->get_logger(), "cache size: %zu", msg.poses.size());
+    marker_pub->publish(marker_array);
     cache_pub->publish(msg);
 }
 

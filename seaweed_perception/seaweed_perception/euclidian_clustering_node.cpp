@@ -163,7 +163,7 @@ void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ
     perception_utils::Point point;
 
     visualization_msgs::msg::MarkerArray marker_array;
-    perception_utils::reset_markers(base_link, marker_array.markers);
+    perception_utils::reset_markers(base_link, "euclidian_clustering", marker_array.markers);
 
     int i = 0;
     for (const auto& cluster : cluster_indices) {
@@ -177,18 +177,18 @@ void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ
         centroid_y /= cluster.indices.size();
         centroid_z /= cluster.indices.size();
 
-        RCLCPP_INFO(this->get_logger(), "cluster  #%i: x=%.2f, y=%.2f, z=%.2f, points=%lu", i, centroid_x,
-                    centroid_y, centroid_z, cluster.indices.size());
-        perception_utils::create_marker(centroid_x, centroid_y, centroid_z, i, base_link,
+        // RCLCPP_INFO(this->get_logger(), "cluster  #%i: x=%.2f, y=%.2f, z=%.2f, points=%lu", i, centroid_x,
+        //             centroid_y, centroid_z, cluster.indices.size());
+        perception_utils::create_marker(centroid_x, centroid_y, centroid_z, i, base_link, "euclidian_clustering",
                                         perception_utils::Color::RED, "cluster", marker_array.markers);
         point.x = centroid_x;
         point.y = centroid_y;
         clusters.push_back(point);
         i++;
     }
-    marker_pub->publish(marker_array);
+    // marker_pub->publish(marker_array);
 
-    RCLCPP_INFO(this->get_logger(), "Found '%i' clusters", i);
+    // RCLCPP_INFO(this->get_logger(), "Found '%i' clusters", i);
 }
 
 void EuclidianClusteringNode::scaled_euclidian_clustering(pcl::PointCloud<pcl::PointXYZ>::Ptr pc,
