@@ -5,13 +5,16 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <tf2_ros/buffer.h>
 
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/pose_array.hpp>
+
 #include <pcl_ros/transforms.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
-
 namespace perception_utils {
 
 enum Color { RED, GREEN, BLUE };
@@ -75,5 +78,15 @@ void create_marker(const float& x, const float& y, const float& z, const int& id
 
 void reset_markers(const std::string& frame, std::string ns,
                    std::vector<visualization_msgs::msg::Marker>& markers);
+
+bool transform_pose(const geometry_msgs::msg::PoseStamped& original_pose,
+                    geometry_msgs::msg::PoseStamped& transformed_pose, const std::string& target_frame,
+                    std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger);
+
+bool transform_pose_array(const geometry_msgs::msg::PoseArray& original_pose_array,
+                    geometry_msgs::msg::PoseArray& transformed_pose_array, const std::string& target_frame,
+                    std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger);
+
+
 
 }  // namespace perception_utils

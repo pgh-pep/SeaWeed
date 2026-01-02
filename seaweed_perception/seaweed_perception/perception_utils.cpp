@@ -160,4 +160,44 @@ void reset_markers(const std::string& frame, std::string ns,
     markers.push_back(marker);
 }
 
+bool transform_pose(const geometry_msgs::msg::PoseStamped& original_pose,
+                    geometry_msgs::msg::PoseStamped& transformed_pose, const std::string& target_frame,
+                    std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger) {
+    try {
+        geometry_msgs::msg::TransformStamped tf_stamped =
+            tf_buffer->lookupTransform(target_frame, original_pose.header.frame_id, tf2::TimePointZero);
+
+        tf2::doTransform(original_pose, transformed_pose, tf_stamped);
+        return true;
+
+    } catch (const tf2::TransformException& ex) {
+        RCLCPP_ERROR(logger, "failed pose transform: %s", ex.what());
+        return false;
+    }
+}
+
+bool transform_pose_array(const geometry_msgs::msg::PoseArray& original_pose_array,
+                          geometry_msgs::msg::PoseArray& transformed_pose_array, const std::string& target_frame,
+                          std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger) {
+    try {
+        geometry_msgs::msg::TransformStamped tf_stamped =
+            tf_buffer->lookupTransform(target_frame, original_pose_array.header.frame_id, tf2::TimePointZero);
+
+        transformed_pose_array.poses.clear();
+        transformed_pose_array.header.frame_id = target_frame;
+        transformed_pose_array.header.stamp = original_pose_array.header.stamp;
+
+        geometry_msgs::msg::Pose transformed_pose;
+        for (auto const& original_pose : original_pose_array.poses) {
+            tf2::doTransform(original_pose, transformed_pose, tf_stamped);
+            transformed_pose_array.poses.push_back(transformed_pose);
+        }
+        return true;
+
+    } catch (const tf2::TransformException& ex) {
+        RCLCPP_ERROR(logger, "failed pose array transform: %s", ex.what());
+        return false;
+    }
+}
+
 }  // namespace perception_utils
