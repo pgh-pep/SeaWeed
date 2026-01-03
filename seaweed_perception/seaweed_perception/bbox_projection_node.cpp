@@ -31,9 +31,12 @@ BBox_Projection_Node::BBox_Projection_Node()
         std::bind(&BBox_Projection_Node::camera_info_callback, this, std::placeholders::_1));
 
     marker_pub = this->create_publisher<visualization_msgs::msg::MarkerArray>("/debug/markers", 1);
-    projection_pub = this->create_publisher<geometry_msgs::msg::PoseArray>(projection_topic, 10);
+    projection_pub = this->create_publisher<seaweed_interfaces::msg::LabeledPoseArray>(projection_topic, 10);
+
+    bbox_projections.header.frame_id = map_frame;
 };
 
+// DONT USE SO PERHAPS REMOVE
 void BBox_Projection_Node::rgb_image_callback(const sensor_msgs::msg::Image::SharedPtr msg) {
     try {
         latest_rgb_image = cv_bridge::toCvCopy(msg, "bgr8")->image;
@@ -81,18 +84,14 @@ void BBox_Projection_Node::detection_callback(const seaweed_interfaces::msg::Det
         return;
     }
 
-    geometry_msgs::msg::PoseArray proj_poses_c;
-    geometry_msgs::msg::PoseArray proj_poses_w;
+    seaweed_interfaces::msg::LabeledPoseArray proj_poses_c, proj_poses_w;
 
     proj_poses_c.header.frame_id = camera_optical_frame;
     proj_poses_c.header.stamp = msg->header.stamp;
 
     // proj_poses_w.header.frame_id = map_frame;
     proj_poses_w.header.frame_id = base_link_frame;
-
     proj_poses_w.header.stamp = msg->header.stamp;
-
-    std::vector<std::string> labels;
 
     for (const seaweed_interfaces::msg::BoundingBox& bbox : detections) {
         int u = bbox.x + bbox.width / 2;
@@ -104,8 +103,6 @@ void BBox_Projection_Node::detection_callback(const seaweed_interfaces::msg::Det
         depth_sample_points.clear();
         depths.clear();
 
-        // RCLCPP_INFO(this->get_logger(), "depth: %f", depth);
-
         if (depth <= 0) {
             RCLCPP_WARN(this->get_logger(), "invalid bbox depth at (%d, %d), SKIPPING", u, v);
             continue;
@@ -113,26 +110,26 @@ void BBox_Projection_Node::detection_callback(const seaweed_interfaces::msg::Det
 
         auto [x_c, y_c, z_c] = camera_intrinsics.project_to_3d(u, v, depth);
 
+        // RCLCPP_INFO(this->get_logger(), "depth: %f", depth);
         // RCLCPP_INFO(this->get_logger(), "x: %f, y: %f, z: %f", x_c, y_c, z_c);
 
-        geometry_msgs::msg::Pose pose_c;
-        pose_c.position.x = x_c;
-        pose_c.position.y = y_c;
-        pose_c.position.z = z_c;
-        pose_c.orientation.w = 1.0;
-        proj_poses_c.poses.push_back(pose_c);
-        labels.push_back(bbox.label);
+        seaweed_interfaces::msg::LabeledPose pose_c;
+        pose_c.pose.position.x = x_c;
+        pose_c.pose.position.y = y_c;
+        pose_c.pose.position.z = z_c;
+        pose_c.pose.orientation.w = 1.0;
+        pose_c.label = bbox.label;
+        proj_poses_c.labeled_poses.push_back(pose_c);
     }
 
-    if (!perception_utils::transform_pose_array(proj_poses_c, proj_poses_w, proj_poses_w.header.frame_id,
-                                                tf_buffer, get_logger())) {
-        RCLCPP_ERROR(this->get_logger(), "bbox transform pose array failed");
+    if (!perception_utils::transform_labeled_pose_array(proj_poses_c, proj_poses_w, proj_poses_w.header.frame_id,
+                                                        tf_buffer, get_logger())) {
+        RCLCPP_ERROR(this->get_logger(), "bbox transform labeled pose array failed");
         return;
     }
 
-    visualize_pose_array(proj_poses_w, labels);
+    visualize_labeled_pose_array(proj_poses_w);
     projection_pub->publish(proj_poses_w);
-    labels.clear();
 };
 
 bool BBox_Projection_Node::is_image_valid(const rclcpp::Time timestamp, float expiration_seconds) {
@@ -216,17 +213,17 @@ float BBox_Projection_Node::calc_med_abs_dev_threshold(std::vector<float> values
     return MAD * _threshold_multiplier;
 };
 
-void BBox_Projection_Node::visualize_pose_array(const geometry_msgs::msg::PoseArray& pose_array,
-                                                const std::vector<std::string>& labels) {
+void BBox_Projection_Node::visualize_labeled_pose_array(
+    const seaweed_interfaces::msg::LabeledPoseArray& labaled_pose_array) {
     visualization_msgs::msg::MarkerArray marker_array;
-    std::string frame = pose_array.header.frame_id;
+    std::string frame = labaled_pose_array.header.frame_id;
     perception_utils::reset_markers(frame, "bbox_projections_node", marker_array.markers);
 
     int i = 0;
-    for (auto const& pose : pose_array.poses) {
-        perception_utils::create_marker(pose.position.x, pose.position.y, pose.position.z, i, frame,
-                                        "bbox_projections_node", perception_utils::Color::GREEN, labels.at(i),
-                                        marker_array.markers);
+    for (auto const& labaled_pose : labaled_pose_array.labeled_poses) {
+        perception_utils::create_marker(labaled_pose.pose.position.x, labaled_pose.pose.position.y,
+                                        labaled_pose.pose.position.z, i, frame, "bbox_projections_node",
+                                        perception_utils::Color::GREEN, labaled_pose.label, marker_array.markers);
         i++;
     }
     marker_pub->publish(marker_array);

@@ -44,7 +44,7 @@ private:
     rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr camera_info_sub;
 
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub;
-    rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr projection_pub;
+    rclcpp::Publisher<seaweed_interfaces::msg::LabeledPoseArray>::SharedPtr projection_pub;
 
     cv::Mat latest_rgb_image;
     cv::Mat latest_depth_image;
@@ -78,6 +78,5 @@ private:
     float calc_median(std::vector<float>& values);
     float calc_med_abs_dev_threshold(std::vector<float> values, float median, float _threshold_multiplier);
 
-    void visualize_pose_array(const geometry_msgs::msg::PoseArray& pose_array,
-                              const std::vector<std::string>& labels);
+    void visualize_labeled_pose_array(const seaweed_interfaces::msg::LabeledPoseArray& labaled_pose_array);
 };

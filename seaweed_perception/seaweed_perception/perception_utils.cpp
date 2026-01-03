@@ -160,6 +160,50 @@ void reset_markers(const std::string& frame, std::string ns,
     markers.push_back(marker);
 }
 
+bool transform_labeled_pose(const seaweed_interfaces::msg::LabeledPose& original_pose,
+                            seaweed_interfaces::msg::LabeledPose& transformed_pose,
+                            const std::string& target_frame, const std::string& source_frame,
+                            std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger) {
+    try {
+        geometry_msgs::msg::TransformStamped tf_stamped =
+            tf_buffer->lookupTransform(target_frame, source_frame, tf2::TimePointZero);
+
+        tf2::doTransform(original_pose.pose, transformed_pose.pose, tf_stamped);
+        transformed_pose.label = original_pose.label;
+        return true;
+
+    } catch (const tf2::TransformException& ex) {
+        RCLCPP_ERROR(logger, "failed labeled pose transform: %s", ex.what());
+        return false;
+    }
+}
+
+bool transform_labeled_pose_array(const seaweed_interfaces::msg::LabeledPoseArray& original_pose_array,
+                                  seaweed_interfaces::msg::LabeledPoseArray& transformed_pose_array,
+                                  const std::string& target_frame, std::shared_ptr<tf2_ros::Buffer> tf_buffer,
+                                  const rclcpp::Logger& logger) {
+    try {
+        geometry_msgs::msg::TransformStamped tf_stamped =
+            tf_buffer->lookupTransform(target_frame, original_pose_array.header.frame_id, tf2::TimePointZero);
+
+        transformed_pose_array.labeled_poses.clear();
+        transformed_pose_array.header.frame_id = target_frame;
+        transformed_pose_array.header.stamp = original_pose_array.header.stamp;
+
+        seaweed_interfaces::msg::LabeledPose transformed_labeled_pose;
+        for (auto const& original_labeled_pose : original_pose_array.labeled_poses) {
+            tf2::doTransform(original_labeled_pose.pose, transformed_labeled_pose.pose, tf_stamped);
+            transformed_labeled_pose.label = original_labeled_pose.label;
+            transformed_pose_array.labeled_poses.push_back(transformed_labeled_pose);
+        }
+        return true;
+
+    } catch (const tf2::TransformException& ex) {
+        RCLCPP_ERROR(logger, "failed labeled pose array transform: %s", ex.what());
+        return false;
+    }
+}
+
 bool transform_pose(const geometry_msgs::msg::PoseStamped& original_pose,
                     geometry_msgs::msg::PoseStamped& transformed_pose, const std::string& target_frame,
                     std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger) {
