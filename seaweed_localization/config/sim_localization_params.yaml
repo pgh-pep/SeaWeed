@@ -1,3 +1,4 @@
+
 navsat_transform_node:
   ros__parameters:
     use_sim_time: true
@@ -29,28 +30,40 @@ ekf_filter_node:
     base_link_frame: wamv/base_link
     world_frame: odom
 
-    odom0: /odometry/gps
-    odom0_config: [true,  true,  false,   # x, y, z pos (GPS position for x,y)
-                   false, false, false,   # roll, pitch, yaw (yaw from IMU)
-                   false, false, false,   # x, y, z velo
-                   false, false, false,   # roll, pitch, yaw velo
-                   false, false, false]   # x, y, z accel
+    # Lidar SLAM / LIO provides high-rate local odometry (pose in odom -> base_link)
+    odom0: /dlio/odom_node/odom
+    odom0_config: [true,  true,  true,   # x, y, z pos (use x,y from lidar odom)
+            true, true, true,    # roll, pitch, yaw (use yaw from lidar odom)
+            true, true, true,   # x, y, z velo
+            true, true, true,   # roll, pitch, yaw velo
+            false, false, false]   # x, y, z accel
     odom0_differential: false
     odom0_relative: false
     odom0_queue_size: 10
 
+    # GPS-derived odometry (converted by navsat_transform_node) used as global correction
+    odom1: /odometry/gps
+    odom1_config: [true,  true,  false,   # x, y, z pos (GPS position for x,y)
+            false, false, false,   # roll, pitch, yaw (yaw from IMU)
+            false, false, false,   # x, y, z velo
+            false, false, false,   # roll, pitch, yaw velo
+            false, false, false]   # x, y, z accel
+    odom1_differential: false
+    odom1_relative: false
+    odom1_queue_size: 10
+
 
     # Note: Figure out if using odom roll/pitch w/ pcl or raw imu (leaning towards raw imu)
-    imu0: /wamv/sensors/imu/imu/data
-    imu0_config: [false, false, false,   # x, y, z pos
-                  false, false, true,    # roll, pitch, yaw
-                  false, false, false,   # x, y, z velo
-                  false, false, true,    # roll, pitch, yaw velo
-                  true,  true,  false]   # x, y, z accel (use x,y accelerometer readings)
-    imu0_differential: false
-    imu0_relative: false
-    imu0_queue_size: 10
-    imu0_remove_gravitational_acceleration: true
+    # imu0: /wamv/sensors/imu/imu/data
+    # imu0_config: [false, false, false,   # x, y, z pos
+    #               false, false, true,    # roll, pitch, yaw
+    #               false, false, false,   # x, y, z velo
+    #               false, false, true,    # roll, pitch, yaw velo
+    #               true,  true,  false]   # x, y, z accel (use x,y accelerometer readings)
+    # imu0_differential: false
+    # imu0_relative: false
+    # imu0_queue_size: 10
+    # imu0_remove_gravitational_acceleration: true
 
     use_control: false
 
