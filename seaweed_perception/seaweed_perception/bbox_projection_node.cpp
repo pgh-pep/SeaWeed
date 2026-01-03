@@ -6,10 +6,10 @@ BBox_Projection_Node::BBox_Projection_Node()
       depth_image_topic("/wamv/sensors/cameras/camera_sensor/optical/depth"),
       camera_info_topic("/wamv/sensors/cameras/camera_sensor/optical/camera_info"),
       detection_topic("/cv_detections"),
+      projection_topic("/yolo_projection"),
       base_link_frame("wamv/base_link"),
       map_frame("map"),
       camera_optical_frame("wamv/base_link/camera_sensor_optical"),
-      projection_topic("/yolo_projection"),
       recieved_img(false),
       intrinsics_set(false),
       image_expiration_threshold(3.0),
@@ -26,7 +26,6 @@ BBox_Projection_Node::BBox_Projection_Node()
     depth_image_sub = this->create_subscription<sensor_msgs::msg::Image>(
         depth_image_topic, perception_utils::image_qos,
         std::bind(&BBox_Projection_Node::depth_image_callback, this, std::placeholders::_1));
-
     camera_info_sub = this->create_subscription<sensor_msgs::msg::CameraInfo>(
         camera_info_topic, 10,
         std::bind(&BBox_Projection_Node::camera_info_callback, this, std::placeholders::_1));
@@ -55,11 +54,6 @@ void BBox_Projection_Node::depth_image_callback(const sensor_msgs::msg::Image::S
         RCLCPP_ERROR(this->get_logger(), "cv_bridge depth error: %s", e.what());
         return;
     }
-};
-
-bool BBox_Projection_Node::is_image_valid(const rclcpp::Time timestamp, float expiration_seconds) {
-    rclcpp::Duration time_since_last_update = this->get_clock()->now() - timestamp;
-    return time_since_last_update.seconds() <= expiration_seconds;
 };
 
 void BBox_Projection_Node::camera_info_callback(const sensor_msgs::msg::CameraInfo::SharedPtr msg) {
@@ -141,10 +135,14 @@ void BBox_Projection_Node::detection_callback(const seaweed_interfaces::msg::Det
     labels.clear();
 };
 
+bool BBox_Projection_Node::is_image_valid(const rclcpp::Time timestamp, float expiration_seconds) {
+    rclcpp::Duration time_since_last_update = this->get_clock()->now() - timestamp;
+    return time_since_last_update.seconds() <= expiration_seconds;
+};
+
 float BBox_Projection_Node::get_depth_at_pixel(const int u, const int v) {
     float depth_meters = latest_depth_image.at<float>(v, u);
     if (!std::isfinite(depth_meters)) {
-        // NOTE: test this w/ zed
         return -1;
     }
     return depth_meters;

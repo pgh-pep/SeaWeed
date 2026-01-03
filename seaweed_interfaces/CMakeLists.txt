@@ -11,12 +11,16 @@ find_package(std_msgs REQUIRED)
 ament_auto_find_build_dependencies()
 
 rosidl_generate_interfaces(${PROJECT_NAME}
+
     # "path_to_msg/action/srv"
     "msg/Detection.msg"
     "msg/BoundingBox.msg"
+    "msg/LabeledPose.msg"
+    "msg/LabeledPoseArray.msg"
+
     DEPENDENCIES
     std_msgs
-    # geometry_msgs
+    geometry_msgs
     # sensor_msgs
     # ...
 )
