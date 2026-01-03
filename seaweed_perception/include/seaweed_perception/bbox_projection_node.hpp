@@ -83,5 +83,6 @@ private:
 
     float calc_med_abs_dev_threshold(std::vector<float> values, float median, float _threshold_multiplier);
 
-    void visualize_pose_array(geometry_msgs::msg::PoseArray pose_array);
+    void visualize_pose_array(const geometry_msgs::msg::PoseArray& pose_array,
+                              const std::vector<std::string>& labels);
 };

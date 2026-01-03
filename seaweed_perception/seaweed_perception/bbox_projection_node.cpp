@@ -98,6 +98,8 @@ void BBox_Projection_Node::detection_callback(const seaweed_interfaces::msg::Det
 
     proj_poses_w.header.stamp = msg->header.stamp;
 
+    std::vector<std::string> labels;
+
     for (const seaweed_interfaces::msg::BoundingBox& bbox : detections) {
         int u = bbox.x + bbox.width / 2;
         int v = bbox.y + bbox.height / 2;
@@ -108,7 +110,7 @@ void BBox_Projection_Node::detection_callback(const seaweed_interfaces::msg::Det
         depth_sample_points.clear();
         depths.clear();
 
-        RCLCPP_INFO(this->get_logger(), "depth: %f", depth);
+        // RCLCPP_INFO(this->get_logger(), "depth: %f", depth);
 
         if (depth <= 0) {
             RCLCPP_WARN(this->get_logger(), "invalid bbox depth at (%d, %d), SKIPPING", u, v);
@@ -125,6 +127,7 @@ void BBox_Projection_Node::detection_callback(const seaweed_interfaces::msg::Det
         pose_c.position.z = z_c;
         pose_c.orientation.w = 1.0;
         proj_poses_c.poses.push_back(pose_c);
+        labels.push_back(bbox.label);
     }
 
     if (!perception_utils::transform_pose_array(proj_poses_c, proj_poses_w, proj_poses_w.header.frame_id,
@@ -133,8 +136,9 @@ void BBox_Projection_Node::detection_callback(const seaweed_interfaces::msg::Det
         return;
     }
 
-    visualize_pose_array(proj_poses_w);
+    visualize_pose_array(proj_poses_w, labels);
     projection_pub->publish(proj_poses_w);
+    labels.clear();
 };
 
 float BBox_Projection_Node::get_depth_at_pixel(const int u, const int v) {
@@ -214,7 +218,8 @@ float BBox_Projection_Node::calc_med_abs_dev_threshold(std::vector<float> values
     return MAD * _threshold_multiplier;
 };
 
-void BBox_Projection_Node::visualize_pose_array(geometry_msgs::msg::PoseArray pose_array) {
+void BBox_Projection_Node::visualize_pose_array(const geometry_msgs::msg::PoseArray& pose_array,
+                                                const std::vector<std::string>& labels) {
     visualization_msgs::msg::MarkerArray marker_array;
     std::string frame = pose_array.header.frame_id;
     perception_utils::reset_markers(frame, "bbox_projections_node", marker_array.markers);
@@ -222,7 +227,7 @@ void BBox_Projection_Node::visualize_pose_array(geometry_msgs::msg::PoseArray po
     int i = 0;
     for (auto const& pose : pose_array.poses) {
         perception_utils::create_marker(pose.position.x, pose.position.y, pose.position.z, i, frame,
-                                        "bbox_projections_node", perception_utils::Color::GREEN, "bbox",
+                                        "bbox_projections_node", perception_utils::Color::GREEN, labels.at(i),
                                         marker_array.markers);
         i++;
     }
