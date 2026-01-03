@@ -11,7 +11,7 @@ from launch_ros.actions import Node
 def launch_setup(context, *args, **kwargs):
     perception_directory = get_package_share_directory("seaweed_perception")
 
-    rviz_config_file = os.path.join(perception_directory, "rviz", "vizualize_debug_pc.rviz")
+    rviz_config_file = os.path.join(perception_directory, "rviz", "debug_cv.rviz")
 
     rviz = Node(
         package="rviz2",
@@ -22,24 +22,23 @@ def launch_setup(context, *args, **kwargs):
         arguments=["-d", rviz_config_file],
     )
 
-    euclidian_clustering_node = Node(
+    yolo_node = Node(
         package="seaweed_perception",
-        executable="euclidian_clustering_node",
-        name="euclidian_clustering_node",
+        executable="yolo_node.py",
+        name="yolo_node",
         output="screen",
-        # parameters=[{}],
     )
 
-    cluster_cache = Node(
+    bbox_projection_node = Node(
         package="seaweed_perception",
-        executable="cluster_cache_node",
-        name="cluster_cache_node",
+        executable="bbox_projection_node",
+        name="bbox_projection_node",
         output="screen",
     )
 
     return [
-        euclidian_clustering_node,
-        cluster_cache,
+        yolo_node,
+        bbox_projection_node,
         rviz,
     ]
 

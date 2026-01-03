@@ -51,7 +51,7 @@ class YOLONode(Node):
 
         self.cv_bridge = CvBridge()
 
-        self.camera_frame = "camera_frame"
+        self.camera_frame = "wamv/base_link/camera_sensor_optical"
 
         # NOTE: will add standardized QOS config file in utils
         image_qos = QoSProfile(
@@ -114,7 +114,7 @@ class YOLONode(Node):
 
         detection_msg.image_width = self.width
         detection_msg.image_height = self.height
-        # detection_msg.inference_time = inference_time
+        detection_msg.inference_time = inference_time
 
         detection_msg.detections = []
 
@@ -152,7 +152,7 @@ class YOLONode(Node):
 
                 detection_msg.detections.append(bbox)
 
-        self.get_logger().info(f"Detected {len(detection_msg.detections)} objects in {inference_time:.3f}s")
+        # self.get_logger().info(f"Detected {len(detection_msg.detections)} objects in {inference_time:.3f}s")
         # for detection in detection_msg.detections:
         #     self.get_logger().info(f"  - {detection.class_name}: {detection.confidence:.2f}")
 

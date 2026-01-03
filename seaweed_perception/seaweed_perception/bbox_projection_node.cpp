@@ -1,12 +1,15 @@
 #include <cv_bridge/cv_bridge.h>
 
 #include <cmath>
+#include <geometry_msgs/msg/pose_array.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 #include <numeric>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <string>
 #include <tf2_ros/transform_broadcaster.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 #include "seaweed_interfaces/msg/bounding_box.hpp"
 #include "seaweed_interfaces/msg/detection.hpp"
@@ -21,9 +24,9 @@ public:
           depth_image_topic("/wamv/sensors/cameras/camera_sensor/optical/depth"),
           camera_info_topic("/wamv/sensors/cameras/camera_sensor/optical/camera_info"),
           detection_topic("/cv_detections"),
-          optical_image_frame("wamv/base_link/camera_sensor_optical"),
           base_link_frame("wamv/base_link"),
           map_frame("map"),
+          camera_optical_frame("wamv/base_link/camera_sensor_optical"),
           recieved_img(false),
           intrinsics_set(false),
           image_expiration_threshold(3.0),
@@ -45,6 +48,8 @@ public:
         camera_info_sub = this->create_subscription<sensor_msgs::msg::CameraInfo>(
             camera_info_topic, 10,
             std::bind(&BBox_Projection_Node::camera_info_callback, this, std::placeholders::_1));
+
+        marker_pub = this->create_publisher<visualization_msgs::msg::MarkerArray>("/debug/markers", 1);
     };
 
 private:
@@ -57,14 +62,15 @@ private:
     std::string camera_info_topic;
     std::string detection_topic;
 
-    std::string optical_image_frame;
     std::string base_link_frame;
     std::string map_frame;
+    std::string camera_optical_frame;
 
     cv::Mat latest_rgb_image;
     cv::Mat latest_depth_image;
 
     std::vector<seaweed_interfaces::msg::BoundingBox> detections;
+    rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub;
 
     rclcpp::Time camera_update_timestamp;
 
@@ -137,7 +143,13 @@ private:
             return;
         }
 
-        RCLCPP_INFO(this->get_logger(), "%zu detections", detections.size());
+        // RCLCPP_INFO(this->get_logger(), "%zu detections", detections.size());
+
+        geometry_msgs::msg::PoseArray proj_poses_c;
+        geometry_msgs::msg::PoseArray proj_poses_w;
+
+        proj_poses_c.header.frame_id = camera_optical_frame;
+        proj_poses_c.header.stamp = msg->header.stamp;
 
         for (const seaweed_interfaces::msg::BoundingBox& bbox : detections) {
             int u = bbox.x + bbox.width / 2;
@@ -146,22 +158,41 @@ private:
             float depth =
                 sample_depth(depth_sample_points, depths, u, v, bbox.width, bbox.height, sample_scaling_factor);
 
-            auto [x_c, y_c, z_c] = camera_intrinsics.project_to_3d(u, v, depth);
             depth_sample_points.clear();
             depths.clear();
-            RCLCPP_INFO(this->get_logger(), "x: %f, y: %f, z: %f", x_c, y_c, z_c);
+
+            RCLCPP_INFO(this->get_logger(), "depth: %f", depth);
+
+            if (depth <= 0) {
+                RCLCPP_WARN(this->get_logger(), "invalid bbox depth at (%d, %d), SKIPPING", u, v);
+                continue;
+            }
+
+            auto [x_c, y_c, z_c] = camera_intrinsics.project_to_3d(u, v, depth);
+
+            // RCLCPP_INFO(this->get_logger(), "x: %f, y: %f, z: %f", x_c, y_c, z_c);
+
+            geometry_msgs::msg::Pose pose_c;
+            pose_c.position.x = x_c;
+            pose_c.position.y = y_c;
+            pose_c.position.z = z_c;
+            pose_c.orientation.w = 1.0;
+            proj_poses_c.poses.push_back(pose_c);
         }
 
-        // call to method to get x,y,z
-        // helper to get u,v
-        // sample multiple points in depth to get the z
-        // transform to map plane
+        if (!perception_utils::transform_pose_array(proj_poses_c, proj_poses_w, base_link_frame, tf_buffer,
+                                                    get_logger())) {
+            RCLCPP_ERROR(this->get_logger(), "bbox transform pose array failed");
+            return;
+        }
+
+        visualize_pose_array(proj_poses_w);
     };
 
     float get_depth_at_pixel(const int u, const int v) {
         float depth_meters = latest_depth_image.at<float>(v, u);
         if (!std::isfinite(depth_meters)) {
-            // Gazebo/ZED use NaN/inf, need to account for both, decide if -1 or inf is the play
+            // NOTE: test this w/ zed
             return -1;
         }
         return depth_meters;
@@ -233,10 +264,24 @@ private:
         return MAD * _threshold_multiplier;
     };
 
-    void camera_to_world_transform(){
-        
-    }
+    void visualize_pose_array(geometry_msgs::msg::PoseArray pose_array) {
+        visualization_msgs::msg::MarkerArray marker_array;
+        std::string frame = pose_array.header.frame_id;
+        perception_utils::reset_markers(frame, "bbox_projections_node", marker_array.markers);
+
+        perception_utils::create_marker(1, 1, 0, -100, frame, "bbox_projections_node",
+                                        perception_utils::Color::GREEN, "bbox_test", marker_array.markers);
+        int i = 0;
+        for (auto const& pose : pose_array.poses) {
+            perception_utils::create_marker(pose.position.x, pose.position.y, pose.position.z, i, frame,
+                                            "bbox_projections_node", perception_utils::Color::GREEN, "bbox",
+                                            marker_array.markers);
+            i++;
+        }
+        marker_pub->publish(marker_array);
+    };
 };
+
 int main(int argc, char* argv[]) {
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<BBox_Projection_Node>());

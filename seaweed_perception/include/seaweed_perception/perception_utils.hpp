@@ -5,6 +5,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <tf2_ros/buffer.h>
 
+#include <geometry_msgs/msg/pose_array.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>
 
@@ -84,8 +85,8 @@ bool transform_pose(const geometry_msgs::msg::PoseStamped& original_pose,
                     std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger);
 
 bool transform_pose_array(const geometry_msgs::msg::PoseArray& original_pose_array,
-                    geometry_msgs::msg::PoseArray& transformed_pose_array, const std::string& target_frame,
-                    std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger);
+                          geometry_msgs::msg::PoseArray& transformed_pose_array, const std::string& target_frame,
+                          std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger);
 
 
 
