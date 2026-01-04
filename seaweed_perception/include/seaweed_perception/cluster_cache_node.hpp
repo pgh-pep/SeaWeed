@@ -28,11 +28,15 @@ private:
 
     rclcpp::TimerBase::SharedPtr cache_timer;
 
+    bool debug;
+
     void cluster_callback(const geometry_msgs::msg::PoseArray& msg);
 
     float euclidian_distance(const perception_utils::Point& p0, const perception_utils::Point& p1);
 
     bool check_expired(const perception_utils::Detection detection, float expiration_seconds);
+
+    void publish_debug_markers();
 
     void publish_cache();
 };
