@@ -14,9 +14,7 @@ public:
     ClusterCacheNode();
 
 private:
-    std::string cluster_topic;
-    std::string cache_topic;
-    std::string cluster_frame;
+    std::string cluster_topic, cache_topic, base_link_frame;
     std::vector<perception_utils::Detection> detections_cache;
 
     float same_cluster_dist_threshold;
@@ -34,7 +32,7 @@ private:
 
     float euclidian_distance(const perception_utils::Point& p0, const perception_utils::Point& p1);
 
-    bool check_expired(const perception_utils::Detection detection, float expiration_seconds);
+    bool check_expired(const perception_utils::Detection& detection, float expiration_seconds);
 
     void publish_debug_markers();
 

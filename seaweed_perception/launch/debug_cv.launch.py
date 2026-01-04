@@ -36,9 +36,17 @@ def launch_setup(context, *args, **kwargs):
         output="screen",
     )
 
+    projection_cache_node = Node(
+        package="seaweed_perception",
+        executable="projection_cache_node",
+        name="projection_cache_node",
+        output="screen",
+    )
+
     return [
         yolo_node,
         bbox_projection_node,
+        projection_cache_node,
         rviz,
     ]
 

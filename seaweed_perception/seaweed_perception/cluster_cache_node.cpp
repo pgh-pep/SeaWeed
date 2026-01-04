@@ -4,7 +4,7 @@ ClusterCacheNode::ClusterCacheNode()
     : Node("cluster_cache"),
       cluster_topic("/debug/clusters"),
       cache_topic("/cluster_cache"),
-      cluster_frame("wamv/base_link"),
+      base_link_frame("wamv/base_link"),
       same_cluster_dist_threshold(.25),
       detection_expiration_threshold(5),
       debug(true) {
@@ -65,7 +65,7 @@ float ClusterCacheNode::euclidian_distance(const perception_utils::Point& p0, co
     return std::hypot(p0.x - p1.x, p0.y - p1.y);
 }
 
-bool ClusterCacheNode::check_expired(const perception_utils::Detection detection, float expiration_seconds) {
+bool ClusterCacheNode::check_expired(const perception_utils::Detection& detection, float expiration_seconds) {
     rclcpp::Duration last_detected_time = this->get_clock()->now() - detection.timestamp;
     if (last_detected_time.seconds() > expiration_seconds) {
         return true;
@@ -75,11 +75,11 @@ bool ClusterCacheNode::check_expired(const perception_utils::Detection detection
 
 void ClusterCacheNode::publish_debug_markers() {
     visualization_msgs::msg::MarkerArray marker_array;
-    perception_utils::reset_markers(cluster_frame, "cluster_cache", marker_array.markers);
+    perception_utils::reset_markers(base_link_frame, "cluster_cache", marker_array.markers);
 
     int i = 0;
     for (const auto& detection : detections_cache) {
-        perception_utils::create_marker(detection.point.x, detection.point.y, 0.0, i, cluster_frame,
+        perception_utils::create_marker(detection.point.x, detection.point.y, 0.0, i, base_link_frame,
                                         "cluster_cache", perception_utils::Color::RED, "cache",
                                         marker_array.markers);
         i++;
@@ -90,7 +90,7 @@ void ClusterCacheNode::publish_debug_markers() {
 void ClusterCacheNode::publish_cache() {
     geometry_msgs::msg::PoseArray msg;
     msg.header.stamp = this->get_clock()->now();
-    msg.header.frame_id = cluster_frame;
+    msg.header.frame_id = base_link_frame;
 
     for (const auto& detection : detections_cache) {
         geometry_msgs::msg::Pose pose;

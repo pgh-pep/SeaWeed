@@ -33,6 +33,11 @@ struct Detection {
     int num_detections;
 };
 
+struct LabeledDetection {
+    std::string label;
+    Detection detection;
+};
+
 struct CameraIntrinsics {
     float fx, fy, cx, cy;
 

@@ -6,7 +6,7 @@ BBox_Projection_Node::BBox_Projection_Node()
       depth_image_topic("/wamv/sensors/cameras/camera_sensor/optical/depth"),
       camera_info_topic("/wamv/sensors/cameras/camera_sensor/optical/camera_info"),
       detection_topic("/cv_detections"),
-      projection_topic("/yolo_projection"),
+      projection_topic("/bbox_projection"),
       base_link_frame("wamv/base_link"),
       map_frame("map"),
       camera_optical_frame("wamv/base_link/camera_sensor_optical"),
