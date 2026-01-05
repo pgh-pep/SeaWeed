@@ -31,6 +31,7 @@ struct Detection {
     Point point;
     rclcpp::Time timestamp;
     int num_detections;
+    uint32_t id;
 };
 
 struct LabeledDetection {

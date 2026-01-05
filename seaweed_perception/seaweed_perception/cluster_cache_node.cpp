@@ -8,10 +8,11 @@ ClusterCacheNode::ClusterCacheNode()
       map_frame("map"),
       same_cluster_dist_threshold(.25),
       detection_expiration_threshold(5),
-      debug(true) {
+      debug(true),
+      next_detection_id(0) {
     cluster_sub = this->create_subscription<geometry_msgs::msg::PoseArray>(
         cluster_topic, 10, std::bind(&ClusterCacheNode::cluster_callback, this, std::placeholders::_1));
-    cache_pub = this->create_publisher<geometry_msgs::msg::PoseArray>(cache_topic, 10);
+    cache_pub = this->create_publisher<seaweed_interfaces::msg::LabeledPoseArray>(cache_topic, 10);
     cache_timer = rclcpp::create_timer(this, this->get_clock(), std::chrono::milliseconds(100),
                                        std::bind(&ClusterCacheNode::publish_cache, this));
     marker_pub = this->create_publisher<visualization_msgs::msg::MarkerArray>("/debug/markers", 1);
@@ -29,7 +30,6 @@ void ClusterCacheNode::cluster_callback(const geometry_msgs::msg::PoseArray& msg
         float min_dist = same_cluster_dist_threshold;
         perception_utils::Detection* closest_detection = nullptr;
 
-        // find closest point within a threshold
         for (perception_utils::Detection& old_detection : detections_cache) {
             float dist = euclidian_distance(old_detection.point, detected_point);
             if (dist < min_dist) {
@@ -41,12 +41,15 @@ void ClusterCacheNode::cluster_callback(const geometry_msgs::msg::PoseArray& msg
         if (closest_detection) {
             // if within threshold, must be the same point
             // average location with old detections:
-            closest_detection->point.x = (closest_detection->point.x * closest_detection->num_detections + detected_point.x) /
-                                         (closest_detection->num_detections + 1);
-            closest_detection->point.y = (closest_detection->point.y * closest_detection->num_detections + detected_point.y) /
-                                         (closest_detection->num_detections + 1);
-            closest_detection->point.z = (closest_detection->point.z * closest_detection->num_detections + detected_point.z) /
-                                         (closest_detection->num_detections + 1);
+            closest_detection->point.x =
+                (closest_detection->point.x * closest_detection->num_detections + detected_point.x) /
+                (closest_detection->num_detections + 1);
+            closest_detection->point.y =
+                (closest_detection->point.y * closest_detection->num_detections + detected_point.y) /
+                (closest_detection->num_detections + 1);
+            closest_detection->point.z =
+                (closest_detection->point.z * closest_detection->num_detections + detected_point.z) /
+                (closest_detection->num_detections + 1);
 
             closest_detection->num_detections += 1;
             closest_detection->timestamp = this->get_clock()->now();
@@ -59,6 +62,7 @@ void ClusterCacheNode::cluster_callback(const geometry_msgs::msg::PoseArray& msg
             new_detection.point = detected_point;
             new_detection.timestamp = this->get_clock()->now();
             new_detection.num_detections = 1;
+            new_detection.id = next_detection_id++;
             detections_cache.push_back(new_detection);
         }
     }
@@ -68,7 +72,7 @@ void ClusterCacheNode::cluster_callback(const geometry_msgs::msg::PoseArray& msg
     // REMOVE OLD POINTS
     for (auto it = detections_cache.begin(); it != detections_cache.end();) {
         if (check_expired(*it, detection_expiration_threshold)) {
-            RCLCPP_INFO(this->get_logger(), "REMOVED FROM CACHE");
+            RCLCPP_INFO(this->get_logger(), "REMOVED FROM CACHE (id: %u)", it->id);
             it = detections_cache.erase(it);
             // TODO: service call to publish to map as unknown
         } else {
@@ -95,28 +99,29 @@ void ClusterCacheNode::publish_debug_markers() {
 
     int i = 0;
     for (const auto& detection : detections_cache) {
-        perception_utils::create_marker(detection.point.x, detection.point.y, detection.point.z, i,
-                                        map_frame, "cluster_cache", perception_utils::Color::RED, "CC",
-                                        marker_array.markers);
+        perception_utils::create_marker(detection.point.x, detection.point.y, detection.point.z, i, map_frame,
+                                        "cluster_cache", perception_utils::Color::RED, "CC", marker_array.markers);
         i++;
     }
     marker_pub->publish(marker_array);
 }
 
 void ClusterCacheNode::publish_cache() {
-    geometry_msgs::msg::PoseArray msg;
+    seaweed_interfaces::msg::LabeledPoseArray msg;
     msg.header.stamp = this->get_clock()->now();
     msg.header.frame_id = base_link_frame;
 
     for (const auto& detection : detections_cache) {
-        geometry_msgs::msg::Pose pose;
-        pose.position.x = detection.point.x;
-        pose.position.y = detection.point.y;
-        pose.position.z = detection.point.z;
-        msg.poses.push_back(pose);
+        seaweed_interfaces::msg::LabeledPose l_pose;
+        l_pose.id = detection.id;
+        l_pose.label = "cc";
+        l_pose.pose.position.x = detection.point.x;
+        l_pose.pose.position.y = detection.point.y;
+        l_pose.pose.position.z = detection.point.z;
+        msg.labeled_poses.push_back(l_pose);
     }
 
-    RCLCPP_INFO(this->get_logger(), "cache size: %zu", msg.poses.size());
+    RCLCPP_INFO(this->get_logger(), "cache size: %zu", msg.labeled_poses.size());
 
     if (debug) {
         publish_debug_markers();

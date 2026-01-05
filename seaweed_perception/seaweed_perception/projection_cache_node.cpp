@@ -22,6 +22,7 @@ public:
           projection_frame("wamv/base_link"),
           same_projection_dist_threshold(.25),
           projection_expiration_threshold(5),
+          next_detection_id(0),
           debug(false) {
         projection_sub = this->create_subscription<seaweed_interfaces::msg::LabeledPoseArray>(
             projection_topic, 10,
@@ -36,6 +37,7 @@ public:
 private:
     std::string projection_topic, base_link_frame, map_frame, projection_cache_topic, projection_frame;
     float same_projection_dist_threshold, projection_expiration_threshold;
+    uint32_t next_detection_id;
     bool debug;
 
     rclcpp::Subscription<seaweed_interfaces::msg::LabeledPoseArray>::SharedPtr projection_sub;
@@ -94,6 +96,7 @@ private:
                 new_l_detection.detection.point = detected_point;
                 new_l_detection.detection.timestamp = this->get_clock()->now();
                 new_l_detection.detection.num_detections = 1;
+                new_l_detection.detection.id = next_detection_id++;
                 new_l_detection.label = l_pose.label;
                 projection_cache.push_back(new_l_detection);
             }
@@ -122,6 +125,7 @@ private:
             l_pose.pose.position.x = projection.detection.point.x;
             l_pose.pose.position.y = projection.detection.point.y;
             l_pose.pose.position.z = projection.detection.point.z;
+            l_pose.id = projection.detection.id;
             msg.labeled_poses.push_back(l_pose);
         }
 

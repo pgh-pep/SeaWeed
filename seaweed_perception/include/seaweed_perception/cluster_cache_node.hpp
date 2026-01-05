@@ -7,6 +7,8 @@
 #include <vector>
 #include <visualization_msgs/msg/marker_array.hpp>
 
+#include "seaweed_interfaces/msg/labeled_pose.hpp"
+#include "seaweed_interfaces/msg/labeled_pose_array.hpp"
 #include "seaweed_perception/perception_utils.hpp"
 
 class ClusterCacheNode : public rclcpp::Node {
@@ -19,9 +21,11 @@ private:
 
     float same_cluster_dist_threshold, detection_expiration_threshold;
     bool debug;
+    uint32_t next_detection_id;
 
     rclcpp::Subscription<geometry_msgs::msg::PoseArray>::SharedPtr cluster_sub;
-    rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr cache_pub;
+
+    rclcpp::Publisher<seaweed_interfaces::msg::LabeledPoseArray>::SharedPtr cache_pub;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub;
 
     rclcpp::TimerBase::SharedPtr cache_timer;
