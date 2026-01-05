@@ -20,27 +20,39 @@ ClusterCacheNode::ClusterCacheNode()
 // add client service to remove points when fused
 
 void ClusterCacheNode::cluster_callback(const geometry_msgs::msg::PoseArray& msg) {
-    bool is_existing_detection = false;
-
     for (const auto& pose : msg.poses) {
         perception_utils::Point detected_point = {(float)pose.position.x, (float)pose.position.y,
                                                   (float)pose.position.z};
-        is_existing_detection = false;
-        for (perception_utils::Detection& old_detection : detections_cache) {
-            if (euclidian_distance(old_detection.point, detected_point) < same_cluster_dist_threshold) {
-                // if within threshold, must be the same point
-                // TODO: IMPLEMENT LOCATION AVERAGING
-                old_detection.num_detections += 1;
-                is_existing_detection = true;
-                old_detection.timestamp = this->get_clock()->now();
-                // RCLCPP_INFO(this->get_logger(), "old cluster, x: %f, y: %f", old_detection.point.x,
-                //             old_detection.point.y);
 
-                break;
+        // find the closest cached detection within threshold
+        float min_dist = same_cluster_dist_threshold;
+        perception_utils::Detection* closest_detection = nullptr;
+
+        // find closest point within a threshold
+        for (perception_utils::Detection& old_detection : detections_cache) {
+            float dist = euclidian_distance(old_detection.point, detected_point);
+            if (dist < min_dist) {
+                min_dist = dist;
+                closest_detection = &old_detection;
             }
         }
-        // else, must be a new point
-        if (!is_existing_detection) {
+
+        if (closest_detection) {
+            // if within threshold, must be the same point
+            // average location with old detections:
+            closest_detection->point.x = (closest_detection->point.x * closest_detection->num_detections + detected_point.x) /
+                                         (closest_detection->num_detections + 1);
+            closest_detection->point.y = (closest_detection->point.y * closest_detection->num_detections + detected_point.y) /
+                                         (closest_detection->num_detections + 1);
+            closest_detection->point.z = (closest_detection->point.z * closest_detection->num_detections + detected_point.z) /
+                                         (closest_detection->num_detections + 1);
+
+            closest_detection->num_detections += 1;
+            closest_detection->timestamp = this->get_clock()->now();
+            // RCLCPP_INFO(this->get_logger(), "old cluster, x: %f, y: %f", closest_detection->point.x,
+            //             closest_detection->point.y);
+        } else {
+            // else, must be a new point
             // RCLCPP_INFO(this->get_logger(), "new cluster, x: %f, y: %f", detected_point.x, detected_point.y);
             perception_utils::Detection new_detection;
             new_detection.point = detected_point;

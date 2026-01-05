@@ -45,32 +45,49 @@ private:
     rclcpp::TimerBase::SharedPtr cache_timer;
 
     // figure out exact strucuture of cache
-    std::vector<perception_utils::LabeledDetection> projection_cache, identified_;
+    std::vector<perception_utils::LabeledDetection> projection_cache, mapped_projections;
 
     void projection_callback(const seaweed_interfaces::msg::LabeledPoseArray& msg) {
-        bool is_existing_detection = false;
-
         for (const auto& l_pose : msg.labeled_poses) {
             perception_utils::Point detected_point = {(float)l_pose.pose.position.x, (float)l_pose.pose.position.y,
                                                       (float)l_pose.pose.position.z};
-            is_existing_detection = false;
-            for (perception_utils::LabeledDetection& old_projection : projection_cache) {
-                if (euclidian_distance(old_projection.detection.point, detected_point) <
-                        same_projection_dist_threshold &&
-                    old_projection.label == l_pose.label) {
-                    // if within threshold, must be the same point
-                    // TODO: IMPLEMENT LOCATION AVERAGING
-                    old_projection.detection.num_detections += 1;
-                    is_existing_detection = true;
-                    old_projection.detection.timestamp = this->get_clock()->now();
-                    // RCLCPP_INFO(this->get_logger(), "old projection, x: %f, y: %f", old_detection.point.x,
-                    //             old_detection.point.y);
 
-                    break;
+            // find the closest cached projection within threshold w/ matching label
+            float min_dist = same_projection_dist_threshold;
+            perception_utils::LabeledDetection* closest_projection = nullptr;
+
+            for (perception_utils::LabeledDetection& old_projection : projection_cache) {
+                if (old_projection.label == l_pose.label) {
+                    float dist = euclidian_distance(old_projection.detection.point, detected_point);
+                    if (dist < min_dist) {
+                        min_dist = dist;
+                        closest_projection = &old_projection;
+                    }
                 }
             }
-            // else, must be a new point
-            if (!is_existing_detection) {
+
+            if (closest_projection) {
+                // if within threshold, must be the same point
+                // average location with old projection:
+                closest_projection->detection.point.x =
+                    (closest_projection->detection.point.x * closest_projection->detection.num_detections +
+                     detected_point.x) /
+                    (closest_projection->detection.num_detections + 1);
+                closest_projection->detection.point.y =
+                    (closest_projection->detection.point.y * closest_projection->detection.num_detections +
+                     detected_point.y) /
+                    (closest_projection->detection.num_detections + 1);
+                closest_projection->detection.point.z =
+                    (closest_projection->detection.point.z * closest_projection->detection.num_detections +
+                     detected_point.z) /
+                    (closest_projection->detection.num_detections + 1);
+
+                closest_projection->detection.num_detections += 1;
+                closest_projection->detection.timestamp = this->get_clock()->now();
+                // RCLCPP_INFO(this->get_logger(), "old projection, x: %f, y: %f", old_detection.point.x,
+                //             old_detection.point.y);
+            } else {
+                // else, must be a new point
                 // RCLCPP_INFO(this->get_logger(), "new projection, x: %f, y: %f", detected_point.x,
                 // detected_point.y);
                 perception_utils::LabeledDetection new_l_detection;
@@ -141,15 +158,6 @@ private:
         }
         marker_pub->publish(marker_array);
     };
-    // void cache_remove_identified(const std::shared_ptr<example_interfaces::srv::AddTwoInts::Request> request,
-    //          std::shared_ptr<example_interfaces::srv::AddTwoInts::Response> response) {
-    //     response->sum = request->a + request->b;
-    //     RCLCPP_INFO(rclcpp::get_logger("rclcpp"),
-    //                 "Incoming request\na: %ld"
-    //                 " b: %ld",
-    //                 request->a, request->b);
-    //     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "sending back response: [%ld]", (long int)response->sum);
-    // }
 };
 
 int main(int argc, char* argv[]) {
