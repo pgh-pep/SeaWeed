@@ -5,7 +5,10 @@ EuclidianClusteringNode::EuclidianClusteringNode()
       box_range(10.0),
       leaf_size(0.01),
       clustering_tolerance(0.5),
+      scale(.3),
       min_cluster_points(5),
+      cluster_topic("/debug/clusters"),
+      map_frame("map"),
       base_link("wamv/base_link") {
     pointcloud_sub = this->create_subscription<sensor_msgs::msg::PointCloud2>(
         "/wamv/sensors/lidars/lidar_wamv_sensor/points", 10,
@@ -14,15 +17,12 @@ EuclidianClusteringNode::EuclidianClusteringNode()
     debug_pointcloud_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>("/debug/pointcloud", 10);
     marker_pub = this->create_publisher<visualization_msgs::msg::MarkerArray>("/debug/markers", 1);
 
-    cluster_topic = "/debug/clusters";
-    cluster_frame = "/odom";
     cluster_pub = this->create_publisher<geometry_msgs::msg::PoseArray>(cluster_topic, 10);
 
     tf_buffer = std::make_shared<tf2_ros::Buffer>(this->get_clock());
     tf_listener = std::make_shared<tf2_ros::TransformListener>(*tf_buffer);
 
     clusters = {};
-    scale = 0.3;
 
     RCLCPP_INFO(this->get_logger(), "started euclidian clustering node");
 }
@@ -54,7 +54,7 @@ void EuclidianClusteringNode::pc_callback(const sensor_msgs::msg::PointCloud2::S
 
     // CLUSTERING
     scaled_euclidian_clustering(obstacle_pc, clustering_tolerance, scale, min_cluster_points);
-    publish_clusters(this->get_clock());
+    publish_clusters();
 
     // DEBUG OUTPUT
     perception_utils::debug_pointcloud(obstacle_pc, base_link, debug_pointcloud_pub, this->get_clock(),
@@ -206,27 +206,29 @@ void EuclidianClusteringNode::scaled_euclidian_clustering(pcl::PointCloud<pcl::P
     euclidian_clustering(scaled_pc, _clustering_tolerance, _min_clustering_points);
 }
 
-void EuclidianClusteringNode::publish_clusters(rclcpp::Clock::SharedPtr clock) {
-    geometry_msgs::msg::PoseArray::SharedPtr msg = std::make_shared<geometry_msgs::msg::PoseArray>();
-
-    msg->header.frame_id = cluster_frame;
-    msg->header.stamp = clock->now();
+void EuclidianClusteringNode::publish_clusters() {
+    geometry_msgs::msg::PoseArray msg_base_link;
+    msg_base_link.header.frame_id = base_link;
+    msg_base_link.header.stamp = this->get_clock()->now();
 
     for (const perception_utils::Point& point : clusters) {
         geometry_msgs::msg::Pose pose;
         pose.position.x = point.x;
         pose.position.y = point.y;
         pose.position.z = point.z;
-
-        pose.orientation.x = 0.0;
-        pose.orientation.y = 0.0;
-        pose.orientation.z = 0.0;
         pose.orientation.w = 1.0;
-
-        msg->poses.push_back(pose);
+        msg_base_link.poses.push_back(pose);
     }
 
-    cluster_pub->publish(*msg);
+    geometry_msgs::msg::PoseArray msg_map;
+    if (!perception_utils::transform_pose_array(msg_base_link, msg_map, map_frame, tf_buffer,
+                                                this->get_logger())) {
+        RCLCPP_WARN(this->get_logger(), "failed to transform clusters to map frame");
+        clusters.clear();
+        return;
+    }
+
+    cluster_pub->publish(msg_map);
     clusters.clear();
 }
 

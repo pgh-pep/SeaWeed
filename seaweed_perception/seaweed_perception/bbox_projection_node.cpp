@@ -1,5 +1,7 @@
 #include "seaweed_perception/bbox_projection_node.hpp"
 
+// NEED TO CONSIDER WHEN BBOXs OVERLAP -> MESSES UP DEPTH
+
 BBox_Projection_Node::BBox_Projection_Node()
     : Node("bbox_projection_node"),
       rgb_image_topic("/wamv/sensors/cameras/camera_sensor/optical/image_raw"),
@@ -89,8 +91,8 @@ void BBox_Projection_Node::detection_callback(const seaweed_interfaces::msg::Det
     proj_poses_c.header.frame_id = camera_optical_frame;
     proj_poses_c.header.stamp = msg->header.stamp;
 
-    // proj_poses_w.header.frame_id = map_frame;
-    proj_poses_w.header.frame_id = base_link_frame;
+    proj_poses_w.header.frame_id = map_frame;
+    // proj_poses_w.header.frame_id = base_link_frame;
     proj_poses_w.header.stamp = msg->header.stamp;
 
     for (const seaweed_interfaces::msg::BoundingBox& bbox : detections) {

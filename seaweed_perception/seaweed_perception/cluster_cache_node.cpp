@@ -5,6 +5,7 @@ ClusterCacheNode::ClusterCacheNode()
       cluster_topic("/debug/clusters"),
       cache_topic("/cluster_cache"),
       base_link_frame("wamv/base_link"),
+      map_frame("map"),
       same_cluster_dist_threshold(.25),
       detection_expiration_threshold(5),
       debug(true) {
@@ -62,6 +63,8 @@ void ClusterCacheNode::cluster_callback(const geometry_msgs::msg::PoseArray& msg
         }
     }
 
+    // send two services, each with their own id.
+
     // REMOVE OLD POINTS
     for (auto it = detections_cache.begin(); it != detections_cache.end();) {
         if (check_expired(*it, detection_expiration_threshold)) {
@@ -93,7 +96,7 @@ void ClusterCacheNode::publish_debug_markers() {
     int i = 0;
     for (const auto& detection : detections_cache) {
         perception_utils::create_marker(detection.point.x, detection.point.y, detection.point.z, i,
-                                        base_link_frame, "cluster_cache", perception_utils::Color::RED, "cache",
+                                        map_frame, "cluster_cache", perception_utils::Color::RED, "CC",
                                         marker_array.markers);
         i++;
     }

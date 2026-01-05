@@ -48,16 +48,10 @@ private:
     std::shared_ptr<tf2_ros::TransformListener> tf_listener;
 
     // PARAMS (make ros params later)
-    float box_range;
-    float leaf_size;
-    float clustering_tolerance;
+    float box_range, leaf_size, clustering_tolerance, scale;
     int min_cluster_points;
-    std::string cluster_topic;
-    std::string cluster_frame;
 
-    float scale;
-
-    const std::string base_link;
+    std::string cluster_topic, map_frame, base_link;
 
     // Callbacks
     void pc_callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
@@ -79,7 +73,7 @@ private:
                          pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_pc);
 
     // CLUSTERING
-    void publish_clusters(rclcpp::Clock::SharedPtr clock);
+    void publish_clusters();
 
     void scaled_euclidian_clustering(pcl::PointCloud<pcl::PointXYZ>::Ptr pc, float _clustering_tolerance,
                                      float _scale, int _min_clustering_points);

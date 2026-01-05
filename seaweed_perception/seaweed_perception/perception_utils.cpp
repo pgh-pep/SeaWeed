@@ -30,6 +30,26 @@ std_msgs::msg::ColorRGBA get_rgba_color(Color color, float alpha) {
             rgba.g = 0.0f;
             rgba.b = 1.0f;
             break;
+        case PURPLE:
+            rgba.r = 0.5f;
+            rgba.g = 0.0f;
+            rgba.b = 1.0f;
+            break;
+        case ORANGE:
+            rgba.r = 1.0f;
+            rgba.g = 0.5f;
+            rgba.b = 0.0f;
+            break;
+        case YELLOW:
+            rgba.r = 1.0f;
+            rgba.g = 1.0f;
+            rgba.b = 0.0f;
+            break;
+        case WHITE:
+            rgba.r = 1.0f;
+            rgba.g = 1.0f;
+            rgba.b = 1.0f;
+            break;
         default:
             rgba.r = 1.0f;
             rgba.g = 1.0f;
@@ -39,7 +59,6 @@ std_msgs::msg::ColorRGBA get_rgba_color(Color color, float alpha) {
 
     return rgba;
 }
-
 void ros_to_pcl(const sensor_msgs::msg::PointCloud2::SharedPtr& pc_msg,
                 pcl::PointCloud<pcl::PointXYZ>::Ptr& pc_pcl) {
     pcl::fromROSMsg(*pc_msg, *pc_pcl);

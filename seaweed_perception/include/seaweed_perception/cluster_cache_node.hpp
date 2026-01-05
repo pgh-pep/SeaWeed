@@ -14,19 +14,17 @@ public:
     ClusterCacheNode();
 
 private:
-    std::string cluster_topic, cache_topic, base_link_frame;
+    std::string cluster_topic, cache_topic, base_link_frame, map_frame;
     std::vector<perception_utils::Detection> detections_cache;
 
-    float same_cluster_dist_threshold;
-    float detection_expiration_threshold;
+    float same_cluster_dist_threshold, detection_expiration_threshold;
+    bool debug;
 
     rclcpp::Subscription<geometry_msgs::msg::PoseArray>::SharedPtr cluster_sub;
     rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr cache_pub;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub;
 
     rclcpp::TimerBase::SharedPtr cache_timer;
-
-    bool debug;
 
     void cluster_callback(const geometry_msgs::msg::PoseArray& msg);
 

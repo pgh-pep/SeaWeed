@@ -18,7 +18,7 @@
 #include "seaweed_interfaces/msg/labeled_pose_array.hpp"
 namespace perception_utils {
 
-enum Color { RED, GREEN, BLUE };
+enum Color { RED, GREEN, BLUE, PURPLE, ORANGE, YELLOW, WHITE };
 struct Point {
     float x;
     float y;
