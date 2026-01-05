@@ -23,7 +23,8 @@ void ClusterCacheNode::cluster_callback(const geometry_msgs::msg::PoseArray& msg
     bool is_existing_detection = false;
 
     for (const auto& pose : msg.poses) {
-        perception_utils::Point detected_point = {(float)pose.position.x, (float)pose.position.y};
+        perception_utils::Point detected_point = {(float)pose.position.x, (float)pose.position.y,
+                                                  (float)pose.position.z};
         is_existing_detection = false;
         for (perception_utils::Detection& old_detection : detections_cache) {
             if (euclidian_distance(old_detection.point, detected_point) < same_cluster_dist_threshold) {
@@ -79,8 +80,8 @@ void ClusterCacheNode::publish_debug_markers() {
 
     int i = 0;
     for (const auto& detection : detections_cache) {
-        perception_utils::create_marker(detection.point.x, detection.point.y, 0.0, i, base_link_frame,
-                                        "cluster_cache", perception_utils::Color::RED, "cache",
+        perception_utils::create_marker(detection.point.x, detection.point.y, detection.point.z, i,
+                                        base_link_frame, "cluster_cache", perception_utils::Color::RED, "cache",
                                         marker_array.markers);
         i++;
     }
@@ -96,6 +97,7 @@ void ClusterCacheNode::publish_cache() {
         geometry_msgs::msg::Pose pose;
         pose.position.x = detection.point.x;
         pose.position.y = detection.point.y;
+        pose.position.z = detection.point.z;
         msg.poses.push_back(pose);
     }
 

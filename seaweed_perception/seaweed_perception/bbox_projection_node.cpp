@@ -164,7 +164,7 @@ float BBox_Projection_Node::sample_depth(std::vector<perception_utils::Point>& s
                                  {u - horizontal_offset, v - vertical_offset}}) {
         float d = get_depth_at_pixel(pu, pv);
         if (d > 0) {
-            samples.push_back(perception_utils::Point{(float)pu, (float)pv});
+            samples.push_back(perception_utils::Point{(float)pu, (float)pv, 0.0f});
             _depths.push_back(d);
         }
     }

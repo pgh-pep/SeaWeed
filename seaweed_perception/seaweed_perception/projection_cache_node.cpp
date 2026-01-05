@@ -22,7 +22,7 @@ public:
           projection_frame("wamv/base_link"),
           same_projection_dist_threshold(.25),
           projection_expiration_threshold(5),
-          debug(true) {
+          debug(false) {
         projection_sub = this->create_subscription<seaweed_interfaces::msg::LabeledPoseArray>(
             projection_topic, 10,
             std::bind(&ProjectionCacheNode::projection_callback, this, std::placeholders::_1));
@@ -45,14 +45,14 @@ private:
     rclcpp::TimerBase::SharedPtr cache_timer;
 
     // figure out exact strucuture of cache
-    std::vector<perception_utils::LabeledDetection> projection_cache;
+    std::vector<perception_utils::LabeledDetection> projection_cache, identified_;
 
     void projection_callback(const seaweed_interfaces::msg::LabeledPoseArray& msg) {
         bool is_existing_detection = false;
 
         for (const auto& l_pose : msg.labeled_poses) {
-            perception_utils::Point detected_point = {(float)l_pose.pose.position.x,
-                                                      (float)l_pose.pose.position.y};
+            perception_utils::Point detected_point = {(float)l_pose.pose.position.x, (float)l_pose.pose.position.y,
+                                                      (float)l_pose.pose.position.z};
             is_existing_detection = false;
             for (perception_utils::LabeledDetection& old_projection : projection_cache) {
                 if (euclidian_distance(old_projection.detection.point, detected_point) <
@@ -104,6 +104,7 @@ private:
             l_pose.label = projection.label;
             l_pose.pose.position.x = projection.detection.point.x;
             l_pose.pose.position.y = projection.detection.point.y;
+            l_pose.pose.position.z = projection.detection.point.z;
             msg.labeled_poses.push_back(l_pose);
         }
 
@@ -133,13 +134,22 @@ private:
 
         int i = 0;
         for (const auto& projection : projection_cache) {
-            perception_utils::create_marker(projection.detection.point.x, projection.detection.point.y, 0.0, i,
-                                            base_link_frame, "projection_cache", perception_utils::Color::BLUE,
-                                            projection.label, marker_array.markers);
+            perception_utils::create_marker(projection.detection.point.x, projection.detection.point.y,
+                                            projection.detection.point.z, i, base_link_frame, "projection_cache",
+                                            perception_utils::Color::BLUE, projection.label, marker_array.markers);
             i++;
         }
         marker_pub->publish(marker_array);
     };
+    // void cache_remove_identified(const std::shared_ptr<example_interfaces::srv::AddTwoInts::Request> request,
+    //          std::shared_ptr<example_interfaces::srv::AddTwoInts::Response> response) {
+    //     response->sum = request->a + request->b;
+    //     RCLCPP_INFO(rclcpp::get_logger("rclcpp"),
+    //                 "Incoming request\na: %ld"
+    //                 " b: %ld",
+    //                 request->a, request->b);
+    //     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "sending back response: [%ld]", (long int)response->sum);
+    // }
 };
 
 int main(int argc, char* argv[]) {

@@ -22,7 +22,7 @@ enum Color { RED, GREEN, BLUE };
 struct Point {
     float x;
     float y;
-    // float z;
+    float z;
 };
 
 std::ostream& operator<<(std::ostream& os, const Point& p);

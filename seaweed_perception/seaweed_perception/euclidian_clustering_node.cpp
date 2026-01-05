@@ -183,6 +183,8 @@ void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ
                                         perception_utils::Color::RED, "cluster", marker_array.markers);
         point.x = centroid_x;
         point.y = centroid_y;
+        point.z = centroid_z;
+
         clusters.push_back(point);
         i++;
     }
@@ -214,7 +216,7 @@ void EuclidianClusteringNode::publish_clusters(rclcpp::Clock::SharedPtr clock) {
         geometry_msgs::msg::Pose pose;
         pose.position.x = point.x;
         pose.position.y = point.y;
-        pose.position.z = 0.0;
+        pose.position.z = point.z;
 
         pose.orientation.x = 0.0;
         pose.orientation.y = 0.0;
