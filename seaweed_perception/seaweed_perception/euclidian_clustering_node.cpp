@@ -7,8 +7,7 @@ EuclidianClusteringNode::EuclidianClusteringNode()
       clustering_tolerance(0.5),
       scale(.3),
       min_cluster_points(5),
-      cluster_topic("/debug/clusters"),
-      map_frame("map"),
+      cluster_topic("/clusters"),
       base_link("wamv/base_link") {
     pointcloud_sub = this->create_subscription<sensor_msgs::msg::PointCloud2>(
         "/wamv/sensors/lidars/lidar_wamv_sensor/points", 10,
@@ -21,8 +20,6 @@ EuclidianClusteringNode::EuclidianClusteringNode()
 
     tf_buffer = std::make_shared<tf2_ros::Buffer>(this->get_clock());
     tf_listener = std::make_shared<tf2_ros::TransformListener>(*tf_buffer);
-
-    clusters = {};
 
     RCLCPP_INFO(this->get_logger(), "started euclidian clustering node");
 }
@@ -53,8 +50,8 @@ void EuclidianClusteringNode::pc_callback(const sensor_msgs::msg::PointCloud2::S
     filter_outliers(obstacle_pc_with_outliers, obstacle_pc);
 
     // CLUSTERING
-    scaled_euclidian_clustering(obstacle_pc, clustering_tolerance, scale, min_cluster_points);
-    publish_clusters();
+    scaled_euclidian_clustering(obstacle_pc, clusters, clustering_tolerance, scale, min_cluster_points);
+    publish_clusters(clusters);
 
     // DEBUG OUTPUT
     perception_utils::debug_pointcloud(obstacle_pc, base_link, debug_pointcloud_pub, this->get_clock(),
@@ -142,9 +139,12 @@ void EuclidianClusteringNode::filter_outliers(pcl::PointCloud<pcl::PointXYZ>::Pt
 }
 
 void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ>::Ptr pc,
+                                                   std::vector<perception_utils::Point>& _clusters,
                                                    float _clustering_tolerance, int _min_clustering_points) {
+    _clusters.clear();
+
     if (pc->empty()) {
-        RCLCPP_INFO(this->get_logger(), "Empty point cloud, can't cluster");
+        RCLCPP_DEBUG(this->get_logger(), "Empty point cloud, can't cluster");
         return;
     }
 
@@ -159,8 +159,6 @@ void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ
     eucl_clustering_extraction.setSearchMethod(tree);
     eucl_clustering_extraction.setInputCloud(pc);
     eucl_clustering_extraction.extract(cluster_indices);
-
-    perception_utils::Point point;
 
     visualization_msgs::msg::MarkerArray marker_array;
     perception_utils::reset_markers(base_link, "euclidian_clustering", marker_array.markers);
@@ -177,23 +175,20 @@ void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ
         centroid_y /= cluster.indices.size();
         centroid_z /= cluster.indices.size();
 
-        // RCLCPP_INFO(this->get_logger(), "cluster  #%i: x=%.2f, y=%.2f, z=%.2f, points=%lu", i, centroid_x,
-        //             centroid_y, centroid_z, cluster.indices.size());
         perception_utils::create_marker(centroid_x, centroid_y, centroid_z, i, base_link, "euclidian_clustering",
-                                        perception_utils::Color::RED, "cluster", marker_array.markers);
-        point.x = centroid_x;
-        point.y = centroid_y;
-        point.z = centroid_z;
+                                        perception_utils::Color::RED, "C" + std::to_string(i),
+                                        marker_array.markers);
 
-        clusters.push_back(point);
+        _clusters.push_back({centroid_x, centroid_y, centroid_z});
         i++;
     }
-    // marker_pub->publish(marker_array);
 
-    // RCLCPP_INFO(this->get_logger(), "Found '%i' clusters", i);
+    marker_pub->publish(marker_array);
+    RCLCPP_DEBUG(this->get_logger(), "Found %d clusters", i);
 }
 
 void EuclidianClusteringNode::scaled_euclidian_clustering(pcl::PointCloud<pcl::PointXYZ>::Ptr pc,
+                                                          std::vector<perception_utils::Point>& _clusters,
                                                           float _clustering_tolerance, float _scale,
                                                           int _min_clustering_points) {
     pcl::PointCloud<pcl::PointXYZ>::Ptr scaled_pc(new pcl::PointCloud<pcl::PointXYZ>);
@@ -203,35 +198,25 @@ void EuclidianClusteringNode::scaled_euclidian_clustering(pcl::PointCloud<pcl::P
         point.z *= _scale;
     }
 
-    euclidian_clustering(scaled_pc, _clustering_tolerance, _min_clustering_points);
+    euclidian_clustering(scaled_pc, _clusters, _clustering_tolerance, _min_clustering_points);
 }
 
-void EuclidianClusteringNode::publish_clusters() {
-    geometry_msgs::msg::PoseArray msg_base_link;
-    msg_base_link.header.frame_id = base_link;
-    msg_base_link.header.stamp = this->get_clock()->now();
+void EuclidianClusteringNode::publish_clusters(const std::vector<perception_utils::Point>& clusters) {
+    geometry_msgs::msg::PoseArray msg;
+    msg.header.frame_id = base_link;
+    msg.header.stamp = this->get_clock()->now();
 
-    for (const perception_utils::Point& point : clusters) {
+    for (const auto& point : clusters) {
         geometry_msgs::msg::Pose pose;
         pose.position.x = point.x;
         pose.position.y = point.y;
         pose.position.z = point.z;
         pose.orientation.w = 1.0;
-        msg_base_link.poses.push_back(pose);
+        msg.poses.push_back(pose);
     }
 
-    geometry_msgs::msg::PoseArray msg_map;
-    if (!perception_utils::transform_pose_array(msg_base_link, msg_map, map_frame, tf_buffer,
-                                                this->get_logger())) {
-        RCLCPP_WARN(this->get_logger(), "failed to transform clusters to map frame");
-        clusters.clear();
-        return;
-    }
-
-    cluster_pub->publish(msg_map);
-    clusters.clear();
+    cluster_pub->publish(msg);
 }
-
 int main(int argc, char* argv[]) {
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<EuclidianClusteringNode>());
