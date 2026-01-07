@@ -176,7 +176,7 @@ void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ
         centroid_z /= cluster.indices.size();
 
         perception_utils::create_marker(centroid_x, centroid_y, centroid_z, i, base_link, "euclidian_clustering",
-                                        perception_utils::Color::RED, "C" + std::to_string(i),
+                                        perception_utils::Color::ORANGE, "C" + std::to_string(i),
                                         marker_array.markers);
 
         _clusters.push_back({centroid_x, centroid_y, centroid_z});
@@ -199,6 +199,10 @@ void EuclidianClusteringNode::scaled_euclidian_clustering(pcl::PointCloud<pcl::P
     }
 
     euclidian_clustering(scaled_pc, _clusters, _clustering_tolerance, _min_clustering_points);
+    
+    for (auto& cluster : _clusters) {
+        cluster.z /= _scale;
+    }
 }
 
 void EuclidianClusteringNode::publish_clusters(const std::vector<perception_utils::Point>& clusters) {
