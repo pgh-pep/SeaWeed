@@ -36,17 +36,18 @@ def launch_setup(context, *args, **kwargs):
         output="screen",
     )
 
-    projection_cache_node = Node(
+    euclidian_clustering_node = Node(
         package="seaweed_perception",
-        executable="projection_cache_node",
-        name="projection_cache_node",
+        executable="euclidian_clustering_node",
+        name="euclidian_clustering_node",
         output="screen",
+        # parameters=[{}],
     )
 
     return [
         yolo_node,
         bbox_projection_node,
-        projection_cache_node,
+        euclidian_clustering_node,
         rviz,
     ]
 

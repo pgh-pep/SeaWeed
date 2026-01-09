@@ -49,11 +49,17 @@ struct CameraIntrinsics {
         cy = msg.k[5];
     }
 
-    std::array<float, 3> project_to_3d(int u, int v, float depth) const {
+    std::array<float, 3> pixel_to_projection(int u, int v, float depth) const {
         float x_c = (u - cx) * depth / fx;
         float y_c = (v - cy) * depth / fy;
         float z_c = depth;
         return {x_c, y_c, z_c};
+    }
+
+    std::pair<int, int> projection_to_pixel(float x, float y, float z) const {
+        int u = static_cast<int>(fx * x / z + cx);
+        int v = static_cast<int>(fy * y / z + cy);
+        return {u, v};
     }
 };
 
