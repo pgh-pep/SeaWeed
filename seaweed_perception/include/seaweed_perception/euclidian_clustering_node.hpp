@@ -52,6 +52,8 @@ private:
     int min_cluster_points;
 
     std::string cluster_topic, base_link;
+    
+    float debug;
 
     // Callbacks
     void pc_callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
@@ -82,4 +84,6 @@ private:
     void scaled_euclidian_clustering(pcl::PointCloud<pcl::PointXYZ>::Ptr pc,
                                      std::vector<perception_utils::Point>& _clusters, float _clustering_tolerance,
                                      float _scale, int _min_clustering_points);
+
+    void visualize_markers(const std::vector<perception_utils::Point>& clusters);
 };

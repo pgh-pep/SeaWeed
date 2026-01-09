@@ -8,7 +8,8 @@ EuclidianClusteringNode::EuclidianClusteringNode()
       scale(.3),
       min_cluster_points(5),
       cluster_topic("/clusters"),
-      base_link("wamv/base_link") {
+      base_link("wamv/base_link"),
+      debug(true) {
     pointcloud_sub = this->create_subscription<sensor_msgs::msg::PointCloud2>(
         "/wamv/sensors/lidars/lidar_wamv_sensor/points", 10,
         std::bind(&EuclidianClusteringNode::pc_callback, this, std::placeholders::_1));
@@ -54,8 +55,11 @@ void EuclidianClusteringNode::pc_callback(const sensor_msgs::msg::PointCloud2::S
     publish_clusters(clusters);
 
     // DEBUG OUTPUT
-    perception_utils::debug_pointcloud(obstacle_pc, base_link, debug_pointcloud_pub, this->get_clock(),
-                                       this->get_logger());
+    if (debug) {
+        perception_utils::debug_pointcloud(obstacle_pc, base_link, debug_pointcloud_pub, this->get_clock(),
+                                           this->get_logger());
+        visualize_markers(clusters);
+    }
 }
 
 void EuclidianClusteringNode::downsample(pcl::PointCloud<pcl::PointXYZ>::Ptr unfiltered_pc,
@@ -160,10 +164,6 @@ void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ
     eucl_clustering_extraction.setInputCloud(pc);
     eucl_clustering_extraction.extract(cluster_indices);
 
-    visualization_msgs::msg::MarkerArray marker_array;
-    perception_utils::reset_markers(base_link, "euclidian_clustering", marker_array.markers);
-
-    int i = 0;
     for (const auto& cluster : cluster_indices) {
         float centroid_x = 0, centroid_y = 0, centroid_z = 0;
         for (const auto& idx : cluster.indices) {
@@ -175,16 +175,10 @@ void EuclidianClusteringNode::euclidian_clustering(pcl::PointCloud<pcl::PointXYZ
         centroid_y /= cluster.indices.size();
         centroid_z /= cluster.indices.size();
 
-        perception_utils::create_marker(centroid_x, centroid_y, centroid_z, i, base_link, "euclidian_clustering",
-                                        perception_utils::Color::ORANGE, "C" + std::to_string(i),
-                                        marker_array.markers);
-
         _clusters.push_back({centroid_x, centroid_y, centroid_z});
-        i++;
     }
 
-    marker_pub->publish(marker_array);
-    RCLCPP_DEBUG(this->get_logger(), "Found %d clusters", i);
+    RCLCPP_DEBUG(this->get_logger(), "Found %ld clusters", _clusters.size());
 }
 
 void EuclidianClusteringNode::scaled_euclidian_clustering(pcl::PointCloud<pcl::PointXYZ>::Ptr pc,
@@ -199,7 +193,7 @@ void EuclidianClusteringNode::scaled_euclidian_clustering(pcl::PointCloud<pcl::P
     }
 
     euclidian_clustering(scaled_pc, _clusters, _clustering_tolerance, _min_clustering_points);
-    
+
     for (auto& cluster : _clusters) {
         cluster.z /= _scale;
     }
@@ -221,6 +215,22 @@ void EuclidianClusteringNode::publish_clusters(const std::vector<perception_util
 
     cluster_pub->publish(msg);
 }
+
+void EuclidianClusteringNode::visualize_markers(const std::vector<perception_utils::Point>& clusters) {
+    visualization_msgs::msg::MarkerArray marker_array;
+    perception_utils::reset_markers(base_link, "euclidian_clustering", marker_array.markers);
+
+    int i = 0;
+    for (const auto& cluster : clusters) {
+        perception_utils::create_marker(cluster.x, cluster.y, cluster.z, i, base_link, "euclidian_clustering",
+                                        perception_utils::Color::ORANGE, "C" + std::to_string(i),
+                                        marker_array.markers);
+        i++;
+    }
+
+    marker_pub->publish(marker_array);
+}
+
 int main(int argc, char* argv[]) {
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<EuclidianClusteringNode>());
