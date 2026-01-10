@@ -8,6 +8,7 @@ from tf2_ros import Buffer, TransformListener, TransformStamped
 from rclpy.qos import QoSProfile, DurabilityPolicy
 from tf2_ros import StaticTransformBroadcaster
 from enum import Enum
+from geometry_msgs.msg import PoseStamped
 
 
 class Direction(Enum):
@@ -25,6 +26,9 @@ class TestMapGenerator(Node):
         self.map_pub = self.create_publisher(OccupancyGrid, "/map", map_qos)
         self.map = OccupancyGrid()
 
+        self.goal_pub = self.create_publisher(PoseStamped, "/goal_pose", map_qos)
+        self.goalPose = PoseStamped()
+
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
         self.tf_broadcaster = StaticTransformBroadcaster(self)
@@ -36,6 +40,11 @@ class TestMapGenerator(Node):
         self.map_origin = [-20.0, -20.0, 0.0]  # keep z = 0.0
 
         self.init_map()
+
+        self.goalPose: PoseStamped = PoseStamped()
+        self.goalPose.pose.position.x = -10.0
+        self.goalPose.pose.position.y = -10.0
+        self.goalPose.header.frame_id = self.map.header.frame_id
 
         # reference: Unknown = -1, Obstacles = 100, 0 < Free < 99
         self.grid = np.full((self.map_height, self.map_width), 0, dtype=np.int8)
@@ -98,6 +107,7 @@ class TestMapGenerator(Node):
         self.map.header.stamp = self.get_clock().now().to_msg()
         self.map.data = self.grid.flatten().astype(np.int8).tolist()
         self.map_pub.publish(self.map)
+        self.goal_pub.publish(self.goalPose)
 
 
 def main(args=None):  # type: ignore

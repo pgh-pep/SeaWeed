@@ -20,12 +20,12 @@ from tf_transformations import euler_from_quaternion
 class PDMotionPlanner(Node):
     def __init__(self):
         super().__init__("pd_motion_planner")
-        # self.declare_parameter("kp", 2.0)
-        # self.declare_parameter("kd", 0.1)
+        self.declare_parameter("kp", 0.01)
+        self.declare_parameter("kd", 1.0)
 
-        self.declare_parameter("ks", 1.0)  # along-track gain
-        self.declare_parameter("kn", 2.0)  # cross-track gain
-        self.declare_parameter("ktheta", 0.5)  # heading gain
+        self.declare_parameter("ks", 0.0)  # along-track gain
+        self.declare_parameter("kn", 0.0)  # cross-track gain
+        self.declare_parameter("ktheta", 0.1)  # heading gain
 
         self.declare_parameter("lookahead_dist", 0.2)
         self.declare_parameter("max_linear_velocity", 0.3)
@@ -35,7 +35,7 @@ class PDMotionPlanner(Node):
         self.declare_parameter("closed_loop_enabled", True)
 
         self.kp = self.get_parameter("kp").value
-        self.ki = self.get_parameter("kp").value
+        self.ki = 0.0
         self.kd = 0.0
 
         self.ks: float = self.get_parameter("ks").value  # type: ignore
@@ -46,7 +46,7 @@ class PDMotionPlanner(Node):
         self.max_linear_velocity: float = self.get_parameter("max_linear_velocity").value  # type: ignore
         self.max_angular_velocity: float = self.get_parameter("max_angular_velocity").value  # type: ignore
 
-        self.open_loop_enabled: bool = self.get_parameter("open_loop_enabled"   ).value  # type: ignore
+        self.open_loop_enabled: bool = self.get_parameter("open_loop_enabled").value  # type: ignore
         self.closed_loop_enabled: bool = self.get_parameter("closed_loop_enabled").value  # type: ignore
 
         self.along_track_pid = PID()
@@ -83,7 +83,7 @@ class PDMotionPlanner(Node):
             self.publish_cmd_vel((0.0, 0.0, 0.0), (0.0, 0.0, 0.0))
             return
 
-        dt = (self.get_clock().now() - self.last_cycle_time).nanoseconds * 1e-9
+        # dt = (self.get_clock().now() - self.last_cycle_time).nanoseconds * 1e-9
 
         try:
             robot_pose = self.get_robot_pose()
@@ -134,9 +134,9 @@ class PDMotionPlanner(Node):
         if second_next_pose is None:
             # slow down if on last pose (not good but works for now)
             return self.max_linear_velocity * 0.5
-        
+
         return self.max_linear_velocity
-    
+
     def get_desired_curvature(self, next_pose: Pose, second_next_pose: Pose | None, velocity: float) -> float:
         # NOTE: WIP
         return 0.0
@@ -260,7 +260,7 @@ class PDMotionPlanner(Node):
     def publish_cmd_vel(self, linear: tuple[float, float, float], angular: tuple[float, float, float]):
         cmd_vel = TwistStamped()
         cmd_vel.header.frame_id = "wamv/base_link"
-        cmd_vel.header.stamp = self.get_clock().now()
+        cmd_vel.header.stamp = self.get_clock().now().to_msg()
 
         cmd_vel.twist.linear.x = linear[0]
         cmd_vel.twist.linear.y = linear[1]
@@ -277,6 +277,7 @@ class PDMotionPlanner(Node):
 
 
 def main(args=None):  # type: ignore
+    print("hi")
     rclpy.init(args=args)
     try:
         pd_motion_planner = PDMotionPlanner()

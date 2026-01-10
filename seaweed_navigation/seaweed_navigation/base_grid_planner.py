@@ -9,6 +9,7 @@ from typing import Optional
 
 # Contains Utils for creating grid-based path planners
 
+
 class WeightedNode:
     def __init__(self, point: Point, parent: Optional["WeightedNode"] = None, cost: float = 0):
         self.cost = cost
@@ -37,7 +38,7 @@ class BasePlanner(ABC):
         # obstacle_tol: float,
         goal_tolerance: float,
     ):
-        self.map = map # OccupancyGrid()
+        self.map = map  # OccupancyGrid()
         self.debug_map: OccupancyGrid = OccupancyGrid()
         # self.world_start = start
         # self.world_goal = goal

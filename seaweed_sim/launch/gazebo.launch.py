@@ -66,7 +66,7 @@ def generate_launch_description():
 
     world_arg = DeclareLaunchArgument(
         name="world",
-        default_value="sydney_regatta",
+        default_value="follow_path",
         choices=[
             "sydney_regatta",
             "sydney_regatta_empty",

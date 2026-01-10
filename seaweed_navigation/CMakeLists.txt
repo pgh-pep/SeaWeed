@@ -14,6 +14,7 @@ ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS
     ${PROJECT_NAME}/navigation_manager.py
     ${PROJECT_NAME}/test_map_generator.py
+    ${PROJECT_NAME}/pd_motion_planner.py
     DESTINATION lib/${PROJECT_NAME}
 )
 

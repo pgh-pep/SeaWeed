@@ -1,15 +1,8 @@
-import os
-
-from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, OpaqueFunction
-from launch.substitutions import LaunchConfiguration
-from launch.actions import IncludeLaunchDescription
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 
-def generate_launch_description():
 
+def generate_launch_description():
     test_map_generator_node = Node(
         package="seaweed_navigation",
         executable="test_map_generator.py",
@@ -24,21 +17,29 @@ def generate_launch_description():
         output="screen",
     )
 
-    nav_directory = get_package_share_directory("seaweed_navigation")
-    rviz_config_file = os.path.join(nav_directory, "rviz", "map_dash.rviz")
-
-    rviz = Node(
-        package="rviz2",
-        executable="rviz2",
-        name="rviz2",
+    pd_motion_planner = Node(
+        package="seaweed_navigation",
+        executable="pd_motion_planner.py",
+        name="pd_motion_planner",
         output="screen",
-        arguments=["-d", rviz_config_file],
     )
+
+    # nav_directory = get_package_share_directory("seaweed_navigation")
+    # rviz_config_file = os.path.join(nav_directory, "rviz", "map_dash.rviz")
+
+    # rviz = Node(
+    #     package="rviz2",
+    #     executable="rviz2",
+    #     name="rviz2",
+    #     output="screen",
+    #     arguments=["-d", rviz_config_file],
+    # )
 
     return LaunchDescription(
         [
             navigation_manager,
             test_map_generator_node,
-            rviz
+            pd_motion_planner,
+            # rviz
         ]
     )
