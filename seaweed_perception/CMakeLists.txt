@@ -15,6 +15,11 @@ find_package(ament_cmake_python REQUIRED)
 
 find_package(PCL REQUIRED)
 
+# utils
+ament_auto_add_library(perception_utils SHARED
+    ${PROJECT_NAME}/perception_utils.cpp
+)
+
 # Cpp Nodes
 ament_auto_add_executable(
     euclidian_clustering_node
@@ -31,6 +36,7 @@ ament_auto_add_executable(
 )
 
 install(TARGETS
+    perception_utils
     euclidian_clustering_node
     bbox_projection_node
     DESTINATION lib/${PROJECT_NAME}

@@ -16,6 +16,7 @@
   <depend>nav_msgs</depend>
   <depend>visualization_msgs</depend>
   <depend>geometry_msgs</depend>
+  <depend>std_srvs</depend>
 
   <depend>tf2_ros</depend>
   <depend>tf2</depend>
@@ -23,6 +24,9 @@
 
   <depend>pcl_conversions</depend>
   <depend>pcl_ros</depend>
+
+  <depend>seaweed_interfaces</depend>
+  <depend>seaweed_perception</depend>
 
   <export>
     <build_type>ament_cmake</build_type>
