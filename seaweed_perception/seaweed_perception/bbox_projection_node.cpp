@@ -2,6 +2,7 @@
 
 BBox_Projection_Node::BBox_Projection_Node()
     : Node("bbox_projection_node"),
+      debug(false),
       depth_image_topic("/wamv/sensors/cameras/camera_sensor/optical/depth"),
       yolo_bbox_image_topic("/debug/yolo"),
       camera_info_topic("/wamv/sensors/cameras/camera_sensor/optical/camera_info"),
@@ -275,12 +276,14 @@ void BBox_Projection_Node::detection_callback(const seaweed_interfaces::msg::Det
     unmatched_bbox_pub->publish(unmatched_bboxes_map);
     unmatched_cluster_pub->publish(unmatched_clusters_map);
 
-    visualize_on_img(cluster_projections);
-    debug_markers(matched_poses_map, unmatched_bboxes_map, unmatched_clusters_map);
+    if (debug) {
+        visualize_on_img(cluster_projections);
+        debug_markers(matched_poses_map, unmatched_bboxes_map, unmatched_clusters_map);
 
-    RCLCPP_DEBUG(this->get_logger(), "matched: %lu, unmatched bbox: %lu, unmatched cluster : %lu",
-                 matched_poses_map.labeled_poses.size(), unmatched_bboxes_map.labeled_poses.size(),
-                 unmatched_clusters_map.poses.size());
+        RCLCPP_DEBUG(this->get_logger(), "matched: %lu, unmatched bbox: %lu, unmatched cluster : %lu",
+                     matched_poses_map.labeled_poses.size(), unmatched_bboxes_map.labeled_poses.size(),
+                     unmatched_clusters_map.poses.size());
+    }
 }
 
 void BBox_Projection_Node::clusters_to_projections(const geometry_msgs::msg::PoseArray& clusters,

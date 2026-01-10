@@ -84,6 +84,8 @@ private:
     rclcpp::Publisher<seaweed_interfaces::msg::LabeledPoseArray>::SharedPtr unmatched_bbox_pub;
     rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr unmatched_cluster_pub;
 
+    bool debug;
+
     std::string depth_image_topic;
     std::string yolo_bbox_image_topic;
 
