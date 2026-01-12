@@ -14,6 +14,7 @@ EuclidianClusteringNode::EuclidianClusteringNode()
         "/wamv/sensors/lidars/lidar_wamv_sensor/points", 10,
         std::bind(&EuclidianClusteringNode::pc_callback, this, std::placeholders::_1));
 
+    filtered_pointcloud_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>("/pc/filtered", 10);
     debug_pointcloud_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>("/debug/pointcloud", 10);
     marker_pub = this->create_publisher<visualization_msgs::msg::MarkerArray>("/debug/markers", 1);
 
@@ -50,14 +51,18 @@ void EuclidianClusteringNode::pc_callback(const sensor_msgs::msg::PointCloud2::S
     filter_boat(obstacle_pc_with_boat, obstacle_pc_with_outliers);
     filter_outliers(obstacle_pc_with_outliers, obstacle_pc);
 
+    // PUB FILTERED PC
+    perception_utils::publish_pointcloud(obstacle_pc, base_link, filtered_pointcloud_pub, this->get_clock(),
+                                         this->get_logger());
+
     // CLUSTERING
     scaled_euclidian_clustering(obstacle_pc, clusters, clustering_tolerance, scale, min_cluster_points);
     publish_clusters(clusters);
 
     // DEBUG OUTPUT
     if (debug) {
-        perception_utils::debug_pointcloud(obstacle_pc, base_link, debug_pointcloud_pub, this->get_clock(),
-                                           this->get_logger());
+        perception_utils::publish_pointcloud(obstacle_pc, base_link, debug_pointcloud_pub, this->get_clock(),
+                                             this->get_logger());
         visualize_markers(clusters);
     }
 }

@@ -33,6 +33,7 @@ def launch_setup(context, *args, **kwargs):
         package="seaweed_perception",
         executable="bbox_projection_node",
         name="bbox_projection_node",
+        parameters=[{'use_sim_time': True}],
         output="screen",
     )
 

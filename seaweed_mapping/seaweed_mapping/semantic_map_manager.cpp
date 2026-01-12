@@ -99,7 +99,7 @@ private:
         }
     }
 
-    void reset_callback(const std_srvs::srv::Trigger::Request::SharedPtr request,
+    void reset_callback(const std_srvs::srv::Trigger::Request::SharedPtr,
                         std_srvs::srv::Trigger::Response::SharedPtr response) {
         size_t n = semantic_map.size();
         semantic_map.clear();

@@ -6,8 +6,9 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake_auto REQUIRED)
-ament_auto_find_build_dependencies()
+# find_package(PCL REQUIRED)
 
+ament_auto_find_build_dependencies()
 ament_python_install_package(${PROJECT_NAME})
 
 # Python Nodes:
@@ -24,8 +25,16 @@ ament_auto_add_executable(
 )
 
 # target_link_libraries(cpp_exe_name non_ROS_dependencies)
+ament_auto_add_executable(
+    occupancy_grid_manager
+    ${PROJECT_NAME}/occupancy_grid_manager.cpp
+)
+
+# target_link_libraries(occupancy_grid_manager ${PCL_LIBRARIES})
+
 install(TARGETS
     semantic_map_manager
+    occupancy_grid_manager
     DESTINATION lib/${PROJECT_NAME}
 )
 

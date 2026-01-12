@@ -38,6 +38,7 @@ private:
     // SUB PUB
     rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud_sub;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr debug_pointcloud_pub;
+    rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr filtered_pointcloud_pub;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub;
     rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr cluster_pub;
 
@@ -52,7 +53,7 @@ private:
     int min_cluster_points;
 
     std::string cluster_topic, base_link;
-    
+
     float debug;
 
     // Callbacks

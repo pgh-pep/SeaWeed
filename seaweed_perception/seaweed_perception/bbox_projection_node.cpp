@@ -2,7 +2,7 @@
 
 BBox_Projection_Node::BBox_Projection_Node()
     : Node("bbox_projection_node"),
-      debug(false),
+      debug(true),
       depth_image_topic("/wamv/sensors/cameras/camera_sensor/optical/depth"),
       yolo_bbox_image_topic("/debug/yolo"),
       camera_info_topic("/wamv/sensors/cameras/camera_sensor/optical/camera_info"),
@@ -161,11 +161,22 @@ void BBox_Projection_Node::detection_callback(const seaweed_interfaces::msg::Det
         return;
     }
 
-    bool clusters_valid = recieved_clusters && is_data_valid(cluster_update_stamp);
-    bool depth_valid = recieved_depth && is_data_valid(depth_update_stamp);
-
-    if (!clusters_valid || !depth_valid) {
-        RCLCPP_WARN(this->get_logger(), "sensor data not valid");
+    if (!recieved_clusters) {
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000, "waiting for cluster data");
+        return;
+    }
+    if (!recieved_depth) {
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000, "waiting for depth data");
+        return;
+    }
+    if (!is_data_valid(cluster_update_stamp)) {
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000, "EXPIRED cluster data: %.2fs old",
+                             (this->get_clock()->now() - cluster_update_stamp).seconds());
+        return;
+    }
+    if (!is_data_valid(depth_update_stamp)) {
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000, "EXPIRED depth data: %.2fs old",
+                             (this->get_clock()->now() - depth_update_stamp).seconds());
         return;
     }
 
@@ -306,6 +317,9 @@ void BBox_Projection_Node::clusters_to_projections(const geometry_msgs::msg::Pos
         proj.matched = false;
 
         cluster_projections.push_back(proj);
+
+        RCLCPP_INFO(this->get_logger(), "Cluster in optical frame: x=%.2f, y=%.2f, z=%.2f -> pixel u=%d, v=%d",
+                    cluster_c.position.x, cluster_c.position.y, cluster_c.position.z, u, v);
     }
 }
 
@@ -454,7 +468,7 @@ void BBox_Projection_Node::debug_markers(const seaweed_interfaces::msg::LabeledP
 
     for (const auto& pose : unmatched_cluster_poses.poses) {
         perception_utils::create_marker(pose.position.x, pose.position.y, pose.position.z, i++, map_frame,
-                                        "bbox_projection", perception_utils::Color::PURPLE, "UNMATCHED CLUSTER",
+                                        "bbox_projection", perception_utils::Color::PURPLE, "UNC",
                                         markers.markers);
     }
 

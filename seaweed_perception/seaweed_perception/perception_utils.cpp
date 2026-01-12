@@ -87,7 +87,7 @@ void transform_pc(const pcl::PointCloud<pcl::PointXYZ>::Ptr& original_pc,
     }
 }
 
-void debug_pointcloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& pc, const std::string& target_frame,
+void publish_pointcloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& pc, const std::string& target_frame,
                       rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr publisher,
                       rclcpp::Clock::SharedPtr clock, rclcpp::Logger logger) {
     sensor_msgs::msg::PointCloud2::SharedPtr debug_pc_msg = std::make_shared<sensor_msgs::msg::PointCloud2>();
