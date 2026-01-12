@@ -19,7 +19,8 @@ public:
           unmatched_clusters_topic("/mapping/unmatched_clusters"),
           semantic_map_topic("/mapping/semantic_map"),
           debug_vis_topic("/debug/semantic_map_markers"),
-          map_frame("map") {
+          map_frame("map"),
+          reset_service("/mapping/semantic/reset") {
         matched_sub = this->create_subscription<seaweed_interfaces::msg::LabeledPoseArray>(
             matched_obstacles_topic, 10,
             std::bind(&SemanticMapManager::matched_callback, this, std::placeholders::_1));
@@ -38,7 +39,7 @@ public:
         marker_pub = this->create_publisher<visualization_msgs::msg::MarkerArray>(debug_vis_topic, 10);
 
         reset_srv = this->create_service<std_srvs::srv::Trigger>(
-            "/mapping/semantic/reset",
+            reset_service,
             std::bind(&SemanticMapManager::reset_callback, this, std::placeholders::_1, std::placeholders::_2));
 
         map_publish_timer = this->create_wall_timer(std::chrono::milliseconds(500),
@@ -63,6 +64,7 @@ private:
     std::string semantic_map_topic;
     std::string debug_vis_topic;
     std::string map_frame;
+    std::string reset_service;
 
     std::vector<TrackedObstacle> semantic_map;
 
@@ -97,7 +99,7 @@ private:
         }
     }
 
-    void reset_callback(const std_srvs::srv::Trigger::Request::SharedPtr,
+    void reset_callback(const std_srvs::srv::Trigger::Request::SharedPtr request,
                         std_srvs::srv::Trigger::Response::SharedPtr response) {
         size_t n = semantic_map.size();
         semantic_map.clear();
