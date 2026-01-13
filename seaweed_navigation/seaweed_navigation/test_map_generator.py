@@ -42,8 +42,8 @@ class TestMapGenerator(Node):
         self.init_map()
 
         self.goalPose: PoseStamped = PoseStamped()
-        self.goalPose.pose.position.x = -10.0
-        self.goalPose.pose.position.y = -10.0
+        self.goalPose.pose.position.x = 0.0
+        self.goalPose.pose.position.y = 10.0
         self.goalPose.header.frame_id = self.map.header.frame_id
 
         # reference: Unknown = -1, Obstacles = 100, 0 < Free < 99
