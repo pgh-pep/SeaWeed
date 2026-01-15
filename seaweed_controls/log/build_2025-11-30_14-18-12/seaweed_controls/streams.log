@@ -1,0 +1,48 @@
+[0.018s] Invoking command in '/home/pkumaran17/pep/seaweed_ws/src/SeaWeed/seaweed_controls/build/seaweed_controls': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /home/pkumaran17/pep/seaweed_ws/src/SeaWeed/seaweed_controls -DCMAKE_INSTALL_PREFIX=/home/pkumaran17/pep/seaweed_ws/src/SeaWeed/seaweed_controls/install/seaweed_controls
+[0.045s] -- Found ament_cmake_auto: 1.3.12 (/opt/ros/humble/share/ament_cmake_auto/cmake)
+[0.262s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.264s] -- Found rosidl_adapter: 3.1.7 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[0.791s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[1.003s] -- Found ament_cmake_ros: 0.10.0 (/opt/ros/humble/share/ament_cmake_ros/cmake)
+[1.188s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[1.418s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[1.815s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.10.12", minimum required is "3.6") 
+[1.821s] -- Found python_cmake_module: 0.10.0 (/opt/ros/humble/share/python_cmake_module/cmake)
+[3.153s] -- Found PythonLibs: /usr/lib/x86_64-linux-gnu/libpython3.10.so (found suitable version "3.10.12", minimum required is "3.5") 
+[3.153s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[3.153s] -- Using PYTHON_INCLUDE_DIRS: /usr/include/python3.10
+[3.153s] -- Using PYTHON_LIBRARIES: /usr/lib/x86_64-linux-gnu/libpython3.10.so
+[3.172s] -- Found PythonExtra: .so  
+[3.175s] [31mCMake Error at /opt/ros/humble/share/ament_cmake_python/cmake/ament_python_install_package.cmake:122 (add_custom_target):
+[3.175s]   add_custom_target cannot create target
+[3.175s]   "ament_cmake_python_copy_seaweed_controls" because another target with the
+[3.175s]   same name already exists.  The existing target is a custom target created
+[3.175s]   in source directory
+[3.175s]   "/home/pkumaran17/pep/seaweed_ws/src/SeaWeed/seaweed_controls".  See
+[3.175s]   documentation for policy CMP0002 for more details.
+[3.175s] Call Stack (most recent call first):
+[3.175s]   /opt/ros/humble/share/ament_cmake_python/cmake/ament_python_install_package.cmake:39 (_ament_cmake_python_install_package)
+[3.175s]   /opt/ros/humble/share/rosidl_generator_py/cmake/rosidl_generator_py_generate_interfaces.cmake:124 (ament_python_install_package)
+[3.175s]   /opt/ros/humble/share/ament_cmake_core/cmake/core/ament_execute_extensions.cmake:48 (include)
+[3.175s]   /opt/ros/humble/share/rosidl_cmake/cmake/rosidl_generate_interfaces.cmake:286 (ament_execute_extensions)
+[3.175s]   CMakeLists.txt:15 (rosidl_generate_interfaces)
+[3.175s] 
+[3.175s] [0m
+[3.175s] [31mCMake Error at /opt/ros/humble/share/ament_cmake_python/cmake/ament_python_install_package.cmake:141 (add_custom_target):
+[3.175s]   add_custom_target cannot create target
+[3.176s]   "ament_cmake_python_build_seaweed_controls_egg" because another target with
+[3.176s]   the same name already exists.  The existing target is a custom target
+[3.176s]   created in source directory
+[3.176s]   "/home/pkumaran17/pep/seaweed_ws/src/SeaWeed/seaweed_controls".  See
+[3.176s]   documentation for policy CMP0002 for more details.
+[3.176s] Call Stack (most recent call first):
+[3.176s]   /opt/ros/humble/share/ament_cmake_python/cmake/ament_python_install_package.cmake:39 (_ament_cmake_python_install_package)
+[3.176s]   /opt/ros/humble/share/rosidl_generator_py/cmake/rosidl_generator_py_generate_interfaces.cmake:124 (ament_python_install_package)
+[3.176s]   /opt/ros/humble/share/ament_cmake_core/cmake/core/ament_execute_extensions.cmake:48 (include)
+[3.176s]   /opt/ros/humble/share/rosidl_cmake/cmake/rosidl_generate_interfaces.cmake:286 (ament_execute_extensions)
+[3.176s]   CMakeLists.txt:15 (rosidl_generate_interfaces)
+[3.176s] 
+[3.176s] [0m
+[3.335s] -- Configuring incomplete, errors occurred!
+[3.335s] See also "/home/pkumaran17/pep/seaweed_ws/src/SeaWeed/seaweed_controls/build/seaweed_controls/CMakeFiles/CMakeOutput.log".
+[3.342s] Invoked command in '/home/pkumaran17/pep/seaweed_ws/src/SeaWeed/seaweed_controls/build/seaweed_controls' returned '1': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /home/pkumaran17/pep/seaweed_ws/src/SeaWeed/seaweed_controls -DCMAKE_INSTALL_PREFIX=/home/pkumaran17/pep/seaweed_ws/src/SeaWeed/seaweed_controls/install/seaweed_controls

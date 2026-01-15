@@ -1,0 +1,86 @@
+[0.000000] (-) TimerEvent: {}
+[0.001010] (seaweed_controls) JobQueued: {'identifier': 'seaweed_controls', 'dependencies': OrderedDict()}
+[0.001067] (seaweed_controls) JobStarted: {'identifier': 'seaweed_controls'}
+[0.014025] (seaweed_controls) JobProgress: {'identifier': 'seaweed_controls', 'progress': 'cmake'}
+[0.017941] (seaweed_controls) Command: {'cmd': ['/usr/bin/cmake', '/home/pkumaran17/pep/seaweed_ws/src/SeaWeed/seaweed_controls', '-DCMAKE_INSTALL_PREFIX=/home/pkumaran17/pep/seaweed_ws/src/SeaWeed/seaweed_controls/install/seaweed_controls'], 'cwd': '/home/pkumaran17/pep/seaweed_ws/src/SeaWeed/seaweed_controls/build/seaweed_controls', 'env': OrderedDict([('GZ_SIM_SYSTEM_PLUGIN_PATH', '/home/pkumaran17/pep/vrx_ws/install/lib'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('GZ_SIM_RESOURCE_PATH', '/home/pkumaran17/pep/vrx_ws/install/share/wamv_description/models:/home/pkumaran17/pep/vrx_ws/install/share/vrx_gz/models/tmp:/home/pkumaran17/pep/vrx_ws/install/share/vrx_gz/models:/home/pkumaran17/pep/vrx_ws/install/share/vrx_gz/worlds/2023_practice:/home/pkumaran17/pep/vrx_ws/install/share/vrx_gz/worlds:/home/pkumaran17/pep/vrx_ws/install/share/vrx_gazebo/models:/home/pkumaran17/pep/vrx_ws/install/share/'), ('USER', 'pkumaran17'), ('GIT_ASKPASS', '/home/pkumaran17/.vscode-server/bin/cb1933bbc38d329b3595673a600fab5c7368f0a7/extensions/git/dist/askpass.sh'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/home/pkumaran17/pep/vrx_ws/install/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('MOTD_SHOWN', 'update-motd'), ('HOME', '/home/pkumaran17'), ('OLDPWD', '/home/pkumaran17/pep/seaweed_ws/src/SeaWeed'), ('TERM_PROGRAM_VERSION', '1.106.1'), ('VSCODE_IPC_HOOK_CLI', '/run/user/1000/vscode-ipc-b84bd1eb-a091-4db9-92f1-ade7099fefeb.sock'), ('ROS_PYTHON_VERSION', '3'), ('VSCODE_GIT_ASKPASS_MAIN', '/home/pkumaran17/.vscode-server/bin/cb1933bbc38d329b3595673a600fab5c7368f0a7/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/home/pkumaran17/.vscode-server/bin/cb1933bbc38d329b3595673a600fab5c7368f0a7/node'), ('VSCODE_PYTHON_AUTOACTIVATE_GUARD', '1'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('WSL_DISTRO_NAME', 'Ubuntu'), ('WAYLAND_DISPLAY', 'wayland-0'), ('COLCON_PREFIX_PATH', '/home/pkumaran17/pep/vrx_ws/install:/home/pkumaran17/pep/seaweed_ws/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'pkumaran17'), ('NAME', 'Code'), ('WSL_INTEROP', '/run/WSL/846_interop'), ('PULSE_SERVER', 'unix:/mnt/wslg/PulseServer'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('TERM', 'xterm-256color'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/home/pkumaran17/.vscode-server/data/User/globalStorage/github.copilot-chat/debugCommand:/home/pkumaran17/.vscode-server/data/User/globalStorage/github.copilot-chat/copilotCli:/home/pkumaran17/.vscode-server/bin/cb1933bbc38d329b3595673a600fab5c7368f0a7/bin/remote-cli:/home/pkumaran17/.local/bin:/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files/WindowsApps/CanonicalGroupLimited.Ubuntu_2404.1.68.0_x64__79rhkp1fndgsc:/mnt/c/Program Files/Eclipse Adoptium/jdk-11.0.28.6-hotspot/bin:/mnt/c/Program Files/Microsoft/jdk-11.0.16.101-hotspot/bin:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/Microsoft SQL Server/150/Tools/Binn/:/mnt/c/Program Files/Microsoft SQL Server/Client SDK/ODBC/170/Tools/Binn/:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/:/mnt/c/Program Files/MATLAB/R2022b/bin:/mnt/c/Program Files/CMake/bin:/mnt/c/Program Files/Git/cmd:/mnt/c/Program Files/Docker/Docker/resources/bin:/mnt/c/Program Files (x86)/Pololu/USB AVR Programmer v2/bin:/mnt/c/Program Files/PuTTY/:/mnt/c/Program Files (x86)/STMicroelectronics/STM32 ST-LINK Utility/ST-LINK Utility:/mnt/c/WINDOWS/system32/config/systemprofile/AppData/Local/Muse Hub/lib:/mnt/c/Users/Prashanth/AppData/Local/Programs/Python/Python39/Scripts/:/mnt/c/Users/Prashanth/AppData/Local/Programs/Python/Python39/:/mnt/c/Users/Prashanth/.cargo/bin:/mnt/c/msys64/ucrt64/bin:/mnt/c/Users/Prashanth/AppData/Local/Programs/Python/Python312/Scripts/:/mnt/c/Users/Prashanth/AppData/Local/Programs/Python/Python312/:/mnt/c/Users/Prashanth/AppData/Local/Programs/Python/Launcher/:/mnt/c/Users/Prashanth/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/Prashanth/.dotnet/tools:/mnt/c/Users/Prashanth/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/intelFPGA_lite/18.1/modelsim_ase/win32aloem:/mnt/c/Program Files/Git/cmd:/mnt/c/Program Files/Git/bin:/mnt/c/Users/Prashanth/AppData/Local/GitHubDesktop/bin:/mnt/c/Users/Prashanth/AppData/Local/Microsoft/WinGet/Packages/magic-wormhole.magic-wormhole_Microsoft.Winget.Source_8wekyb3d8bbwe:/mnt/c/AVRDUDE:/mnt/c/Users/Prashanth/esp/esp-idf:/mnt/c/Program Files/Java/jre1.8.0_441/bin:/mnt/c/Users/Prashanth/AppData/Local/Muse Hub/lib:/mnt/c/msys64/mingw64/bin:/mnt/c/Gradle/gradle-9.0.0/bin:/mnt/c/Program Files/JetBrains/IntelliJ IDEA 2025.2.1/bin:/snap/bin'), ('XDG_RUNTIME_DIR', '/run/user/1000/'), ('DISPLAY', ':0'), ('LANG', 'C.UTF-8'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-fac0a3fc6f.sock'), ('TERM_PROGRAM', 'vscode'), ('AMENT_PREFIX_PATH', '/home/pkumaran17/pep/seaweed_ws/install/seaweed_utils:/home/pkumaran17/pep/seaweed_ws/install/seaweed_sim:/home/pkumaran17/pep/seaweed_ws/install/seaweed_perception:/home/pkumaran17/pep/seaweed_ws/install/seaweed_navigation:/home/pkumaran17/pep/seaweed_ws/install/seaweed_mapping:/home/pkumaran17/pep/seaweed_ws/install/seaweed_localization:/home/pkumaran17/pep/seaweed_ws/install/seaweed_interfaces:/home/pkumaran17/pep/seaweed_ws/install/seaweed_description:/home/pkumaran17/pep/seaweed_ws/install/seaweed_core:/home/pkumaran17/pep/seaweed_ws/install/seaweed_controls:/home/pkumaran17/pep/seaweed_ws/install/seaweed_auxiliary:/home/pkumaran17/pep/vrx_ws/install:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('PWD', '/home/pkumaran17/pep/seaweed_ws/src/SeaWeed/seaweed_controls/build/seaweed_controls'), ('XDG_DATA_DIRS', '/usr/share/gnome:/home/pkumaran17/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share:/usr/share:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/pkumaran17/pep/seaweed_ws/install/seaweed_utils/local/lib/python3.10/dist-packages:/home/pkumaran17/pep/seaweed_ws/install/seaweed_sim/local/lib/python3.10/dist-packages:/home/pkumaran17/pep/seaweed_ws/install/seaweed_perception/local/lib/python3.10/dist-packages:/home/pkumaran17/pep/seaweed_ws/install/seaweed_navigation/local/lib/python3.10/dist-packages:/home/pkumaran17/pep/seaweed_ws/install/seaweed_mapping/local/lib/python3.10/dist-packages:/home/pkumaran17/pep/seaweed_ws/install/seaweed_localization/local/lib/python3.10/dist-packages:/home/pkumaran17/pep/seaweed_ws/install/seaweed_description/local/lib/python3.10/dist-packages:/home/pkumaran17/pep/seaweed_ws/install/seaweed_core/local/lib/python3.10/dist-packages:/home/pkumaran17/pep/seaweed_ws/install/seaweed_controls/local/lib/python3.10/dist-packages:/home/pkumaran17/pep/seaweed_ws/install/seaweed_auxiliary/local/lib/python3.10/dist-packages:/home/pkumaran17/pep/vrx_ws/install/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('WSL2_GUI_APPS_ENABLED', '1'), ('HOSTTYPE', 'x86_64'), ('CMAKE_PREFIX_PATH', '/home/pkumaran17/pep/seaweed_ws/install/seaweed_utils:/home/pkumaran17/pep/seaweed_ws/install/seaweed_sim:/home/pkumaran17/pep/seaweed_ws/install/seaweed_perception:/home/pkumaran17/pep/seaweed_ws/install/seaweed_navigation:/home/pkumaran17/pep/seaweed_ws/install/seaweed_mapping:/home/pkumaran17/pep/seaweed_ws/install/seaweed_localization:/home/pkumaran17/pep/seaweed_ws/install/seaweed_interfaces:/home/pkumaran17/pep/seaweed_ws/install/seaweed_description:/home/pkumaran17/pep/seaweed_ws/install/seaweed_core:/home/pkumaran17/pep/seaweed_ws/install/seaweed_controls:/home/pkumaran17/pep/seaweed_ws/install/seaweed_auxiliary:/home/pkumaran17/pep/vrx_ws/install:/opt/ros/humble'), ('WSLENV', 'ELECTRON_RUN_AS_NODE/w:')]), 'shell': False}
+[0.098858] (-) TimerEvent: {}
+[0.199214] (-) TimerEvent: {}
+[0.299620] (-) TimerEvent: {}
+[0.400041] (-) TimerEvent: {}
+[0.459789] (seaweed_controls) StdoutLine: {'line': b'-- The C compiler identification is GNU 11.4.0\n'}
+[0.500126] (-) TimerEvent: {}
+[0.600595] (-) TimerEvent: {}
+[0.701695] (-) TimerEvent: {}
+[0.802519] (-) TimerEvent: {}
+[0.903125] (-) TimerEvent: {}
+[1.003519] (-) TimerEvent: {}
+[1.103851] (-) TimerEvent: {}
+[1.204152] (-) TimerEvent: {}
+[1.304477] (-) TimerEvent: {}
+[1.404800] (-) TimerEvent: {}
+[1.505091] (-) TimerEvent: {}
+[1.605596] (-) TimerEvent: {}
+[1.706121] (-) TimerEvent: {}
+[1.806677] (-) TimerEvent: {}
+[1.907204] (-) TimerEvent: {}
+[2.007657] (-) TimerEvent: {}
+[2.108045] (-) TimerEvent: {}
+[2.151299] (seaweed_controls) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 11.4.0\n'}
+[2.208179] (-) TimerEvent: {}
+[2.308550] (-) TimerEvent: {}
+[2.409055] (-) TimerEvent: {}
+[2.509516] (-) TimerEvent: {}
+[2.610080] (-) TimerEvent: {}
+[2.713901] (-) TimerEvent: {}
+[2.817086] (-) TimerEvent: {}
+[2.920862] (-) TimerEvent: {}
+[3.022463] (-) TimerEvent: {}
+[3.126442] (-) TimerEvent: {}
+[3.230260] (-) TimerEvent: {}
+[3.333827] (-) TimerEvent: {}
+[3.437566] (-) TimerEvent: {}
+[3.539659] (-) TimerEvent: {}
+[3.600279] (seaweed_controls) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[3.640979] (-) TimerEvent: {}
+[3.741506] (-) TimerEvent: {}
+[3.842559] (-) TimerEvent: {}
+[3.943037] (-) TimerEvent: {}
+[3.985873] (seaweed_controls) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[3.991141] (seaweed_controls) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc - skipped\n'}
+[3.993895] (seaweed_controls) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[3.995155] (seaweed_controls) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[3.999369] (seaweed_controls) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[4.043397] (-) TimerEvent: {}
+[4.144845] (-) TimerEvent: {}
+[4.246215] (-) TimerEvent: {}
+[4.335315] (seaweed_controls) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[4.340353] (seaweed_controls) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[4.340616] (seaweed_controls) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[4.340872] (seaweed_controls) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[4.346381] (-) TimerEvent: {}
+[4.353081] (seaweed_controls) StdoutLine: {'line': b'-- Found ament_cmake_auto: 1.3.12 (/opt/ros/humble/share/ament_cmake_auto/cmake)\n'}
+[4.447476] (-) TimerEvent: {}
+[4.517905] (seaweed_controls) StdoutLine: {'line': b'-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter \n'}
+[4.548451] (-) TimerEvent: {}
+[4.649371] (-) TimerEvent: {}
+[4.708819] (seaweed_controls) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[4.719884] (seaweed_controls) StdoutLine: {'line': b'-- Found rosidl_adapter: 3.1.7 (/opt/ros/humble/share/rosidl_adapter/cmake)\n'}
+[4.749697] (-) TimerEvent: {}
+[4.852351] (-) TimerEvent: {}
+[4.954899] (-) TimerEvent: {}
+[5.056155] (-) TimerEvent: {}
+[5.157654] (-) TimerEvent: {}
+[5.258279] (-) TimerEvent: {}
+[5.331117] (seaweed_controls) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[5.359041] (-) TimerEvent: {}
+[5.414810] (seaweed_controls) StderrLine: {'line': b'\x1b[31mCMake Error at /opt/ros/humble/share/rosidl_cmake/cmake/rosidl_generate_interfaces.cmake:64 (message):\n'}
+[5.415029] (seaweed_controls) StderrLine: {'line': b'  rosidl_generate_interfaces() must be called before ament_package()\n'}
+[5.415092] (seaweed_controls) StderrLine: {'line': b'Call Stack (most recent call first):\n'}
+[5.415180] (seaweed_controls) StderrLine: {'line': b'  CMakeLists.txt:25 (rosidl_generate_interfaces)\n'}
+[5.415315] (seaweed_controls) StderrLine: {'line': b'\n'}
+[5.415352] (seaweed_controls) StderrLine: {'line': b'\x1b[0m\n'}
+[5.415385] (seaweed_controls) StdoutLine: {'line': b'-- Configuring incomplete, errors occurred!\n'}
+[5.415426] (seaweed_controls) StdoutLine: {'line': b'See also "/home/pkumaran17/pep/seaweed_ws/src/SeaWeed/seaweed_controls/build/seaweed_controls/CMakeFiles/CMakeOutput.log".\n'}
+[5.420995] (seaweed_controls) CommandEnded: {'returncode': 1}
+[5.448633] (seaweed_controls) JobEnded: {'identifier': 'seaweed_controls', 'rc': 1}
+[5.459742] (-) EventReactorShutdown: {}

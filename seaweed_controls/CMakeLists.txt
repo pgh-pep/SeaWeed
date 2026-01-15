@@ -12,8 +12,13 @@ ament_python_install_package(${PROJECT_NAME})
 
 # Python Nodes:
 install(PROGRAMS
-    # ${PROJECT_NAME}/my_node.py
+     ${PROJECT_NAME}/publisher_member_function.py
+     ${PROJECT_NAME}/subscriber_member_function.py
     DESTINATION lib/${PROJECT_NAME}
 )
 
+
+
 ament_auto_package(INSTALL_TO_SHARE launch config)
+
+

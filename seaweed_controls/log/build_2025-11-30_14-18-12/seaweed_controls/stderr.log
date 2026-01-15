@@ -1,0 +1,30 @@
+[31mCMake Error at /opt/ros/humble/share/ament_cmake_python/cmake/ament_python_install_package.cmake:122 (add_custom_target):
+  add_custom_target cannot create target
+  "ament_cmake_python_copy_seaweed_controls" because another target with the
+  same name already exists.  The existing target is a custom target created
+  in source directory
+  "/home/pkumaran17/pep/seaweed_ws/src/SeaWeed/seaweed_controls".  See
+  documentation for policy CMP0002 for more details.
+Call Stack (most recent call first):
+  /opt/ros/humble/share/ament_cmake_python/cmake/ament_python_install_package.cmake:39 (_ament_cmake_python_install_package)
+  /opt/ros/humble/share/rosidl_generator_py/cmake/rosidl_generator_py_generate_interfaces.cmake:124 (ament_python_install_package)
+  /opt/ros/humble/share/ament_cmake_core/cmake/core/ament_execute_extensions.cmake:48 (include)
+  /opt/ros/humble/share/rosidl_cmake/cmake/rosidl_generate_interfaces.cmake:286 (ament_execute_extensions)
+  CMakeLists.txt:15 (rosidl_generate_interfaces)
+
+[0m
+[31mCMake Error at /opt/ros/humble/share/ament_cmake_python/cmake/ament_python_install_package.cmake:141 (add_custom_target):
+  add_custom_target cannot create target
+  "ament_cmake_python_build_seaweed_controls_egg" because another target with
+  the same name already exists.  The existing target is a custom target
+  created in source directory
+  "/home/pkumaran17/pep/seaweed_ws/src/SeaWeed/seaweed_controls".  See
+  documentation for policy CMP0002 for more details.
+Call Stack (most recent call first):
+  /opt/ros/humble/share/ament_cmake_python/cmake/ament_python_install_package.cmake:39 (_ament_cmake_python_install_package)
+  /opt/ros/humble/share/rosidl_generator_py/cmake/rosidl_generator_py_generate_interfaces.cmake:124 (ament_python_install_package)
+  /opt/ros/humble/share/ament_cmake_core/cmake/core/ament_execute_extensions.cmake:48 (include)
+  /opt/ros/humble/share/rosidl_cmake/cmake/rosidl_generate_interfaces.cmake:286 (ament_execute_extensions)
+  CMakeLists.txt:15 (rosidl_generate_interfaces)
+
+[0m

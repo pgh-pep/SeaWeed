@@ -16,4 +16,13 @@ ament_auto_find_build_dependencies()
 #     # ...
 # )
 
+rosidl_generate_interfaces(${PROJECT_NAME}
+    msg/Command.msg
+    DEPENDENCIES
+    # geometry_msgs
+    # sensor_msgs
+    # ...
+)
+
+
 ament_auto_package()
