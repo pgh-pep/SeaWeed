@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import math
 from typing import Optional
 import rclpy
 from rclpy.time import Time
@@ -73,13 +74,18 @@ class NavigationManager(Node):
         goal_point.x = goal_pose_stamped.pose.position.x
         goal_point.y = goal_pose_stamped.pose.position.y
 
-        path = self.planner.plan(robot_position, goal_point)
-
-        if path and path.poses:
-            self.get_logger().info("Path found")
-            self.path_pub.publish(path)
-        else:
-            self.get_logger().warn("No path found")
+        dx = goal_point.x - robot_position.x
+        dy = goal_point.y - robot_position.y
+        distance = math.sqrt(dx * dx + dy * dy)
+        # stop replanning if robot is within tolerance of goal
+        if distance >= 6:
+            path = self.planner.plan(robot_position, goal_point)
+            self.get_logger().info("Replanning.. distance =" + str(distance))
+            if path and path.poses:
+                # self.get_logger().info("Path found")
+                self.path_pub.publish(path)
+            else:
+                self.get_logger().warn("No path found")
 
     def lookup_pose(self, target_frame: str, source_frame: str) -> Optional[Pose]:
         try:

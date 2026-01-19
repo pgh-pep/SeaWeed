@@ -15,6 +15,7 @@ install(PROGRAMS
     ${PROJECT_NAME}/navigation_manager.py
     ${PROJECT_NAME}/test_map_generator.py
     ${PROJECT_NAME}/pd_motion_planner.py
+    ${PROJECT_NAME}/pd_motion_planner_2.py
     DESTINATION lib/${PROJECT_NAME}
 )
 
