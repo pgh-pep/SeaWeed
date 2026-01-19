@@ -1,6 +1,7 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
 
+
 def generate_launch_description():
     pd_motion_planner = Node(
         package="seaweed_navigation",

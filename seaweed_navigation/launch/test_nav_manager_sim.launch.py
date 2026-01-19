@@ -1,4 +1,4 @@
-import os 
+import os
 
 from launch import LaunchDescription
 from ament_index_python.packages import get_package_share_directory
@@ -117,6 +117,7 @@ def launch_setup(context, *args, **kwargs):
         rviz,
     ]
 
+
 def generate_launch_description():
     test_map_generator_node = Node(
         package="seaweed_navigation",
@@ -181,6 +182,6 @@ def generate_launch_description():
             rviz_arg,
             joy_node,
             diff_thrust_controller,
-            OpaqueFunction(function=launch_setup)
+            OpaqueFunction(function=launch_setup),
         ]
     )
