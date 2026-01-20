@@ -70,8 +70,8 @@ static const rclcpp::QoS image_qos = rclcpp::QoS(5)
 
 std_msgs::msg::ColorRGBA get_rgba_color(Color color, float alpha = 1.0f);
 
-void ros_to_pcl(const sensor_msgs::msg::PointCloud2::SharedPtr& pc_msg,
-                pcl::PointCloud<pcl::PointXYZ>::Ptr& pc_pcl);
+rclcpp::Time ros_to_pcl(const sensor_msgs::msg::PointCloud2::SharedPtr& pc_msg,
+                        pcl::PointCloud<pcl::PointXYZ>::Ptr& pc_pcl);
 
 void pcl_to_ros(const pcl::PointCloud<pcl::PointXYZ>::Ptr& pc_pcl,
                 sensor_msgs::msg::PointCloud2::SharedPtr& pc_msg, const std::string& target_frame,
@@ -82,8 +82,8 @@ void transform_pc(const pcl::PointCloud<pcl::PointXYZ>::Ptr& original_pc,
                   std::shared_ptr<tf2_ros::Buffer> tf_buffer, rclcpp::Logger logger);
 
 void publish_pointcloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& pc, const std::string& target_frame,
-                      rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr publisher,
-                      rclcpp::Clock::SharedPtr clock, rclcpp::Logger logger);
+                        rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr publisher, rclcpp::Time stamp,
+                        rclcpp::Logger logger);
 
 void create_marker(const float& x, const float& y, const float& z, const int& id, const std::string& frame,
                    std::string ns, const Color& color, const std::string& label,
@@ -95,19 +95,22 @@ void reset_markers(const std::string& frame, std::string ns,
 bool transform_labeled_pose(const seaweed_interfaces::msg::LabeledPose& original_pose,
                             seaweed_interfaces::msg::LabeledPose& transformed_pose,
                             const std::string& target_frame, const std::string& source_frame,
-                            std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger);
+                            std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger,
+                            const rclcpp::Time& stamp);
 
 bool transform_labeled_pose_array(const seaweed_interfaces::msg::LabeledPoseArray& original_pose_array,
                                   seaweed_interfaces::msg::LabeledPoseArray& transformed_pose_array,
                                   const std::string& target_frame, std::shared_ptr<tf2_ros::Buffer> tf_buffer,
-                                  const rclcpp::Logger& logger);
+                                  const rclcpp::Logger& logger, const rclcpp::Time& stamp);
 
 bool transform_pose(const geometry_msgs::msg::PoseStamped& original_pose,
                     geometry_msgs::msg::PoseStamped& transformed_pose, const std::string& target_frame,
-                    std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger);
+                    std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger,
+                    const rclcpp::Time& stamp);
 
 bool transform_pose_array(const geometry_msgs::msg::PoseArray& original_pose_array,
                           geometry_msgs::msg::PoseArray& transformed_pose_array, const std::string& target_frame,
-                          std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger);
+                          std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger,
+                          const rclcpp::Time& stamp);
 
 }  // namespace perception_utils

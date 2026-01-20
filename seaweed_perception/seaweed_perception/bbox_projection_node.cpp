@@ -72,7 +72,7 @@ float BBox_Projection_Node::calc_cost(const seaweed_interfaces::msg::BoundingBox
 
 void BBox_Projection_Node::cluster_callback(const geometry_msgs::msg::PoseArray::SharedPtr msg) {
     latest_clusters = *msg;
-    cluster_update_stamp = this->get_clock()->now();
+    cluster_update_stamp = msg->header.stamp;
     recieved_clusters = true;
 }
 
@@ -132,7 +132,7 @@ void BBox_Projection_Node::match_detections_to_clusters(
 void BBox_Projection_Node::depth_image_callback(const sensor_msgs::msg::Image::SharedPtr msg) {
     try {
         latest_depth_image = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::TYPE_32FC1)->image;
-        depth_update_stamp = this->get_clock()->now();
+        depth_update_stamp = msg->header.stamp;
         recieved_depth = true;
     } catch (cv_bridge::Exception& e) {
         RCLCPP_ERROR(this->get_logger(), "cv_bridge depth error: %s", e.what());
@@ -182,7 +182,8 @@ void BBox_Projection_Node::detection_callback(const seaweed_interfaces::msg::Det
 
     // transform cluster pose onto camera projection
     std::vector<ClusterProjection> cluster_projections;
-    clusters_to_projections(latest_clusters, cluster_projections);
+    // clusters_to_projections(latest_clusters, cluster_projections, rclcpp::Time(latest_clusters.header.stamp));
+    clusters_to_projections(latest_clusters, cluster_projections, rclcpp::Time(msg->header.stamp));
 
     // pair: bbox idx -> cluster idx (might replace w/ a struct)
     std::vector<std::pair<int, int>> matches_idx;
@@ -194,7 +195,7 @@ void BBox_Projection_Node::detection_callback(const seaweed_interfaces::msg::Det
 
     seaweed_interfaces::msg::LabeledPoseArray matched_poses;
     matched_poses.header.frame_id = latest_clusters.header.frame_id;
-    matched_poses.header.stamp = msg->header.stamp;
+    matched_poses.header.stamp = latest_clusters.header.stamp;
 
     seaweed_interfaces::msg::LabeledPoseArray unmatched_bbox_poses;
     unmatched_bbox_poses.header.frame_id = camera_optical_frame;
@@ -202,7 +203,7 @@ void BBox_Projection_Node::detection_callback(const seaweed_interfaces::msg::Det
 
     geometry_msgs::msg::PoseArray unmatched_cluster_poses;
     unmatched_cluster_poses.header.frame_id = latest_clusters.header.frame_id;
-    unmatched_cluster_poses.header.stamp = msg->header.stamp;
+    unmatched_cluster_poses.header.stamp = latest_clusters.header.stamp;
 
     // MATCHED BBOX TO CLUSTER
     // use cluster location w/ bbox label
@@ -249,7 +250,7 @@ void BBox_Projection_Node::detection_callback(const seaweed_interfaces::msg::Det
     // map frame transforms
     seaweed_interfaces::msg::LabeledPoseArray matched_poses_map;
     matched_poses_map.header.frame_id = map_frame;
-    matched_poses_map.header.stamp = msg->header.stamp;
+    matched_poses_map.header.stamp = latest_clusters.header.stamp;
 
     seaweed_interfaces::msg::LabeledPoseArray unmatched_bboxes_map;
     unmatched_bboxes_map.header.frame_id = map_frame;
@@ -257,11 +258,11 @@ void BBox_Projection_Node::detection_callback(const seaweed_interfaces::msg::Det
 
     geometry_msgs::msg::PoseArray unmatched_clusters_map;
     unmatched_clusters_map.header.frame_id = map_frame;
-    unmatched_clusters_map.header.stamp = msg->header.stamp;
+    unmatched_clusters_map.header.stamp = latest_clusters.header.stamp;
 
     if (!matched_poses.labeled_poses.empty()) {
         if (!perception_utils::transform_labeled_pose_array(matched_poses, matched_poses_map, map_frame, tf_buffer,
-                                                            this->get_logger())) {
+                                                            this->get_logger(), latest_clusters.header.stamp)) {
             RCLCPP_ERROR(this->get_logger(), "matched pose transform failure");
             return;
         }
@@ -269,7 +270,7 @@ void BBox_Projection_Node::detection_callback(const seaweed_interfaces::msg::Det
 
     if (!unmatched_bbox_poses.labeled_poses.empty()) {
         if (!perception_utils::transform_labeled_pose_array(unmatched_bbox_poses, unmatched_bboxes_map, map_frame,
-                                                            tf_buffer, this->get_logger())) {
+                                                            tf_buffer, this->get_logger(), msg->header.stamp)) {
             RCLCPP_ERROR(this->get_logger(), "unmatched bbox transform failure");
             return;
         }
@@ -277,7 +278,7 @@ void BBox_Projection_Node::detection_callback(const seaweed_interfaces::msg::Det
 
     if (!unmatched_cluster_poses.poses.empty()) {
         if (!perception_utils::transform_pose_array(unmatched_cluster_poses, unmatched_clusters_map, map_frame,
-                                                    tf_buffer, this->get_logger())) {
+                                                    tf_buffer, this->get_logger(), latest_clusters.header.stamp)) {
             RCLCPP_ERROR(this->get_logger(), "unmatched cluster transform failure");
             return;
         }
@@ -298,11 +299,12 @@ void BBox_Projection_Node::detection_callback(const seaweed_interfaces::msg::Det
 }
 
 void BBox_Projection_Node::clusters_to_projections(const geometry_msgs::msg::PoseArray& clusters,
-                                                   std::vector<ClusterProjection>& cluster_projections) {
+                                                   std::vector<ClusterProjection>& cluster_projections,
+                                                   rclcpp::Time stamp) {
     geometry_msgs::msg::PoseArray clusters_c;
     clusters_c.header.frame_id = camera_optical_frame;
     perception_utils::transform_pose_array(clusters, clusters_c, camera_optical_frame, tf_buffer,
-                                           this->get_logger());
+                                           this->get_logger(), stamp);
 
     for (size_t i = 0; i < clusters_c.poses.size(); i++) {
         const auto& cluster_c = clusters_c.poses[i];

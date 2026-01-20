@@ -45,7 +45,7 @@ private:
     void detection_callback(const seaweed_interfaces::msg::Detection::SharedPtr msg);
 
     void clusters_to_projections(const geometry_msgs::msg::PoseArray& clusters,
-                                 std::vector<ClusterProjection>& cluster_projections);
+                                 std::vector<ClusterProjection>& cluster_projections, rclcpp::Time stamp);
 
     int find_cluster_in_bbox(const seaweed_interfaces::msg::BoundingBox& bbox,
                              std::vector<ClusterProjection>& projections);

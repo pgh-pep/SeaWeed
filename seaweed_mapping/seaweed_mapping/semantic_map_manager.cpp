@@ -12,13 +12,13 @@ public:
     SemanticMapManager()
         : Node("semantic_map_manager"),
           debug(true),
-          merge_thresh(1.0),
-          min_observ_threshold(2),
+          merge_thresh(2.5),
+          min_observ_threshold(5),
           matched_obstacles_topic("/mapping/matched"),
           unmatched_bbox_topic("/mapping/unmatched_bbox"),
           unmatched_clusters_topic("/mapping/unmatched_clusters"),
           semantic_map_topic("/mapping/semantic_map"),
-          debug_vis_topic("/debug/semantic_map_markers"),
+          debug_vis_topic("/debug/markers"),
           map_frame("map"),
           reset_service("/mapping/semantic/reset") {
         matched_sub = this->create_subscription<seaweed_interfaces::msg::LabeledPoseArray>(
@@ -42,7 +42,7 @@ public:
             reset_service,
             std::bind(&SemanticMapManager::reset_callback, this, std::placeholders::_1, std::placeholders::_2));
 
-        map_publish_timer = this->create_wall_timer(std::chrono::milliseconds(500),
+        map_publish_timer = this->create_wall_timer(std::chrono::milliseconds(250),
                                                     std::bind(&SemanticMapManager::publish_semantic_map, this));
     }
 
@@ -117,33 +117,65 @@ private:
         }
     }
 
+    // TrackedObstacle* find_match(const seaweed_interfaces::msg::LabeledPose& pose) {
+    //     TrackedObstacle* unknown_match = nullptr;
+
+    //     for (auto& obstacle : semantic_map) {
+    //         // diff obstacles if sufficient distance apart
+    //         if (eucl_distance(obstacle.l_pose.pose.position, pose.pose.position) >= merge_thresh) {
+    //             continue;
+    //         }
+
+    //         // else: same obstacle, check if labeled-labeled pair:
+    //         if (obstacle.l_pose.label == pose.label) {
+    //             return &obstacle;
+    //         }
+
+    //         // else, check if unknown-labeled pair
+    //         bool is_unknown_incoming = (pose.label == "UNKNOWN");
+    //         bool is_unknown_mapped = (obstacle.l_pose.label == "UNKNOWN");
+
+    //         if (is_unknown_incoming != is_unknown_mapped) {
+    //             unknown_match = &obstacle;
+    //             // note: currently does not return here to check
+    //             // if labeled obj within thresh exists (prioritize labeled)
+    //         }
+    //     }
+
+    //     // else, must be unknown-unknown pair
+    //     return unknown_match;
+    // }
+
     TrackedObstacle* find_match(const seaweed_interfaces::msg::LabeledPose& pose) {
-        TrackedObstacle* unknown_match = nullptr;
+        TrackedObstacle* best_match = nullptr;
+        float best_distance = merge_thresh;
 
         for (auto& obstacle : semantic_map) {
-            // diff obstacles if sufficient distance apart
-            if (eucl_distance(obstacle.l_pose.pose.position, pose.pose.position) >= merge_thresh) {
-                continue;
+            float dist = eucl_distance(obstacle.l_pose.pose.position, pose.pose.position);
+
+            if (dist >= merge_thresh) continue;
+
+            bool incoming_labeled = (pose.label != "UNKNOWN");
+            bool mapped_labeled = (obstacle.l_pose.label != "UNKNOWN");
+
+            // Priority 1: Exact label match (labeled-labeled with same label)
+            if (incoming_labeled && mapped_labeled && obstacle.l_pose.label == pose.label) {
+                return &obstacle;  // Immediate return for exact match
             }
 
-            // else: same obstacle, check if labeled-labeled pair:
-            if (obstacle.l_pose.label == pose.label) {
-                return &obstacle;
-            }
-
-            // else, check if unknown-labeled pair
-            bool is_unknown_incoming = (pose.label == "UNKNOWN");
-            bool is_unknown_mapped = (obstacle.l_pose.label == "UNKNOWN");
-
-            if (is_unknown_incoming != is_unknown_mapped) {
-                unknown_match = &obstacle;
-                // note: currently does not return here to check
-                // if labeled obj within thresh exists (prioritize labeled)
+            // Priority 2: labeled-unknown pair (prefer closer ones)
+            // Priority 3: unknown-unknown pair (prefer closer ones)
+            // For both cases, prefer the closest obstacle
+            if (dist < best_distance) {
+                // Accept if: same labels, or at least one is unknown
+                if (obstacle.l_pose.label == pose.label || !incoming_labeled || !mapped_labeled) {
+                    best_distance = dist;
+                    best_match = &obstacle;
+                }
             }
         }
 
-        // else, must be unknown-unknown pair
-        return unknown_match;
+        return best_match;
     }
 
     void update_obstacle(TrackedObstacle& obstacle, const seaweed_interfaces::msg::LabeledPose& new_pose) {
@@ -190,6 +222,7 @@ private:
 
         semantic_map_pub->publish(msg);
         if (debug) {
+            RCLCPP_INFO(this->get_logger(), "semantic obstacles: %zu", msg.labeled_poses.size());
             visualize_map_markers();
         }
     }

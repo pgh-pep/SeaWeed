@@ -80,7 +80,7 @@ private:
                               std::vector<perception_utils::Point>& _clusters, float _clustering_tolerance,
                               int _min_clustering_points);
 
-    void publish_clusters(const std::vector<perception_utils::Point>& clusters);
+    void publish_clusters(const std::vector<perception_utils::Point>& clusters, rclcpp::Time stamp);
 
     void scaled_euclidian_clustering(pcl::PointCloud<pcl::PointXYZ>::Ptr pc,
                                      std::vector<perception_utils::Point>& _clusters, float _clustering_tolerance,

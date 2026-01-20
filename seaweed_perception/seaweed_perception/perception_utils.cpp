@@ -59,16 +59,17 @@ std_msgs::msg::ColorRGBA get_rgba_color(Color color, float alpha) {
 
     return rgba;
 }
-void ros_to_pcl(const sensor_msgs::msg::PointCloud2::SharedPtr& pc_msg,
-                pcl::PointCloud<pcl::PointXYZ>::Ptr& pc_pcl) {
+rclcpp::Time ros_to_pcl(const sensor_msgs::msg::PointCloud2::SharedPtr& pc_msg,
+                        pcl::PointCloud<pcl::PointXYZ>::Ptr& pc_pcl) {
     pcl::fromROSMsg(*pc_msg, *pc_pcl);
+    return pc_msg->header.stamp;
 }
 
 void pcl_to_ros(const pcl::PointCloud<pcl::PointXYZ>::Ptr& pc_pcl,
                 sensor_msgs::msg::PointCloud2::SharedPtr& pc_msg, const std::string& target_frame,
-                rclcpp::Clock::SharedPtr clock) {
+                rclcpp::Time stamp) {
     pcl::toROSMsg(*pc_pcl, *pc_msg);
-    pc_msg->header.stamp = clock->now();
+    pc_msg->header.stamp = stamp;
     pc_msg->header.frame_id = target_frame;
 }
 
@@ -88,13 +89,13 @@ void transform_pc(const pcl::PointCloud<pcl::PointXYZ>::Ptr& original_pc,
 }
 
 void publish_pointcloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& pc, const std::string& target_frame,
-                      rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr publisher,
-                      rclcpp::Clock::SharedPtr clock, rclcpp::Logger logger) {
+                        rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr publisher, rclcpp::Time stamp,
+                        rclcpp::Logger logger) {
     sensor_msgs::msg::PointCloud2::SharedPtr debug_pc_msg = std::make_shared<sensor_msgs::msg::PointCloud2>();
 
-    pcl_to_ros(pc, debug_pc_msg, target_frame, clock);
+    pcl_to_ros(pc, debug_pc_msg, target_frame, stamp);
     debug_pc_msg->header.frame_id = target_frame;
-    debug_pc_msg->header.stamp = clock->now();
+    debug_pc_msg->header.stamp = stamp;
 
     publisher->publish(*debug_pc_msg);
 
@@ -182,10 +183,11 @@ void reset_markers(const std::string& frame, std::string ns,
 bool transform_labeled_pose(const seaweed_interfaces::msg::LabeledPose& original_pose,
                             seaweed_interfaces::msg::LabeledPose& transformed_pose,
                             const std::string& target_frame, const std::string& source_frame,
-                            std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger) {
+                            std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger,
+                            const rclcpp::Time& stamp) {
     try {
         geometry_msgs::msg::TransformStamped tf_stamped =
-            tf_buffer->lookupTransform(target_frame, source_frame, tf2::TimePointZero);
+            tf_buffer->lookupTransform(target_frame, source_frame, stamp, rclcpp::Duration::from_seconds(0.1));
 
         tf2::doTransform(original_pose.pose, transformed_pose.pose, tf_stamped);
         transformed_pose.label = original_pose.label;
@@ -200,10 +202,10 @@ bool transform_labeled_pose(const seaweed_interfaces::msg::LabeledPose& original
 bool transform_labeled_pose_array(const seaweed_interfaces::msg::LabeledPoseArray& original_pose_array,
                                   seaweed_interfaces::msg::LabeledPoseArray& transformed_pose_array,
                                   const std::string& target_frame, std::shared_ptr<tf2_ros::Buffer> tf_buffer,
-                                  const rclcpp::Logger& logger) {
+                                  const rclcpp::Logger& logger, const rclcpp::Time& stamp) {
     try {
-        geometry_msgs::msg::TransformStamped tf_stamped =
-            tf_buffer->lookupTransform(target_frame, original_pose_array.header.frame_id, tf2::TimePointZero);
+        geometry_msgs::msg::TransformStamped tf_stamped = tf_buffer->lookupTransform(
+            target_frame, original_pose_array.header.frame_id, stamp, rclcpp::Duration::from_seconds(0.1));
 
         transformed_pose_array.labeled_poses.clear();
         transformed_pose_array.header.frame_id = target_frame;
@@ -225,10 +227,11 @@ bool transform_labeled_pose_array(const seaweed_interfaces::msg::LabeledPoseArra
 
 bool transform_pose(const geometry_msgs::msg::PoseStamped& original_pose,
                     geometry_msgs::msg::PoseStamped& transformed_pose, const std::string& target_frame,
-                    std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger) {
+                    std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger,
+                    const rclcpp::Time& stamp) {
     try {
-        geometry_msgs::msg::TransformStamped tf_stamped =
-            tf_buffer->lookupTransform(target_frame, original_pose.header.frame_id, tf2::TimePointZero);
+        geometry_msgs::msg::TransformStamped tf_stamped = tf_buffer->lookupTransform(
+            target_frame, original_pose.header.frame_id, stamp, rclcpp::Duration::from_seconds(0.1));
 
         tf2::doTransform(original_pose, transformed_pose, tf_stamped);
         return true;
@@ -238,13 +241,13 @@ bool transform_pose(const geometry_msgs::msg::PoseStamped& original_pose,
         return false;
     }
 }
-
 bool transform_pose_array(const geometry_msgs::msg::PoseArray& original_pose_array,
                           geometry_msgs::msg::PoseArray& transformed_pose_array, const std::string& target_frame,
-                          std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger) {
+                          std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger,
+                          const rclcpp::Time& stamp) {
     try {
-        geometry_msgs::msg::TransformStamped tf_stamped =
-            tf_buffer->lookupTransform(target_frame, original_pose_array.header.frame_id, tf2::TimePointZero);
+        geometry_msgs::msg::TransformStamped tf_stamped = tf_buffer->lookupTransform(
+            target_frame, original_pose_array.header.frame_id, stamp, rclcpp::Duration::from_seconds(0.1));
 
         transformed_pose_array.poses.clear();
         transformed_pose_array.header.frame_id = target_frame;

@@ -41,7 +41,7 @@ void EuclidianClusteringNode::pc_callback(const sensor_msgs::msg::PointCloud2::S
     pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_pc(new pcl::PointCloud<pcl::PointXYZ>);
 
     // INPUT
-    perception_utils::ros_to_pcl(msg, pc);
+    rclcpp::Time pc_stamp = perception_utils::ros_to_pcl(msg, pc);
     perception_utils::transform_pc(pc, transformed_pc, base_link, tf_buffer, this->get_logger());
 
     // FILTERING
@@ -52,16 +52,16 @@ void EuclidianClusteringNode::pc_callback(const sensor_msgs::msg::PointCloud2::S
     filter_outliers(obstacle_pc_with_outliers, obstacle_pc);
 
     // PUB FILTERED PC
-    perception_utils::publish_pointcloud(obstacle_pc, base_link, filtered_pointcloud_pub, this->get_clock(),
+    perception_utils::publish_pointcloud(obstacle_pc, base_link, filtered_pointcloud_pub, pc_stamp,
                                          this->get_logger());
 
     // CLUSTERING
     scaled_euclidian_clustering(obstacle_pc, clusters, clustering_tolerance, scale, min_cluster_points);
-    publish_clusters(clusters);
+    publish_clusters(clusters, pc_stamp);
 
     // DEBUG OUTPUT
     if (debug) {
-        perception_utils::publish_pointcloud(obstacle_pc, base_link, debug_pointcloud_pub, this->get_clock(),
+        perception_utils::publish_pointcloud(obstacle_pc, base_link, debug_pointcloud_pub, pc_stamp,
                                              this->get_logger());
         visualize_markers(clusters);
     }
@@ -204,10 +204,10 @@ void EuclidianClusteringNode::scaled_euclidian_clustering(pcl::PointCloud<pcl::P
     }
 }
 
-void EuclidianClusteringNode::publish_clusters(const std::vector<perception_utils::Point>& clusters) {
+void EuclidianClusteringNode::publish_clusters(const std::vector<perception_utils::Point>& clusters, rclcpp::Time stamp) {
     geometry_msgs::msg::PoseArray msg;
     msg.header.frame_id = base_link;
-    msg.header.stamp = this->get_clock()->now();
+    msg.header.stamp = stamp;
 
     for (const auto& point : clusters) {
         geometry_msgs::msg::Pose pose;

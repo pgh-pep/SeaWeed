@@ -8,6 +8,7 @@ import torch
 from ament_index_python import get_package_share_directory
 import rclpy
 from rclpy.node import Node
+from builtin_interfaces.msg import Time
 from std_msgs.msg import Header
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 
@@ -71,8 +72,10 @@ class YOLONode(Node):
         self.confidence = 0.3
 
         self.latest_image: NDArray[np.uint8] | None = None
+        self.latest_image_stamp: Time | None = None
         self.height: int = 0
         self.width: int = 0
+        
 
         self.device = "cuda" if self.use_cuda and torch.cuda.is_available() else "cpu"
 
@@ -85,6 +88,7 @@ class YOLONode(Node):
         try:
             self.latest_image = self.cv_bridge.imgmsg_to_cv2(msg, "bgr8")
             self.height, self.width = self.latest_image.shape[:2]
+            self.latest_image_stamp = msg.header.stamp
         except CvBridgeError as e:
             self.get_logger().error(f"image callback error: {str(e)}")
 
@@ -109,7 +113,7 @@ class YOLONode(Node):
         detection_msg = Detection()
 
         detection_msg.header = Header()
-        detection_msg.header.stamp = self.get_clock().now().to_msg()
+        detection_msg.header.stamp = self.latest_image_stamp
         detection_msg.header.frame_id = self.camera_frame
 
         detection_msg.image_width = self.width
