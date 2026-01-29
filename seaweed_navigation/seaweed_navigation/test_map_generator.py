@@ -42,7 +42,7 @@ class TestMapGenerator(Node):
         self.init_map()
 
         self.goalPose: PoseStamped = PoseStamped()
-        self.goalPose.pose.position.x = 7.0
+        self.goalPose.pose.position.x = 10.0
         self.goalPose.pose.position.y = 10.0
         self.goalPose.header.frame_id = "map"
         self.goalPose.header
@@ -51,8 +51,9 @@ class TestMapGenerator(Node):
         self.grid = np.full((self.map_height, self.map_width), 0, dtype=np.int8)
 
         # ADD TEST OBSTACLES HERE
-        self.generate_rect(100, 100, 40, 40)
         self.generate_rect(300, 300, 75, 30)
+        self.generate_rect(520, 400, 30, 30)
+        self.generate_rect(400, 520, 30, 30)
 
         # self.publish_test_robot_tf()
         self.generate_map_timer = self.create_timer(0.1, self.timer_callback)

@@ -173,8 +173,6 @@ def generate_launch_description():
 
     return LaunchDescription(
         [
-            navigation_manager,
-            test_map_generator_node,
             robot_model_arg,
             use_sim_time_arg,
             use_gui_arg,
@@ -182,6 +180,8 @@ def generate_launch_description():
             rviz_arg,
             joy_node,
             diff_thrust_controller,
+            navigation_manager,
+            test_map_generator_node,
             OpaqueFunction(function=launch_setup),
         ]
     )

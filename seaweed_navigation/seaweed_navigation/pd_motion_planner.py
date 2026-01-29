@@ -22,18 +22,20 @@ class PDMotionPlanner(Node):
     def __init__(self):
         super().__init__("pd_motion_planner")
 
-        self.declare_parameter("heading_kp", 0.75)
-        self.declare_parameter("heading_kd", 0.2)
+        self.declare_parameter("heading_kp", 1.0)
+        self.declare_parameter("heading_kd", 0.3)
 
-        self.declare_parameter("cross_track_kp", 1.2)
-        self.declare_parameter("cross_track_kd", 0.4)
+        self.declare_parameter("cross_track_kp", 0.3)
+        self.declare_parameter("cross_track_kd", 0.1)
 
-        self.declare_parameter("ks", 1)  # along-track gain
+        self.declare_parameter("ks", 0.5)  # along-track gain
         self.declare_parameter("kn", 0.1)  # cross-track gain
         self.declare_parameter("ktheta", 0.01)  # heading gain
 
-        self.declare_parameter("lookahead_dist", 1)
-        self.declare_parameter("max_linear_velocity", 0.3)
+        self.declare_parameter("replan_radius", 5)
+
+        self.declare_parameter("lookahead_dist", 1.5)
+        self.declare_parameter("max_linear_velocity", 1.0)
         self.declare_parameter("max_angular_velocity", 1.0)
 
         self.declare_parameter("open_loop_enabled", True)
@@ -41,6 +43,8 @@ class PDMotionPlanner(Node):
 
         self.heading_kp: float = self.get_parameter("heading_kp").value  # type: ignore
         self.heading_kd: float = self.get_parameter("heading_kd").value  # type: ignore
+
+        self.replan_radius: float = self.get_parameter("replan_radius").value  # type: ignore
 
         self.cross_track_kp: float = self.get_parameter("cross_track_kp").value  # type: ignore
         self.cross_track_kd: float = self.get_parameter("cross_track_kd").value  # type: ignore
@@ -56,7 +60,7 @@ class PDMotionPlanner(Node):
         self.open_loop_enabled: bool = self.get_parameter("open_loop_enabled").value  # type: ignore
         self.closed_loop_enabled: bool = self.get_parameter("closed_loop_enabled").value  # type: ignore
 
-        self.along_track_pid = PID()
+        self.along_track_pid = PID(0.1, 0.0, 0.0)
         self.cross_track_pid = PID(self.cross_track_kp, 0.0, self.cross_track_kd)
         self.heading_pid = PID(self.heading_kp, 0.0, self.heading_kd)
 
@@ -80,7 +84,6 @@ class PDMotionPlanner(Node):
         #     cancel_callback=self.cancel_callback,
         #     goal_callback=self.goal_callback
         # )
-
         # DEBUG
         self.debug_distance_from_goal = self.create_publisher(Float64, "/debug/distance_from_goal", 10)
         self.debug_heading_error = self.create_publisher(Float64, "/debug/heading_error", 10)
@@ -132,19 +135,17 @@ class PDMotionPlanner(Node):
 
         if self.closed_loop_enabled:
             velocity_correction = self.ks * along_track_error
-            # curvature_correction = self.kn * cross_track_error + self.ktheta * heading_error
             curvature_correction = self.heading_pid.update(heading_error, dt) + self.cross_track_pid.update(
                 cross_track_error, dt
             )
 
         output_linear_velocity = desired_velocity + velocity_correction
         output_curvature = desired_curvature + curvature_correction
-        # output_angular_velocity = output_linear_velocity * output_curvature
-        output_angular_velocity = self.heading_pid.update(heading_error, dt)
+
+        output_angular_velocity = output_linear_velocity * output_curvature
 
         final_velocity = max(-self.max_linear_velocity, min(self.max_linear_velocity, output_linear_velocity))
-        # angular_velocity = max(-self.max_angular_velocity, min(self.max_angular_velocity, output_angular_velocity))
-        angular_velocity = output_angular_velocity
+        angular_velocity = max(-self.max_angular_velocity, min(self.max_angular_velocity, output_angular_velocity))
 
         # DEBUG
         self.debug_distance_from_goal.publish(
@@ -155,7 +156,7 @@ class PDMotionPlanner(Node):
         self.debug_goal_heading.publish(Float64(data=test_goal_heading))
         self.debug_robot_heading.publish(Float64(data=self.get_robot_heading(robot_pose.pose)))
 
-        if self.check_reached_goal(robot_pose.pose, 1) and self.goal_reached is False:
+        if self.check_reached_goal(robot_pose.pose, 3) and self.goal_reached is False:
             self.get_logger().info("Goal reached!")
             self.goal_reached = True
             self.publish_cmd_vel((0.0, 0.0, 0.0), (0.0, 0.0, 0.0))
@@ -167,7 +168,6 @@ class PDMotionPlanner(Node):
         # Go to goal if outside replan radius
         if self.goal_reached and not self.check_reached_goal(robot_pose.pose, 5):
             self.goal_reached = False
-        # self.publish_cmd_vel((0.0, 0.0, 0.0), (0.0, 0.0, angular_velocity))
 
         self.last_cycle_time = self.get_clock().now()
 
@@ -175,13 +175,8 @@ class PDMotionPlanner(Node):
         pass
 
     def get_desired_velocity(self, robot_pose: Pose, next_pose: Pose, second_next_pose: Pose | None) -> float:
-        if not self.check_reached_goal(robot_pose, 7):
-            return self.max_linear_velocity * 0.2
-        elif second_next_pose is None or self.check_reached_goal(robot_pose, 3):
-            # slow down if on last pose (not good but works for now)
-            return self.max_linear_velocity * 0.2
-
-        return self.max_linear_velocity
+        # needs motion profiling or similar
+        return self.max_linear_velocity * 0.5
 
     def get_desired_curvature(self, next_pose: Pose, second_next_pose: Pose | None, velocity: float) -> float:
         if second_next_pose is None:
@@ -221,8 +216,16 @@ class PDMotionPlanner(Node):
         path_dy = second_next_path_pose.position.y - next_path_pose.position.y
         pose_vector_mag = math.sqrt(path_dx**2 + path_dy**2)
 
+        boat_x = robot_pose.position.x
+        boat_y = robot_pose.position.y
+
+        x2 = second_next_path_pose.position.x
+        y2 = second_next_path_pose.position.y
+        x1 = next_path_pose.position.x
+        y1 = next_path_pose.position.y
+
         # Pos -> left of path; Neg -> right of path
-        return (path_dx * robot_dy - robot_dx * path_dy) / pose_vector_mag
+        return ((path_dy) * boat_x - (path_dx) * boat_y + x2 * y1 - y2 * x1) / pose_vector_mag
 
     def get_heading_error(self, robot_pose: Pose, next_path_pose: Pose, second_next_path_pose: Pose | None) -> float:
         # on last pose in path
