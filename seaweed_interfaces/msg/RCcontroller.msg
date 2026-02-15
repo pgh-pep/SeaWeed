@@ -1,0 +1,9 @@
+std_msgs/Header header
+float32 joy_r_lr
+float32 joy_r_ud
+float32 joy_l_ud
+float32 joy_l_lr
+float32 sw_b
+float32 vr_b
+float32 sw_a
+float32 vr_a
