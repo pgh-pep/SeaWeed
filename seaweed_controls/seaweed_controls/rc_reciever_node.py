@@ -26,7 +26,7 @@ class Channels(Enum):
     CH10 = 9
     CH11 = 10
     CH12 = 11
-    CH13 = 11
+    CH13 = 12
     CH14 = 13
     CH15 = 14
     CH16 = 15
@@ -42,13 +42,15 @@ class RCRecieverNode(Node):
         self.serial_ESP = serial.Serial(self.serial_port, BAUD_RATE, timeout=0.1)
         time.sleep(2.5)
 
-        rc_controller_topic = "/RC/controller"
+        rc_controller_topic = "/rc/channels"
         self.rc_msg_pub = self.create_publisher(RCcontroller, rc_controller_topic, 10)
 
-        rc_fail_safe_topic = "/RC/fail_safe"
+        rc_fail_safe_topic = "/rc/fail_safe"
         self.rc_fail_safe_pub = self.create_publisher(Bool, rc_fail_safe_topic, 10)
+        self.timer = self.create_timer(0.01, self.timer_callback)
 
         self.get_logger().info(f"Serial ESP on {self.serial_port} @ {BAUD_RATE}")
+
 
     def parse_packet(self, packet: str) -> Dict[Channels, float] | None:
         # expected packet: "CH1, CH2 ... CH16, failsafe, frame_lost"
