@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 
+import threading
 import math
+import time
 from typing import List
 import rclpy
 from rclpy.time import Time
 from rclpy.node import Node
 from rclpy.duration import Duration
+from rclpy.action import ActionServer
+from rclpy.action import GoalResponse
+from rclpy.executors import MultiThreadedExecutor
 
 # from rclpy.action import ActionServer
 from geometry_msgs.msg import PoseStamped, Pose, TwistStamped
@@ -16,6 +21,8 @@ from tf2_ros import Buffer, TransformListener
 from tf2_geometry_msgs import do_transform_pose
 from tf_transformations import euler_from_quaternion
 # from rclpy.qos import QoSProfile, DurabilityPolicy
+
+from seaweed_interfaces.action import MotionPlanner
 
 
 class PDMotionPlanner(Node):
@@ -32,7 +39,7 @@ class PDMotionPlanner(Node):
         self.declare_parameter("kn", 0.1)  # cross-track gain
         self.declare_parameter("ktheta", 0.01)  # heading gain
 
-        self.declare_parameter("replan_radius", 5)
+        self.declare_parameter("goal_tolerance", 5.0)
 
         self.declare_parameter("lookahead_dist", 1.5)
         self.declare_parameter("max_linear_velocity", 1.0)
@@ -44,7 +51,7 @@ class PDMotionPlanner(Node):
         self.heading_kp: float = self.get_parameter("heading_kp").value  # type: ignore
         self.heading_kd: float = self.get_parameter("heading_kd").value  # type: ignore
 
-        self.replan_radius: float = self.get_parameter("replan_radius").value  # type: ignore
+        self.goal_tolerance: float = self.get_parameter("goal_tolerance").value  # type:ignore
 
         self.cross_track_kp: float = self.get_parameter("cross_track_kp").value  # type: ignore
         self.cross_track_kd: float = self.get_parameter("cross_track_kd").value  # type: ignore
@@ -66,24 +73,26 @@ class PDMotionPlanner(Node):
 
         self.path_sub = self.create_subscription(Path, "/path", self.path_callback, 10)
         self.cmd_vel_pub = self.create_publisher(TwistStamped, "/cmd_vel", 10)
-        self.control_loop = self.create_timer(0.1, self.update_controls)
+        self.control_loop = None
 
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
+        self.goal_lock = threading.Lock()
+
         self.path: Path = Path()
         self.last_cycle_time = self.get_clock().now()
         self.goal_reached = False
+        self._goal_handle = None
+        self._is_executing = False
 
-        # modify to recieve path
-        # self.action_server = ActionServer(
-        #     self,
-        #     NavigateToPose,
-        #     'navigate_to_pose',
-        #     execute_callback=self.execute_callback,
-        #     cancel_callback=self.cancel_callback,
-        #     goal_callback=self.goal_callback
-        # )
+        self.action_server = ActionServer(
+            self,
+            MotionPlanner,
+            "motion_planner",
+            execute_callback=self.execute_callback,
+            goal_callback=self.goal_callback,
+        )
         # DEBUG
         self.debug_distance_from_goal = self.create_publisher(Float64, "/debug/distance_from_goal", 10)
         self.debug_heading_error = self.create_publisher(Float64, "/debug/heading_error", 10)
@@ -91,6 +100,48 @@ class PDMotionPlanner(Node):
         self.debug_along_track_error = self.create_publisher(Float64, "/debug/along_track_error", 10)
         self.debug_goal_heading = self.create_publisher(Float64, "/debug/goal_heading", 10)
         self.debug_robot_heading = self.create_publisher(Float64, "/debug/robot_heading", 10)
+
+    def goal_callback(self, goal_request):  # type: ignore
+        with self.goal_lock:
+            if self._is_executing:
+                self.get_logger().info("Goal rejected: Already busy!")
+                return GoalResponse.REJECT
+            else:
+                self._is_executing = True
+                return GoalResponse.ACCEPT
+
+    def execute_callback(self, goal_handle):  # type: ignore
+        self.get_logger().info("Executing goal...")
+        self._goal_handle = goal_handle
+
+        feedback = MotionPlanner.Feedback()
+        feedback.distance_to_goal = 0.0
+
+        self.path = goal_handle.request.path
+        self.last_cycle_time = self.get_clock().now()
+        self.heading_pid.reset(reset_integral=True, reset_derivative=True)
+        self.cross_track_pid.reset(reset_integral=True, reset_derivative=True)
+        self.transform_plan()
+
+        self.goal_reached = False
+
+        robot_pose = self.get_robot_pose()
+        while not self.goal_reached or self._goal_handle is None:
+            self.update_controls()
+            robot_pose = self.get_robot_pose()
+            feedback.distance_to_goal = self.get_pose_error(robot_pose.pose, list(self.path.poses)[-1].pose)  # type:ignore
+            goal_handle.publish_feedback(feedback)
+            time.sleep(0.1)
+
+        goal_handle.succeed()
+
+        with self.goal_lock:
+            self._goal_handle = None
+            self._is_executing = None
+
+        result = MotionPlanner.Result()
+        result.final_pose = self.get_robot_pose().pose
+        return result
 
     def path_callback(self, msg: Path):
         self.last_cycle_time = self.get_clock().now()
@@ -141,7 +192,6 @@ class PDMotionPlanner(Node):
 
         output_linear_velocity = desired_velocity + velocity_correction
         output_curvature = desired_curvature + curvature_correction
-
         output_angular_velocity = output_linear_velocity * output_curvature
 
         final_velocity = max(-self.max_linear_velocity, min(self.max_linear_velocity, output_linear_velocity))
@@ -156,18 +206,16 @@ class PDMotionPlanner(Node):
         self.debug_goal_heading.publish(Float64(data=test_goal_heading))
         self.debug_robot_heading.publish(Float64(data=self.get_robot_heading(robot_pose.pose)))
 
-        if self.check_reached_goal(robot_pose.pose, 3) and self.goal_reached is False:
+        if self.check_reached_goal(robot_pose.pose, self.goal_tolerance):
             self.get_logger().info("Goal reached!")
             self.goal_reached = True
             self.publish_cmd_vel((0.0, 0.0, 0.0), (0.0, 0.0, 0.0))
+            self._is_executing = False
         elif self.goal_reached is True:
             self.publish_cmd_vel((0.0, 0.0, 0.0), (0.0, 0.0, 0.0))
         else:
-            self.publish_cmd_vel((final_velocity, 0.0, 0.0), (0.0, 0.0, angular_velocity))
-
-        # Go to goal if outside replan radius
-        if self.goal_reached and not self.check_reached_goal(robot_pose.pose, 5):
             self.goal_reached = False
+            self.publish_cmd_vel((final_velocity, 0.0, 0.0), (0.0, 0.0, angular_velocity))
 
         self.last_cycle_time = self.get_clock().now()
 
@@ -342,12 +390,14 @@ class PDMotionPlanner(Node):
 
 
 def main(args=None):  # type: ignore
-    print("hi")
     rclpy.init(args=args)
+    pd_motion_planner = PDMotionPlanner()
+    executor = MultiThreadedExecutor()
+    executor.add_node(pd_motion_planner)
     try:
-        pd_motion_planner = PDMotionPlanner()
-        rclpy.spin(pd_motion_planner)
+        executor.spin()
     finally:
+        pd_motion_planner.destroy_node
         rclpy.shutdown()
 
 

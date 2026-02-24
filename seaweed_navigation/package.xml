@@ -15,6 +15,7 @@
   <depend>std_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>tf_transformations</depend>
+  <depend>seaweed_interfaces</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-import math
 from typing import Optional
 import rclpy
 from rclpy.time import Time
 from rclpy.node import Node
 from rclpy.duration import Duration
+from rclpy.action import ActionClient
 
 # from rclpy.action import ActionServer
 from geometry_msgs.msg import PoseStamped, Pose, Point
@@ -13,6 +13,7 @@ from a_star import AStarPlanner
 from nav_msgs.msg import OccupancyGrid, Path
 from tf2_ros import Buffer, TransformListener
 from rclpy.qos import QoSProfile, DurabilityPolicy
+from seaweed_interfaces.action import MotionPlanner
 
 
 class NavigationManager(Node):
@@ -47,6 +48,10 @@ class NavigationManager(Node):
         self.debug_map = OccupancyGrid()
         self.debug_map_pub = self.create_publisher(OccupancyGrid, "/debug/map", 10)
 
+        self.action_client = ActionClient(self, MotionPlanner, "motion_planner")
+        self.send_goal_future = None
+        self.get_result_future = None
+
     def map_callback(self, map_msg: OccupancyGrid):
         self.map = map_msg
         self.planner.map = map_msg
@@ -74,18 +79,30 @@ class NavigationManager(Node):
         goal_point.x = goal_pose_stamped.pose.position.x
         goal_point.y = goal_pose_stamped.pose.position.y
 
-        dx = goal_point.x - robot_position.x
-        dy = goal_point.y - robot_position.y
-        distance = math.sqrt(dx * dx + dy * dy)
-
-        # stop replanning if robot is within tolerance of goal
         path = self.planner.plan(robot_position, goal_point)
-        self.get_logger().info("Replanning.. distance =" + str(distance))
+        goal = MotionPlanner.Goal()
+
         if path and path.poses:
-            # self.get_logger().info("Path found")
-            self.path_pub.publish(path)
+            goal.path = path
+            self.action_client.wait_for_server()
+            self.send_goal_future = self.action_client.send_goal_async(goal)
+            self.send_goal_future.add_done_callback(self.goal_response_callback)
         else:
             self.get_logger().warn("No path found")
+
+    def goal_response_callback(self, future):  # type:ignore
+        goal_handle = future.result()
+        if not goal_handle.accepted:
+            self.get_logger().info("Goal rejected :(")
+            return
+
+        self.get_logger().info("Goal accepted :)")
+
+        self.get_result_future = goal_handle.get_result_async()
+        self.get_result_future.add_done_callback(self.get_result_callback)
+
+    def get_result_callback(self, future):  # type:ignore
+        _ = future.result().result
 
     def lookup_pose(self, target_frame: str, source_frame: str) -> Optional[Pose]:
         try:

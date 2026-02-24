@@ -8,12 +8,13 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-# rosidl_generate_interfaces(${PROJECT_NAME}
-#     # "path_to_msg/action/srv"
-#     DEPENDENCIES
-#     # geometry_msgs
-#     # sensor_msgs
-#     # ...
-# )
+find_package(rosidl_default_generators REQUIRED)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+    "action/MotionPlanner.action"
+    DEPENDENCIES
+    geometry_msgs
+    nav_msgs
+)
 
 ament_auto_package()
