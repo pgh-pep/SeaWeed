@@ -29,7 +29,10 @@ repos:
     rev: v1.1.403
     hooks:
       - id: pyright
-        additional_dependencies: [typing_extensions]
+        additional_dependencies:
+          - typing_extensions
+          - opencv-python==4.9.0.80
+          - ultralytics==8.3.201
         args: [--level=error]
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.12.3

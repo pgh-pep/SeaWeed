@@ -1,4 +1,4 @@
-wamv_camera:
+wamv_rgbd_camera:
     - name: camera
       visualize: False
       x: 0.75
@@ -44,3 +44,5 @@ wamv_ball_shooter:
 wamv_pinger:
     - sensor_name: receiver
       position: 1.0 0 -1.0
+wamv_p3d:
+    - name: ground_truth_odometry
