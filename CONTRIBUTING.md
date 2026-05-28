@@ -39,6 +39,7 @@ Install dependencies:
 cd ~/pep/seaweed_ws
 rosdep install --from-paths src --ignore-src -r -y --rosdistro humble
 sudo apt install ros-humble-joint-state-publisher-gui
+sudo apt install ros-humble-nmea-navsat-driver
 cd ~/pep/seaweed_ws/src/SeaWeed
 pip install -r requirements.txt
 ```
