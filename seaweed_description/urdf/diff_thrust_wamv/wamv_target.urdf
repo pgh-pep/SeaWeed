@@ -766,7 +766,7 @@
     <parent link="camera_link"/>
     <child link="camera_link_optical"/>
   </joint>
-  <!-- Gazebo Garden RGBD Camera -->
+  <!-- Gazebo Harmonic GBD Camera -->
   <gazebo reference="camera_link">
     <visual>
       <material>
@@ -858,7 +858,7 @@
   <link name="imu_wamv_link">
     <visual name="imu_wamv_visual">
       &gt;
-        
+
       <geometry>
         <box size="0.05 0.025 0.005"/>
       </geometry>
@@ -868,7 +868,7 @@
     </visual>
     <collision name="imu_wamv_collision">
       &gt;
-        
+
       <geometry>
         <box size="0.05 0.025 0.005"/>
       </geometry>
