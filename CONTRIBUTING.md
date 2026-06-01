@@ -80,7 +80,7 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-
   | sudo tee /etc/apt/sources.list.d/gazebo-stable.list
 
 sudo apt update
-sudo apt install python3-sdformat14 ros-jazzy-xacro ros-jazzy-ros-gz-interfaces
+sudo apt install gz-harmonic python3-sdformat14 ros-jazzy-xacro ros-jazzy-ros-gz-interfaces
 ```
 
 Build w/ colcon:
