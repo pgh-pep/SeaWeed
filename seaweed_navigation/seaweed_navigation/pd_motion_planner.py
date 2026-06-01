@@ -19,7 +19,6 @@ from nav_msgs.msg import Path
 from std_msgs.msg import Float64
 from tf2_ros import Buffer, TransformListener
 from tf2_geometry_msgs import do_transform_pose
-from tf_transformations import euler_from_quaternion
 # from rclpy.qos import QoSProfile, DurabilityPolicy
 
 from seaweed_interfaces.action import MotionPlanner
@@ -321,8 +320,39 @@ class PDMotionPlanner(Node):
     def get_robot_heading(self, robot_pose: Pose) -> float:
         q = [robot_pose.orientation.x, robot_pose.orientation.y, robot_pose.orientation.z, robot_pose.orientation.w]
 
-        _, _, yaw = euler_from_quaternion(q)
+        _, _, yaw = self.quaternion_to_euler(q)
         return yaw
+
+    def quaternion_to_euler(self, q: list[float]) -> tuple[float, float, float]:
+        """
+        Convert a quaternion to Euler angles (roll, pitch, yaw).
+
+        Args:
+            q: Quaternion as [x, y, z, w]
+
+        Returns:
+            Tuple of (roll, pitch, yaw) in radians
+        """
+        x, y, z, w = q
+
+        # Roll (rotation around x-axis)
+        sinr_cosp = 2 * (w * x + y * z)
+        cosr_cosp = 1 - 2 * (x * x + y * y)
+        roll = math.atan2(sinr_cosp, cosr_cosp)
+
+        # Pitch (rotation around y-axis)
+        sinp = 2 * (w * y - z * x)
+        if abs(sinp) >= 1:
+            pitch = math.copysign(math.pi / 2, sinp)  # Gimbal lock: clamp to ±90°
+        else:
+            pitch = math.asin(sinp)
+
+        # Yaw (rotation around z-axis)
+        siny_cosp = 2 * (w * z + x * y)
+        cosy_cosp = 1 - 2 * (y * y + z * z)
+        yaw = math.atan2(siny_cosp, cosy_cosp)
+
+        return (roll, pitch, yaw)
 
     def transform_plan(self, target_frame: str = "map") -> bool:
         try:
