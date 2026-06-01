@@ -7,9 +7,9 @@
   <maintainer email="vap77@pitt.edu">varun</maintainer>
   <license>TODO: License declaration</license>
 
-    <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
-    <depend>rclpy</depend>
+  <depend>rclpy</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

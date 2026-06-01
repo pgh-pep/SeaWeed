@@ -767,7 +767,7 @@
     <parent link="camera_link"/>
     <child link="camera_link_optical"/>
   </joint>
-  <!-- Gazebo Garden RGBD Camera -->
+  <!-- Gazebo Harmonic RGBD Camera -->
   <gazebo reference="camera_link">
     <visual>
       <material>

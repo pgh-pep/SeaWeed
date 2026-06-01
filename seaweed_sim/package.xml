@@ -12,6 +12,7 @@
   <depend>rclpy</depend>
   <depend>robot_localization</depend>
   <depend>rviz_satellite</depend>
+  <depend>joint_state_publisher_gui</depend>
 
 
   <export>
