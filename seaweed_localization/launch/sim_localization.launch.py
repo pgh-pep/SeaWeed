@@ -9,8 +9,14 @@ from launch.conditions import IfCondition
 
 
 def launch_setup(context, *args, **kwargs):
+    use_lidar = LaunchConfiguration("lidar")
     localization_directory = get_package_share_directory("seaweed_localization")
     sim_localization_params = os.path.join(localization_directory, "config", "sim_localization_params.yaml")
+    if use_lidar in kwargs:
+        sim_localization_params = os.path.join(
+            localization_directory, "config", "sim_localization_params_dlio_lidar.yaml"
+        )
+        print("Using LIDAR localization parameters")
 
     # manually determined init point; turn into a ros param to pick between more worlds as needed
     world = "sydney_regatta"
@@ -86,6 +92,7 @@ def generate_launch_description():
     return LaunchDescription(
         [
             DeclareLaunchArgument("rviz", default_value="false", choices=["true", "false"]),
+            DeclareLaunchArgument("lidar", default_value="false", choices=["true", "false"]),
             OpaqueFunction(function=launch_setup),
         ]
     )
