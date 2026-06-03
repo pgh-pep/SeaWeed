@@ -1,10 +1,10 @@
 # Development Environment Setup
 
-## Installing ROS2
+## Installing ROS2 Jazzy
 
-ROS2 and the additional tools we use require Ubuntu 22.04. If you are on Windows, WSL (Windows Subsystem for Linux) is the recommended approach for development. ADD MACOS INFO.
+ROS2 and the additional tools we use require Ubuntu 24.04. If you are on Windows, WSL (Windows Subsystem for Linux) is the recommended approach for development. ADD MACOS INFO.
 
-### 1) Install Ubuntu 22.04 w/ WSL2 (If using Windows)
+### 1) Install Ubuntu 24.04 w/ WSL2 (If using Windows)
 
 Make sure Windows is up to date.
 
@@ -16,7 +16,7 @@ NOTE: WSL install instructions vary depending on Windows version. For help on an
 To install WSL2, in a PowerShell or Windows Command Prompt, run:
 
 ```powershell
-wsl --install -d Ubuntu-22.04
+wsl --install -d Ubuntu-24.04
 # If getting errors, try in another CMD:  wsl --set-default-version 2
 ```
 
@@ -49,14 +49,22 @@ Update and upgrade packages:
 sudo apt update && sudo apt upgrade -y
 ```
 
+Set locale:
+```sh
+sudo apt update && sudo apt install locales
+sudo locale-gen en_US en_US.UTF-8
+sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+export LANG=en_US.UTF-8
+```
+
 Add the ROS 2 apt repository to your system:
 
 ```sh
 sudo apt install software-properties-common
 sudo add-apt-repository universe
 sudo apt update && sudo apt install curl -y
-export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F\" '{print $4}')
-curl -L -o /tmp/ros2-apt-source.deb "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo $VERSION_CODENAME)_all.deb"
+export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F'"' '{print $4}')
+curl -L -o /tmp/ros2-apt-source.deb "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo ${UBUNTU_CODENAME:-${VERSION_CODENAME}})_all.deb"
 sudo dpkg -i /tmp/ros2-apt-source.deb
 ```
 
@@ -66,20 +74,30 @@ Update and upgrade apt repository again:
 sudo apt update && sudo apt-get upgrade -y
 ```
 
-Install ROS2 Humble:
+Install ROS2 Jazzy:
 
 ```sh
-sudo apt install ros-humble-desktop -y
+sudo apt install ros-jazzy-desktop
 ```
 
 ROS must be sourced every time the terminal is launched. Install additional dependencies and, in the `~/.bashrc` file, automatically source ROS and colcon autocompletion.
 
 ```sh
-sudo apt install python3-colcon-common-extensions python3-rosdep2 libsdl1.2-dev bash-completion nano python3-pip python-is-python3 -y
-echo "source /opt/ros/humble/setup.sh" >> ~/.bashrc
+sudo apt install python3-colcon-common-extensions python3-rosdep libsdl1.2-dev bash-completion nano python3-pip python-is-python3 -y
+echo "source /opt/ros/jazzy/setup.sh" >> ~/.bashrc
 echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> ~/.bashrc
 source ~/.bashrc
 sudo rosdep init
+rosdep update
+```
+
+## Installing Gazebo Harmonic
+
+For additional information regarding the Gazebo versions, URDFs, bridges & related topics, visit the [PEP Docs](https://github.com/pgh-pep/pep_resources/blob/main/Simulation/gazebo.md).
+
+Install Gazebo Harmonic:
+```sh
+sudo apt install ros-jazzy-ros-gz
 ```
 
 ## Git Setup
@@ -104,40 +122,5 @@ cat ~/.ssh/id_ed25519.pub
 
 Add the key to your [github account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account): `Settings > SSH and GPG Keys > New SSH Key`
 
-## Installing Gazebo Garden
-
-For additional information regarding the Gazebo versions, URDFs, bridges & related topics, visit the [PEP Docs](https://github.com/pgh-pep/pep_resources/blob/main/Simulation/gazebo.md).
-
-If you already have ROS2 Humble installed, you might already have Gazebo 11 and Gazebo/Ignition Fortress installed. We need to remove conflicting Gazebo versions first to prevent library conflicts:
-
-```sh
-sudo apt remove ign*
-sudo apt-get remove gazebo*
-```
-
-Install necessary dependencies:
-
-```sh
-sudo apt-get update
-sudo apt-get install lsb-release curl gnupg
-```
-
-Install Gazebo Garden:
-
-```sh
-sudo curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null
-sudo apt update
-sudo apt install gz-garden ros-humble-ros-gzgarden ros-humble-xacro python3-sdformat13
-```
-
-Reinstall Gazebo 11 (if desired):
-
-```sh
-sudo add-apt-repository ppa:openrobotics/gazebo11-gz-cli
-sudo apt update
-sudo apt install gazebo11
-sudo apt install ros-humble-gazebo-ros-pkgs
-```
 
 Once all dependencies are installed, [`CONTRIBUTION.md`](https://github.com/pgh-pep/SeaWeed/blob/main/CONTRIBUTING.md) has build instructions.
