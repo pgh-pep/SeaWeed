@@ -37,10 +37,9 @@ Install dependencies:
 
 ```sh
 cd ~/pep/seaweed_ws
-rosdep install --from-paths src --ignore-src -r -y --rosdistro humble
-sudo apt install ros-humble-joint-state-publisher-gui
+rosdep install --from-paths src --ignore-src -r -y --rosdistro jazzy
 cd ~/pep/seaweed_ws/src/SeaWeed
-pip install -r requirements.txt
+pip install -r requirements.txt --break-system-packages
 ```
 
 Builld w/ colcon (Always build in the workspace directory):
@@ -67,19 +66,27 @@ To add simulation capabilities, clone the VRX simulator: (Currently not implemen
 ```sh
 mkdir -p ~/pep/vrx_ws/src
 cd ~/pep/vrx_ws/src
-git clone git@github.com:pgh-pep/vrx.git --branch humble
+git clone git@github.com:pgh-pep/vrx.git --branch pep_jazzy
 ```
 
 Install VRX dependencies:
 
 ```sh
-cd ~/pep/vrx_ws
-rosdep install --from-paths src --ignore-src -r -y --rosdistro humble
+sudo curl -sSL https://packages.osrfoundation.org/gazebo.gpg \
+  -o /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] \
+  http://packages.osrfoundation.org/gazebo/ubuntu-stable noble main" \
+  | sudo tee /etc/apt/sources.list.d/gazebo-stable.list
+
+sudo apt update
+sudo apt install gz-harmonic python3-sdformat14 ros-jazzy-xacro ros-jazzy-ros-gz-interfaces
 ```
 
 Build w/ colcon:
 
 ```sh
+cd ~/pep/vrx_ws
 colcon build --merge-install
 ```
 
@@ -90,6 +97,7 @@ You can either manually source the workspaces every time you launch a new termin
 ```sh
 echo "source ~/pep/seaweed_ws/install/setup.bash" >> ~/.bashrc
 echo "source ~/pep/vrx_ws/install/setup.bash" >> ~/.bashrc
+source ~/.bashrc
 ```
 
 ### Checking Installation
