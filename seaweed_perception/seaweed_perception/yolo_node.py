@@ -75,7 +75,6 @@ class YOLONode(Node):
         self.latest_image_stamp: Time | None = None
         self.height: int = 0
         self.width: int = 0
-        
 
         self.device = "cuda" if self.use_cuda and torch.cuda.is_available() else "cpu"
 

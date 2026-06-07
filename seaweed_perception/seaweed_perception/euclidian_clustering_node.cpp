@@ -204,7 +204,8 @@ void EuclidianClusteringNode::scaled_euclidian_clustering(pcl::PointCloud<pcl::P
     }
 }
 
-void EuclidianClusteringNode::publish_clusters(const std::vector<perception_utils::Point>& clusters, rclcpp::Time stamp) {
+void EuclidianClusteringNode::publish_clusters(const std::vector<perception_utils::Point>& clusters,
+                                               rclcpp::Time stamp) {
     geometry_msgs::msg::PoseArray msg;
     msg.header.frame_id = base_link;
     msg.header.stamp = stamp;

@@ -2,9 +2,7 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, OpaqueFunction, IncludeLaunchDescription
-from launch.substitutions import LaunchConfiguration
-from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.actions import OpaqueFunction
 from launch_ros.actions import Node
 
 
@@ -33,7 +31,7 @@ def launch_setup(context, *args, **kwargs):
         package="seaweed_perception",
         executable="bbox_projection_node",
         name="bbox_projection_node",
-        parameters=[{'use_sim_time': True}],
+        parameters=[{"use_sim_time": True}],
         output="screen",
     )
 

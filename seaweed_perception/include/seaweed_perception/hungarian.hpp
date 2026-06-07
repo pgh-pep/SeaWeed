@@ -10,16 +10,13 @@
 #include <algorithm>
 #include <vector>
 
-struct HungarianResult
-{
-    std::vector<int> row_to_col; // row_to_col[i] = assigned column for row i, -1 if unmatched
-    std::vector<int> col_to_row; // col_to_row[j] = assigned row for column j, -1 if unmatched
+struct HungarianResult {
+    std::vector<int> row_to_col;  // row_to_col[i] = assigned column for row i, -1 if unmatched
+    std::vector<int> col_to_row;  // col_to_row[j] = assigned row for column j, -1 if unmatched
 };
 
-inline HungarianResult hungarian_solve(const std::vector<std::vector<float>> &cost, float max_cost = 1e9f)
-{
-    if (cost.empty() || cost[0].empty())
-    {
+inline HungarianResult hungarian_solve(const std::vector<std::vector<float>> &cost, float max_cost = 1e9f) {
+    if (cost.empty() || cost[0].empty()) {
         return {{}, {}};
     }
 
@@ -31,10 +28,8 @@ inline HungarianResult hungarian_solve(const std::vector<std::vector<float>> &co
 
     // fill square matrix with inf to pad
     std::vector<std::vector<float>> c(n, std::vector<float>(n, INF));
-    for (int i = 0; i < rows; ++i)
-    {
-        for (int j = 0; j < cols; ++j)
-        {
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
             c[i][j] = cost[i][j];
         }
     }
@@ -48,48 +43,38 @@ inline HungarianResult hungarian_solve(const std::vector<std::vector<float>> &co
     // way[j] = previous column
     std::vector<int> way(n + 1, 0);
 
-    for (int i = 1; i <= n; ++i)
-    {
+    for (int i = 1; i <= n; ++i) {
         p[0] = i;
         int j0 = 0;
 
         std::vector<float> minv(n + 1, INF);
         std::vector<bool> used(n + 1, false);
 
-        do
-        {
+        do {
             used[j0] = true;
             int i0 = p[j0];
             int j1 = 0;
             float delta = INF;
 
-            for (int j = 1; j <= n; ++j)
-            {
-                if (!used[j])
-                {
+            for (int j = 1; j <= n; ++j) {
+                if (!used[j]) {
                     float cur = c[i0 - 1][j - 1] - u[i0] - v[j];
-                    if (cur < minv[j])
-                    {
+                    if (cur < minv[j]) {
                         minv[j] = cur;
                         way[j] = j0;
                     }
-                    if (minv[j] < delta)
-                    {
+                    if (minv[j] < delta) {
                         delta = minv[j];
                         j1 = j;
                     }
                 }
             }
 
-            for (int j = 0; j <= n; ++j)
-            {
-                if (used[j])
-                {
+            for (int j = 0; j <= n; ++j) {
+                if (used[j]) {
                     u[p[j]] += delta;
                     v[j] -= delta;
-                }
-                else
-                {
+                } else {
                     minv[j] -= delta;
                 }
             }
@@ -97,8 +82,7 @@ inline HungarianResult hungarian_solve(const std::vector<std::vector<float>> &co
             j0 = j1;
         } while (p[j0] != 0);
 
-        do
-        {
+        do {
             int j1 = way[j0];
             p[j0] = p[j1];
             j0 = j1;
@@ -109,15 +93,12 @@ inline HungarianResult hungarian_solve(const std::vector<std::vector<float>> &co
     result.row_to_col.assign(rows, -1);
     result.col_to_row.assign(cols, -1);
 
-    for (int j = 1; j <= n; ++j)
-    {
+    for (int j = 1; j <= n; ++j) {
         int i = p[j] - 1;
         int col = j - 1;
 
-        if (i >= 0 && i < rows && col < cols)
-        {
-            if (cost[i][col] <= max_cost)
-            {
+        if (i >= 0 && i < rows && col < cols) {
+            if (cost[i][col] <= max_cost) {
                 result.row_to_col[i] = col;
                 result.col_to_row[col] = i;
             }
