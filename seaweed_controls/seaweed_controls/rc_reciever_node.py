@@ -51,7 +51,6 @@ class RCRecieverNode(Node):
 
         self.get_logger().info(f"Serial ESP on {self.serial_port} @ {BAUD_RATE}")
 
-
     def parse_packet(self, packet: str) -> Dict[Channels, float] | None:
         # expected packet: "CH1, CH2 ... CH16, failsafe, frame_lost"
         try:
