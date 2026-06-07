@@ -32,4 +32,3 @@ ros2 launch vrx_gazebo generate_wamv.launch.py component_yaml:=`pwd`/src/SeaWeed
 
 
 ros2 launch vrx_gazebo generate_wamv.launch.py component_yaml:=`pwd`/src/asne/asne_pkg/urdf/single_thrust_component_config.yaml thruster_yaml:=`pwd`/src/asne/asne_pkg/urdf/single_thrust_thruster_config.yaml wamv_target:=`pwd`/src/asne/asne_pkg/urdf/wamv_target.urdf wamv_locked:=False
-
