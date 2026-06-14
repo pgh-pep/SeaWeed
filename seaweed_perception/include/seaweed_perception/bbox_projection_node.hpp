@@ -1,11 +1,11 @@
 #pragma once
 
-#include <cv_bridge/cv_bridge.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
 #include <algorithm>
 #include <cmath>
+#include <cv_bridge/cv_bridge.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <limits>

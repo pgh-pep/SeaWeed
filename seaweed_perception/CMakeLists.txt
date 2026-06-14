@@ -1,11 +1,12 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.12)
 project(seaweed_perception)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-cmake_policy(SET CMP0074 NEW)
+set(CMAKE_POLICY_DEFAULT_CMP0074 NEW)
+set(CMAKE_POLICY_DEFAULT_CMP0144 NEW)
 
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
@@ -36,7 +37,6 @@ ament_auto_add_executable(
 )
 
 install(TARGETS
-    perception_utils
     euclidian_clustering_node
     bbox_projection_node
     DESTINATION lib/${PROJECT_NAME}

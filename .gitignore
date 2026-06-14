@@ -20,6 +20,10 @@ log/*
 .vscode
 .clang-tidy
 
+frames*
+*.log
+*.logs
+
 basic_sim_readings/*
 moving_basic_sim_readings/*
 stationary_basic_sim_readings/*

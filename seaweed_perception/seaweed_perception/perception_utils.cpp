@@ -75,7 +75,7 @@ void pcl_to_ros(const pcl::PointCloud<pcl::PointXYZ>::Ptr& pc_pcl,
 
 void transform_pc(const pcl::PointCloud<pcl::PointXYZ>::Ptr& original_pc,
                   pcl::PointCloud<pcl::PointXYZ>::Ptr& transformed_pc, const std::string& target_frame,
-                  std::shared_ptr<tf2_ros::Buffer> tf_buffer, rclcpp::Logger logger) {
+                  const std::shared_ptr<tf2_ros::Buffer>& tf_buffer, rclcpp::Logger logger) {
     try {
         geometry_msgs::msg::TransformStamped tf_stamped = tf_buffer->lookupTransform(
             target_frame, original_pc->header.frame_id, rclcpp::Time{}, rclcpp::Duration::from_seconds(1.0));
@@ -183,7 +183,7 @@ void reset_markers(const std::string& frame, std::string ns,
 bool transform_labeled_pose(const seaweed_interfaces::msg::LabeledPose& original_pose,
                             seaweed_interfaces::msg::LabeledPose& transformed_pose,
                             const std::string& target_frame, const std::string& source_frame,
-                            std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger,
+                            const std::shared_ptr<tf2_ros::Buffer>& tf_buffer, const rclcpp::Logger& logger,
                             const rclcpp::Time& stamp) {
     try {
         geometry_msgs::msg::TransformStamped tf_stamped =
@@ -201,8 +201,9 @@ bool transform_labeled_pose(const seaweed_interfaces::msg::LabeledPose& original
 
 bool transform_labeled_pose_array(const seaweed_interfaces::msg::LabeledPoseArray& original_pose_array,
                                   seaweed_interfaces::msg::LabeledPoseArray& transformed_pose_array,
-                                  const std::string& target_frame, std::shared_ptr<tf2_ros::Buffer> tf_buffer,
-                                  const rclcpp::Logger& logger, const rclcpp::Time& stamp) {
+                                  const std::string& target_frame,
+                                  const std::shared_ptr<tf2_ros::Buffer>& tf_buffer, const rclcpp::Logger& logger,
+                                  const rclcpp::Time& stamp) {
     try {
         geometry_msgs::msg::TransformStamped tf_stamped = tf_buffer->lookupTransform(
             target_frame, original_pose_array.header.frame_id, stamp, rclcpp::Duration::from_seconds(0.1));
@@ -227,7 +228,7 @@ bool transform_labeled_pose_array(const seaweed_interfaces::msg::LabeledPoseArra
 
 bool transform_pose(const geometry_msgs::msg::PoseStamped& original_pose,
                     geometry_msgs::msg::PoseStamped& transformed_pose, const std::string& target_frame,
-                    std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger,
+                    const std::shared_ptr<tf2_ros::Buffer>& tf_buffer, const rclcpp::Logger& logger,
                     const rclcpp::Time& stamp) {
     try {
         geometry_msgs::msg::TransformStamped tf_stamped = tf_buffer->lookupTransform(
@@ -243,7 +244,7 @@ bool transform_pose(const geometry_msgs::msg::PoseStamped& original_pose,
 }
 bool transform_pose_array(const geometry_msgs::msg::PoseArray& original_pose_array,
                           geometry_msgs::msg::PoseArray& transformed_pose_array, const std::string& target_frame,
-                          std::shared_ptr<tf2_ros::Buffer> tf_buffer, const rclcpp::Logger& logger,
+                          const std::shared_ptr<tf2_ros::Buffer>& tf_buffer, const rclcpp::Logger& logger,
                           const rclcpp::Time& stamp) {
     try {
         geometry_msgs::msg::TransformStamped tf_stamped = tf_buffer->lookupTransform(
@@ -263,6 +264,27 @@ bool transform_pose_array(const geometry_msgs::msg::PoseArray& original_pose_arr
     } catch (const tf2::TransformException& ex) {
         RCLCPP_ERROR(logger, "failed pose array transform: %s", ex.what());
         return false;
+    }
+}
+
+std::optional<geometry_msgs::msg::Pose> get_robot_pose(const std::string& target_frame,
+                                                       const std::string& robot_frame,
+                                                       const std::shared_ptr<tf2_ros::Buffer>& tf_buffer,
+                                                       const rclcpp::Logger& logger, const rclcpp::Time& stamp) {
+    try {
+        geometry_msgs::msg::TransformStamped tf_stamped =
+            tf_buffer->lookupTransform(target_frame, robot_frame, stamp, rclcpp::Duration::from_seconds(0.1));
+
+        geometry_msgs::msg::Pose pose;
+        pose.position.x = tf_stamped.transform.translation.x;
+        pose.position.y = tf_stamped.transform.translation.y;
+        pose.position.z = tf_stamped.transform.translation.z;
+        pose.orientation = tf_stamped.transform.rotation;
+        return pose;
+    } catch (const tf2::TransformException& ex) {
+        RCLCPP_ERROR(logger, "failed to get pose of %s in %s: %s", robot_frame.c_str(), target_frame.c_str(),
+                     ex.what());
+        return std::nullopt;
     }
 }
 
