@@ -10,15 +10,9 @@ def generate_launch_description():
 
     # Set default arguments
     rviz = LaunchConfiguration('rviz', default='false')
-    pointcloud_topic = LaunchConfiguration('pointcloud_topic', default='points_raw')
-    imu_topic = LaunchConfiguration('imu_topic', default='imu_raw')
+    pointcloud_topic = LaunchConfiguration('pointcloud_topic', default='/wamv/sensors/lidars/lidar_wamv_sensor/points')
+    imu_topic = LaunchConfiguration('imu_topic', default='/wamv/sensors/imu/imu/data')
 
-    # Define arguments
-    declare_rviz_arg = DeclareLaunchArgument(
-        'rviz',
-        default_value=rviz,
-        description='Launch RViz'
-    )
     declare_pointcloud_topic_arg = DeclareLaunchArgument(
         'pointcloud_topic',
         default_value=pointcloud_topic,
@@ -63,9 +57,33 @@ def generate_launch_description():
         ],
     )
 
+    static_dlio_transform_publisher_node = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        name="static_odom_to_dlio_odom_publisher",
+        arguments=[
+            "--x",
+            "0",
+            "--y",
+            "0",
+            "--z",
+            "0",
+            "--roll",
+            "0",
+            "--pitch",
+            "0",
+            "--yaw",
+            "1.57",
+            "--frame-id",
+            "odom",
+            "--child-frame-id",
+            "dlio_odom",
+        ],
+    )
+
     return LaunchDescription([
-        declare_rviz_arg,
         declare_pointcloud_topic_arg,
+        static_dlio_transform_publisher_node,
         declare_imu_topic_arg,
         dlio_odom_node,
         dlio_map_node,

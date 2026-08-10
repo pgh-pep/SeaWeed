@@ -71,7 +71,8 @@ def launch_setup(context, *args, **kwargs):
         parameters=[sim_localization_params],
     )
 
-    # Assume no sensor drift
+    # Assume no sensor drift. Yaw matches the boat's spawn heading (see spawn_pose above),
+    # since DLIO's odom frame is anchored to the vehicle's pose at the first scan.
     static_transform_publisher_node = Node(
         package="tf2_ros",
         executable="static_transform_publisher",
@@ -88,7 +89,7 @@ def launch_setup(context, *args, **kwargs):
             "--pitch",
             "0",
             "--yaw",
-            "0",
+            "1.57",
             "--frame-id",
             "map",
             "--child-frame-id",
