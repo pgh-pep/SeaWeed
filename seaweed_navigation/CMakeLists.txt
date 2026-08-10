@@ -12,7 +12,9 @@ ament_python_install_package(${PROJECT_NAME})
 
 # Python Nodes:
 install(PROGRAMS
-    # ${PROJECT_NAME}/my_node.py
+    ${PROJECT_NAME}/navigation_manager.py
+    ${PROJECT_NAME}/test_map_generator.py
+    ${PROJECT_NAME}/pd_motion_planner.py
     DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -33,5 +35,5 @@ install(TARGETS
 
 ament_auto_package(
     USE_SCOPED_HEADER_INSTALL_DIR
-    INSTALL_TO_SHARE launch config
+    INSTALL_TO_SHARE launch config rviz
 )
