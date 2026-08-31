@@ -33,7 +33,7 @@ cd $PEP_DIR/seaweed_ws/ && rosdep install --from-paths src --ignore-src -r -y
 
 echo "Installing additional dependencies..."
 sudo apt install libomp-dev libpcl-dev libeigen3-dev
-cd $PEP_DIR/seaweed_ws/src/SeaWeed && pip install -r requirements.txt
+cd $PEP_DIR/seaweed_ws/src/SeaWeed && pip install -r requirements.txt --break-system-packages
 
 echo "Building source packages..."
 cd $PEP_DIR/src_deps/vrx_ws/ && colcon build --merge-install
