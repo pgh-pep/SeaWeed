@@ -15,38 +15,25 @@ If you need help setting up ROS, Gazebo, Git, or other dependencies, please see 
 │   └───src
 │       └───SeaWeed (Clone HERE)
 │       └───external packages (ex. zed_wrapper, ros-drivers, can be added late
-└───vrx_ws       (colcon build HERE)
-│   └───build    (auto-generated w/ colcon)
-│   └───install  (auto-generated w/ colcon)
-│   └───log      (auto-generated w/ colcon)
-│   └───src
-│       └───vrx    (Clone HERE)
+└───src_deps
+    └───vrx_ws       (colcon build HERE)
+        └───build    (auto-generated w/ colcon)
+        └───install  (auto-generated w/ colcon)
+        └───log      (auto-generated w/ colcon)
+        └───src
+            └───vrx    (Clone HERE)
+    └───velodyne_ws
+        └───src
+        └───...
+    └───...
+      
 ```
 
-### Installing SeaWeed
+## Installing SeaWeed workspace and source dependencies
 
-Clone the SeaWeed repository:
-
+To generate the file structure shown above, run:
 ```sh
-mkdir -p ~/pep/seaweed_ws/src
-cd ~/pep/seaweed_ws/src
-git clone git@github.com:pgh-pep/SeaWeed.git
-```
-
-Install dependencies:
-
-```sh
-cd ~/pep/seaweed_ws
-rosdep install --from-paths src --ignore-src -r -y --rosdistro jazzy
-cd ~/pep/seaweed_ws/src/SeaWeed
-pip install -r requirements.txt --break-system-packages
-```
-
-Builld w/ colcon (Always build in the workspace directory):
-
-```sh
-cd ~/pep/seaweed_ws
-colcon build --symlink-install --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+curl -fsSl https://raw.githubusercontent.com/pgh-pep/SeaWeed/refs/heads/ws_setup_docs/setup.sh | bash
 ```
 
 ### Colcon and IntelliSense
@@ -57,37 +44,6 @@ Likewise, with `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`, we are configuring VSCode's
 
 ```sh
 "compileCommands": "~/pep/seaweed_ws/build/compile_commands.json"
-```
-
-### Installing VRX Simulator
-
-To add simulation capabilities, clone the VRX simulator: (Currently not implemented for MacOS)
-
-```sh
-mkdir -p ~/pep/vrx_ws/src
-cd ~/pep/vrx_ws/src
-git clone git@github.com:pgh-pep/vrx.git --branch pep_jazzy
-```
-
-Install VRX dependencies:
-
-```sh
-sudo curl -sSL https://packages.osrfoundation.org/gazebo.gpg \
-  -o /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg
-
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] \
-  http://packages.osrfoundation.org/gazebo/ubuntu-stable noble main" \
-  | sudo tee /etc/apt/sources.list.d/gazebo-stable.list
-
-sudo apt update
-sudo apt install gz-harmonic python3-sdformat14 ros-jazzy-xacro ros-jazzy-ros-gz-interfaces
-```
-
-Build w/ colcon:
-
-```sh
-cd ~/pep/vrx_ws
-colcon build --merge-install
 ```
 
 ### Sourcing Workspaces
