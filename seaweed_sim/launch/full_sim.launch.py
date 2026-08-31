@@ -46,8 +46,8 @@ def launch_setup(context, *args, **kwargs):
     )
 
     # LOCALIZATION
-    use_dlio = LaunchConfiguration('use_dlio')
-    sim_localization_file = "sim_localization_params_dlio_lidar.yaml" if use_dlio else "sim_localization_params.yaml"
+    use_dlio = context.perform_substitution(LaunchConfiguration('use_dlio'))
+    sim_localization_file = "sim_localization_params_dlio_lidar.yaml" if use_dlio == "true" else "sim_localization_params.yaml"
     sim_localization_params = os.path.join(localization_directory, "config", sim_localization_file)
 
     world = "sydney_regatta"
