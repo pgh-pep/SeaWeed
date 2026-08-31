@@ -46,7 +46,9 @@ def launch_setup(context, *args, **kwargs):
     )
 
     # LOCALIZATION
-    sim_localization_params = os.path.join(localization_directory, "config", "sim_localization_params_dlio_lidar.yaml")
+    use_dlio = LaunchConfiguration('use_dlio')
+    sim_localization_file = "sim_localization_params_dlio_lidar.yaml" if use_dlio else "sim_localization_params.yaml"
+    sim_localization_params = os.path.join(localization_directory, "config", sim_localization_file)
 
     world = "sydney_regatta"
     # manually determined init point; turn into a ros param to pick between more worlds as needed
@@ -139,6 +141,11 @@ def generate_launch_description():
         default_value="true",
     )
 
+    dlio_arg = DeclareLaunchArgument(
+        name="use_dlio",
+        default_value="false",
+    )
+
     use_gui_arg = DeclareLaunchArgument(name="use_gui", default_value="true")  # unused
     rviz_arg = DeclareLaunchArgument("rviz", default_value="true", choices=["true", "false"])
 
@@ -148,6 +155,7 @@ def generate_launch_description():
             use_sim_time_arg,
             use_gui_arg,
             world_arg,
+            dlio_arg,
             rviz_arg,
             OpaqueFunction(function=launch_setup),
         ]
