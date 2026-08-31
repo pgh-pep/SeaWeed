@@ -1,10 +1,10 @@
 /**:
   ros__parameters:
     use_sim_time: true
-    frames/odom: dlio_odom
+    frames/odom: odom
     frames/baselink: wamv/base_link
-    frames/lidar: lidar
-    frames/imu: imu
+    frames/lidar: wamv/base_link/lidar_wamv_sensor
+    frames/imu: wamv/imu_wamv_link
 
     map/waitUntilMove: true
     map/dense/filtered: false

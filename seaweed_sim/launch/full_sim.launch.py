@@ -46,7 +46,7 @@ def launch_setup(context, *args, **kwargs):
     )
 
     # LOCALIZATION
-    sim_localization_params = os.path.join(localization_directory, "config", "sim_localization_params.yaml")
+    sim_localization_params = os.path.join(localization_directory, "config", "sim_localization_params_dlio_lidar.yaml")
 
     world = "sydney_regatta"
     # manually determined init point; turn into a ros param to pick between more worlds as needed
@@ -114,10 +114,9 @@ def launch_setup(context, *args, **kwargs):
         vrx_sim_launch,
         ekf_node,
         navsat_transform_node,
-        static_transform_publisher_node,
+        # static_transform_publisher_node,
         rviz,
     ]
-
 
 def generate_launch_description():
     robot_model_arg = DeclareLaunchArgument(

@@ -25,8 +25,8 @@ def generate_launch_description():
     )
 
     # Load parameters
-    dlio_yaml_path = PathJoinSubstitution([current_pkg, 'config', 'dlio_config.yaml'])
-    dlio_params_yaml_path = PathJoinSubstitution([current_pkg, 'config', 'dlio_params.yaml'])
+    dlio_yaml_path = PathJoinSubstitution([current_pkg, 'config', 'dlio_sim_config.yaml'])
+    dlio_params_yaml_path = PathJoinSubstitution([current_pkg, 'config', 'dlio_sim_params.yaml'])
 
     # DLIO Odometry Node
     dlio_odom_node = Node(
@@ -57,33 +57,8 @@ def generate_launch_description():
         ],
     )
 
-    static_dlio_transform_publisher_node = Node(
-        package="tf2_ros",
-        executable="static_transform_publisher",
-        name="static_odom_to_dlio_odom_publisher",
-        arguments=[
-            "--x",
-            "0",
-            "--y",
-            "0",
-            "--z",
-            "0",
-            "--roll",
-            "0",
-            "--pitch",
-            "0",
-            "--yaw",
-            "1.57",
-            "--frame-id",
-            "odom",
-            "--child-frame-id",
-            "dlio_odom",
-        ],
-    )
-
     return LaunchDescription([
         declare_pointcloud_topic_arg,
-        static_dlio_transform_publisher_node,
         declare_imu_topic_arg,
         dlio_odom_node,
         dlio_map_node,
