@@ -1,7 +1,7 @@
 #!/bin/bash
 if [ -z $1 ]; then
    echo "No parent folder argument. Defaulting to ~/pep..."
-   PEP_DIR="~/pep"
+   PEP_DIR="/home/$USER/pep"
 else
    PEP_DIR=$1
 fi
