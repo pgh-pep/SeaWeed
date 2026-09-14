@@ -23,6 +23,7 @@ def launch_setup(context, *args, **kwargs):
     os.environ["GZ_SIM_RESOURCE_PATH"] = f"{local_world_directory}:{resource_path}:{vrx_worlds_directory}"
 
     model = context.perform_substitution(LaunchConfiguration("model"))
+    headless = context.perform_substitution(LaunchConfiguration("headless"))
 
     match model:
         case "x_drive":
@@ -39,6 +40,7 @@ def launch_setup(context, *args, **kwargs):
         launch_arguments={
             "world": world,
             "urdf": model_path,
+            "headless": headless,
             "extra_gz_args": "-v 0",  # verbose levels from 0 to 4
             # "spawn_pose": "-532.0,162.0,0.0,0.0,0.0,1.0",  # Original spawn point for sydney_regatta
             "spawn_pose": "-520.0,180.0,0.0,0.0,0.0,1.57",  # Original spawn point for sydney_regatta
@@ -144,6 +146,11 @@ def generate_launch_description():
     dlio_arg = DeclareLaunchArgument(
         name="use_dlio",
         default_value="false",
+    )
+
+    headless_arg = DeclareLaunchArgument(
+        name="headless",
+        default_value="false"
     )
 
     use_gui_arg = DeclareLaunchArgument(name="use_gui", default_value="true")  # unused
