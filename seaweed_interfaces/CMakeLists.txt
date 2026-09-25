@@ -10,12 +10,16 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(std_msgs REQUIRED)
 ament_auto_find_build_dependencies()
 
-rosidl_generate_interfaces(${PROJECT_NAME}
+find_package(rosidl_default_generators REQUIRED)
 
+rosidl_generate_interfaces(${PROJECT_NAME}
+    "action/MotionPlanner.action"
     "msg/Detection.msg"
     "msg/BoundingBox.msg"
     "msg/RCcontroller.msg"
     DEPENDENCIES
+    geometry_msgs
+    nav_msgs
     std_msgs
 )
 

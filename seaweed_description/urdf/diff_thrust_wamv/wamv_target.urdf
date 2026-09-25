@@ -675,6 +675,7 @@
       <use_pose_vector_msg>true</use_pose_vector_msg>
       <static_publisher>false</static_publisher>
       <static_update_frequency>1</static_update_frequency>
+      <update_frequency>30</update_frequency>
     </plugin>
     <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
     </plugin>
@@ -783,7 +784,7 @@
       </material>
     </visual>
     <sensor name="camera_sensor" type="rgbd_camera">
-      <update_rate>30.0</update_rate>
+      <update_rate>2.0</update_rate>
       <camera name="camera_camera">
         <horizontal_fov>1.91986</horizontal_fov>
         <image>
@@ -1056,7 +1057,7 @@
       </material>
     </visual>
     <sensor name="lidar_wamv_sensor" type="gpu_ray">
-      <update_rate>10</update_rate>
+      <update_rate>2</update_rate>
       <ray>
         <scan>
           <horizontal>

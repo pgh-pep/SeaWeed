@@ -1,0 +1,5 @@
+nav_msgs/Path path
+---
+geometry_msgs/Pose final_pose
+---
+float64 distance_to_goal

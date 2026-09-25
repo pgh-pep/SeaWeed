@@ -23,6 +23,9 @@ def launch_setup(context, *args, **kwargs):
     os.environ["GZ_SIM_RESOURCE_PATH"] = f"{local_world_directory}:{resource_path}:{vrx_worlds_directory}"
 
     model = context.perform_substitution(LaunchConfiguration("model"))
+    headless = context.perform_substitution(LaunchConfiguration("headless"))
+
+    nodes = []
 
     match model:
         case "x_drive":
@@ -39,6 +42,7 @@ def launch_setup(context, *args, **kwargs):
         launch_arguments={
             "world": world,
             "urdf": model_path,
+            "headless": headless,
             "extra_gz_args": "-v 0",  # verbose levels from 0 to 4
             # "spawn_pose": "-532.0,162.0,0.0,0.0,0.0,1.0",  # Original spawn point for sydney_regatta
             "spawn_pose": "-520.0,180.0,0.0,0.0,0.0,1.57",  # Original spawn point for sydney_regatta
@@ -46,7 +50,9 @@ def launch_setup(context, *args, **kwargs):
     )
 
     # LOCALIZATION
-    sim_localization_params = os.path.join(localization_directory, "config", "sim_localization_params.yaml")
+    use_dlio = context.perform_substitution(LaunchConfiguration('use_dlio')) == "true"
+    sim_localization_file = "sim_localization_params_dlio_lidar.yaml" if use_dlio else "sim_localization_params.yaml"
+    sim_localization_params = os.path.join(localization_directory, "config", sim_localization_file)
 
     world = "sydney_regatta"
     # manually determined init point; turn into a ros param to pick between more worlds as needed
@@ -71,30 +77,33 @@ def launch_setup(context, *args, **kwargs):
         parameters=[sim_localization_params],
     )
 
-    # Assume no sensor drift
-    static_transform_publisher_node = Node(
-        package="tf2_ros",
-        executable="static_transform_publisher",
-        name="static_map_to_odom_publisher",
-        arguments=[
-            "--x",
-            "0",
-            "--y",
-            "0",
-            "--z",
-            "0",
-            "--roll",
-            "0",
-            "--pitch",
-            "0",
-            "--yaw",
-            "0",
-            "--frame-id",
-            "map",
-            "--child-frame-id",
-            "odom",
-        ],
-    )
+    if not use_dlio:
+        # Assume no sensor drift. Yaw matches the boat's spawn heading (see spawn_pose above),
+        # since DLIO's odom frame is anchored to the vehicle's pose at the first scan.
+        static_transform_publisher_node = Node(
+            package="tf2_ros",
+            executable="static_transform_publisher",
+            name="static_map_to_odom_publisher",
+            arguments=[
+                "--x",
+                "0",
+                "--y",
+                "0",
+                "--z",
+                "0",
+                "--roll",
+                "0",
+                "--pitch",
+                "0",
+                "--yaw",
+                "1.57",
+                "--frame-id",
+                "map",
+                "--child-frame-id",
+                "odom",
+            ],
+        )
+        nodes.append(static_transform_publisher_node)
 
     # VISUALIZATION/TESTING
     rviz_config_file = os.path.join(sim_directory, "rviz", "gazebo_full.rviz")
@@ -109,14 +118,15 @@ def launch_setup(context, *args, **kwargs):
         condition=IfCondition(LaunchConfiguration("rviz")),
     )
 
-    return [
+    nodes.extend([
         vrx_sim_launch,
         ekf_node,
         navsat_transform_node,
-        static_transform_publisher_node,
+        # static_transform_publisher_node,
         rviz,
-    ]
+    ])
 
+    return nodes
 
 def generate_launch_description():
     robot_model_arg = DeclareLaunchArgument(
@@ -139,6 +149,16 @@ def generate_launch_description():
         default_value="true",
     )
 
+    dlio_arg = DeclareLaunchArgument(
+        name="use_dlio",
+        default_value="false",
+    )
+
+    headless_arg = DeclareLaunchArgument(
+        name="headless",
+        default_value="false"
+    )
+
     use_gui_arg = DeclareLaunchArgument(name="use_gui", default_value="true")  # unused
     rviz_arg = DeclareLaunchArgument("rviz", default_value="true", choices=["true", "false"])
 
@@ -146,8 +166,10 @@ def generate_launch_description():
         [
             robot_model_arg,
             use_sim_time_arg,
+            headless_arg,
             use_gui_arg,
             world_arg,
+            dlio_arg,
             rviz_arg,
             OpaqueFunction(function=launch_setup),
         ]
