@@ -25,6 +25,8 @@ def launch_setup(context, *args, **kwargs):
     model = context.perform_substitution(LaunchConfiguration("model"))
     headless = context.perform_substitution(LaunchConfiguration("headless"))
 
+    nodes = []
+
     match model:
         case "x_drive":
             model_path = os.path.join(description_directory, "urdf", "x_drive_wamv", "wamv_target.urdf")
@@ -48,8 +50,8 @@ def launch_setup(context, *args, **kwargs):
     )
 
     # LOCALIZATION
-    use_dlio = context.perform_substitution(LaunchConfiguration('use_dlio'))
-    sim_localization_file = "sim_localization_params_dlio_lidar.yaml" if use_dlio == "true" else "sim_localization_params.yaml"
+    use_dlio = context.perform_substitution(LaunchConfiguration('use_dlio')) == "true"
+    sim_localization_file = "sim_localization_params_dlio_lidar.yaml" if use_dlio else "sim_localization_params.yaml"
     sim_localization_params = os.path.join(localization_directory, "config", sim_localization_file)
 
     world = "sydney_regatta"
@@ -75,31 +77,33 @@ def launch_setup(context, *args, **kwargs):
         parameters=[sim_localization_params],
     )
 
-    # Assume no sensor drift. Yaw matches the boat's spawn heading (see spawn_pose above),
-    # since DLIO's odom frame is anchored to the vehicle's pose at the first scan.
-    static_transform_publisher_node = Node(
-        package="tf2_ros",
-        executable="static_transform_publisher",
-        name="static_map_to_odom_publisher",
-        arguments=[
-            "--x",
-            "0",
-            "--y",
-            "0",
-            "--z",
-            "0",
-            "--roll",
-            "0",
-            "--pitch",
-            "0",
-            "--yaw",
-            "1.57",
-            "--frame-id",
-            "map",
-            "--child-frame-id",
-            "odom",
-        ],
-    )
+    if not use_dlio:
+        # Assume no sensor drift. Yaw matches the boat's spawn heading (see spawn_pose above),
+        # since DLIO's odom frame is anchored to the vehicle's pose at the first scan.
+        static_transform_publisher_node = Node(
+            package="tf2_ros",
+            executable="static_transform_publisher",
+            name="static_map_to_odom_publisher",
+            arguments=[
+                "--x",
+                "0",
+                "--y",
+                "0",
+                "--z",
+                "0",
+                "--roll",
+                "0",
+                "--pitch",
+                "0",
+                "--yaw",
+                "1.57",
+                "--frame-id",
+                "map",
+                "--child-frame-id",
+                "odom",
+            ],
+        )
+        nodes.append(static_transform_publisher_node)
 
     # VISUALIZATION/TESTING
     rviz_config_file = os.path.join(sim_directory, "rviz", "gazebo_full.rviz")
@@ -114,13 +118,15 @@ def launch_setup(context, *args, **kwargs):
         condition=IfCondition(LaunchConfiguration("rviz")),
     )
 
-    return [
+    nodes.extend([
         vrx_sim_launch,
         ekf_node,
         navsat_transform_node,
         # static_transform_publisher_node,
         rviz,
-    ]
+    ])
+
+    return nodes
 
 def generate_launch_description():
     robot_model_arg = DeclareLaunchArgument(
