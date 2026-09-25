@@ -3,6 +3,7 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
+    # TODO: Debug map arg
     test_map_generator_node = Node(
         package="seaweed_navigation",
         executable="test_map_generator.py",
@@ -23,17 +24,6 @@ def generate_launch_description():
         name="pd_motion_planner",
         output="screen",
     )
-
-    # nav_directory = get_package_share_directory("seaweed_navigation")
-    # rviz_config_file = os.path.join(nav_directory, "rviz", "map_dash.rviz")
-
-    # rviz = Node(
-    #     package="rviz2",
-    #     executable="rviz2",
-    #     name="rviz2",
-    #     output="screen",
-    #     arguments=["-d", rviz_config_file],
-    # )
 
     return LaunchDescription(
         [

@@ -160,6 +160,7 @@ def generate_launch_description():
         [
             robot_model_arg,
             use_sim_time_arg,
+            headless_arg,
             use_gui_arg,
             world_arg,
             dlio_arg,
