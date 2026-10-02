@@ -10,6 +10,7 @@ endif()
 
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
+find_package(PCL REQUIRED COMPONENTS common filters segmentation search)
 
 ament_python_install_package(${PROJECT_NAME})
 
@@ -20,14 +21,12 @@ install(PROGRAMS
 )
 
 # Cpp Nodes
-# ament_auto_add_executable(
-#     cpp_exe_name
-#     ${PROJECT_NAME}/cpp_node.cpp
-#     ${PROJECT_NAME}/other_cpp_file.cpp
-#     ...
-# )
+ament_auto_add_executable(
+    point_cluster
+    src/point_cluster.cpp
+)
 
-# target_link_libraries(cpp_exe_name non_ROS_dependencies)
+target_link_libraries(point_cluster ${PCL_LIBRARIES})
 
 install(TARGETS
     # cpp_exe_name
