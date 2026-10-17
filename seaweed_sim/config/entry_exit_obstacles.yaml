@@ -1,0 +1,24 @@
+obstacles:
+  - name: "marker_1"
+    type: "mb_marker_buoy"
+    color: "red"
+    pose: [-524, 190, .25, 0, 0, 0]
+    radius: 1.0
+
+  - name: "marker_2"
+    type: "mb_marker_buoy"
+    color: "green"
+    pose: [-516, 190, .25, 0, 0, 0]
+    radius: 1.0
+
+  - name: "marker_3"
+    type: "mb_marker_buoy"
+    color: "red"
+    pose: [-524, 220, .25, 0, 0, 0]
+    radius: 1.0
+
+  - name: "marker_4"
+    type: "mb_marker_buoy"
+    color: "green"
+    pose: [-516, 220, .25, 0, 0, 0]
+    radius: 1.0

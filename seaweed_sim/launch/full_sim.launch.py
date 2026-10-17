@@ -141,6 +141,7 @@ def generate_launch_description():
             "sydney_regatta_empty",
             "nbpark",
             "follow_path",
+            "entry_exit"
         ],
     )
 
