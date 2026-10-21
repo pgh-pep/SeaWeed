@@ -77,6 +77,21 @@ def launch_setup(context, *args, **kwargs):
         parameters=[sim_localization_params],
     )
 
+    joy_node = Node(
+        package="joy",
+        executable="joy_node",
+        name="joy_node",
+        output="screen",
+        parameters=[{"deadzone": 0.01}],
+    )
+
+    diff_thrust_controller = Node(
+        package="seaweed_sim",
+        executable="diff_thrust_controller.py",
+        name="diff_thrust_controller",
+        output="screen",
+    )
+
     if not use_dlio:
         # Assume no sensor drift. Yaw matches the boat's spawn heading (see spawn_pose above),
         # since DLIO's odom frame is anchored to the vehicle's pose at the first scan.
@@ -96,7 +111,7 @@ def launch_setup(context, *args, **kwargs):
                 "--pitch",
                 "0",
                 "--yaw",
-                "1.57",
+                "0",
                 "--frame-id",
                 "map",
                 "--child-frame-id",
@@ -122,6 +137,8 @@ def launch_setup(context, *args, **kwargs):
         vrx_sim_launch,
         ekf_node,
         navsat_transform_node,
+        diff_thrust_controller,
+        joy_node,
         # static_transform_publisher_node,
         rviz,
     ])
