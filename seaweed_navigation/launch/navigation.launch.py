@@ -1,15 +1,25 @@
 from launch import LaunchDescription
+from launch.substitutions import LaunchConfiguration
+from launch.actions import DeclareLaunchArgument, OpaqueFunction, IncludeLaunchDescription
 from launch_ros.actions import Node
 
+def launch_setup(context, *args, **kwargs):
+    nodes = []
+
+    if context.perform_substitution(LaunchConfiguration("debug_map")) == "true":
+        nodes.append(
+            Node(
+                package="seaweed_navigation",
+                executable="test_map_generator.py",
+                name="test_map_generator",
+                output="screen",
+            )
+        )
+
+    return nodes
 
 def generate_launch_description():
-    # TODO: Debug map arg
-    test_map_generator_node = Node(
-        package="seaweed_navigation",
-        executable="test_map_generator.py",
-        name="test_map_generator",
-        output="screen",
-    )
+    debug_map_arg = DeclareLaunchArgument(name="debug_map", default_value="false", choices=["true", "false"])
 
     navigation_manager = Node(
         package="seaweed_navigation",
@@ -28,8 +38,8 @@ def generate_launch_description():
     return LaunchDescription(
         [
             navigation_manager,
-            test_map_generator_node,
             pd_motion_planner,
-            # rviz
+            debug_map_arg,
+            OpaqueFunction(function=launch_setup)
         ]
     )
