@@ -32,7 +32,7 @@ class NavigationManager(Node):
         map_qos = QoSProfile(depth=10)
         map_qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
 
-        self.map_sub = self.create_subscription(OccupancyGrid, "/map", self.map_callback, map_qos)
+        self.map_sub = self.create_subscription(OccupancyGrid, "/costmap", self.map_callback, map_qos)
         self.pose_sub = self.create_subscription(PoseStamped, "/goal_pose", self.goal_callback, 10)
 
         self.path_pub = self.create_publisher(Path, "/path", 10)
@@ -84,6 +84,7 @@ class NavigationManager(Node):
 
         if path and path.poses:
             goal.path = path
+            self.path_pub.publish(path)
             self.action_client.wait_for_server()
             self.send_goal_future = self.action_client.send_goal_async(goal)
             self.send_goal_future.add_done_callback(self.goal_response_callback)
