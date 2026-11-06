@@ -1,0 +1,741 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>BaseStationDashboard</class>
+ <widget class="QMainWindow" name="BaseStationDashboard">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1445</width>
+    <height>756</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>SeaWeed Base Station</string>
+  </property>
+  <property name="layoutDirection">
+   <enum>Qt::LayoutDirection::LeftToRight</enum>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">/* ============================================================================
+   DASHBOARD - MINIMAL STYLING
+   Keep all elements visible, just style colors and fonts
+   ============================================================================ */
+
+QMainWindow {
+    background-color: #003594;
+}
+
+QWidget {
+    background-color: #003594;
+    color: #FFFFFF;
+    font-size: 13pt;
+    font-family: &quot;Segoe UI&quot;;
+}
+
+QFrame {
+    background-color: #003594;
+    border: 3px solid #FFB81C;
+}
+
+QLabel {
+    color: #FFFFFF;
+    background-color: transparent;
+    font-size: 13pt;
+    font-weight: bold;
+	border: none;
+}
+
+/* Buttons */
+QPushButton {
+    background-color: #003594;
+    color: #FFFFFF;
+    border: 3px solid #FFB81C;
+    padding: 8px 12px;
+    font-size: 12pt;
+    font-weight: bold;
+}
+
+QPushButton:hover {
+    background-color: #001F50;
+    border: 3px solid #FFFFFF;
+}
+
+QPushButton:pressed {
+    background-color: #FFB81C;
+    color: #003594;
+}
+
+/* E-Stop Button */
+#soft_estop {
+    background-color: #E74C3C;
+    color: #FFFFFF;
+    border: 3px solid #FFFFFF;
+}
+
+#soft_estop:hover {
+    background-color: #C0392B;
+}
+
+#soft_estop:pressed {
+    background-color: #FFFFFF;
+    color: #E74C3C;
+}
+
+/* Spinbox */
+QSpinBox, QDoubleSpinBox {
+    color: #FFFFFF;
+    border: 2px solid #003594;
+    padding: 6px;
+    font-size: 12pt;
+}
+
+QSpinBox:focus, QDoubleSpinBox:focus {
+    border: 3px solid #FFB81C;
+}
+
+/* Combo Box - MINIMAL */
+QComboBox {
+    color: #FFFFFF;
+    border: 2px solid #003594;
+    padding: 6px;
+    font-size: 12pt;
+}
+
+QComboBox:focus {
+    border: 3px solid #FFB81C;
+}
+
+QComboBox QAbstractItemView {
+    color: #FFFFFF;
+    selection-background-color: #FFB81C;
+    selection-color: #003594;
+    font-size: 12pt;
+}
+
+/* Line Edit */
+QLineEdit {
+    color: #FFFFFF;
+    border: 2px solid #003594;
+    padding: 6px;
+    font-size: 12pt;
+}
+
+QLineEdit:focus {
+    border: 3px solid #FFB81C;
+}
+
+/* Text Browser - Black background */
+QTextBrowser {
+    background-color: #000000;
+    color: #FFFFFF;
+    border: 3px solid #FFB81C;
+    font-size: 11pt;
+}
+
+/* Text Edit */
+QTextEdit {
+    background-color: #000000;
+    color: #FFFFFF;
+    border: 3px solid #FFB81C;
+    font-size: 11pt;
+}
+
+/* Plain Text Edit */
+QPlainTextEdit {
+    background-color: #000000;
+    color: #FFFFFF;
+    border: 3px solid #FFB81C;
+    font-size: 11pt;
+}
+
+/* Graphics View - Black for video */
+QGraphicsView {
+    background-color: #000000;
+    border: 3px solid #FFB81C;
+}
+
+/* Checkboxes */
+QCheckBox {
+    color: #FFFFFF;
+    font-size: 12pt;
+}
+
+QCheckBox::indicator {
+    border: 2px solid #FFB81C;
+    background: #003594;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #FFB81C;
+}
+
+/* Scroll Bars */
+QScrollBar:vertical {
+    background-color: #003594;
+    width: 12px;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #FFB81C;
+    border-radius: 6px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #FFFFFF;
+}
+
+QScrollBar:horizontal {
+    background-color: #003594;
+    height: 12px;
+}
+
+QScrollBar::handle:horizontal {
+    background-color: #FFB81C;
+    border-radius: 6px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background-color: #FFFFFF;
+}
+
+/* Tabs */
+QTabWidget::pane {
+    border: 2px solid #FFB81C;
+}
+
+QTabBar::tab {
+    background: #1A4D7F;
+    color: #FFFFFF;
+    padding: 6px 12px;
+    border: 1px solid #FFB81C;
+    font-size: 12pt;
+}
+
+QTabBar::tab:selected {
+    background: #FFB81C;
+    color: #003594;
+    font-weight: bold;
+}
+
+/* Group Box */
+QGroupBox {
+    border: 2px solid #FFB81C;
+    color: #FFB81C;
+    font-size: 12pt;
+    font-weight: bold;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top center;
+    padding: 0 5px;
+    color: #FFB81C;
+}
+
+QPushButton:checked { background-color: #FFB81C; color: #003594; }</string>
+  </property>
+  <widget class="QWidget" name="central_widget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QFrame" name="central_frame">
+      <property name="frameShape">
+       <enum>QFrame::Shape::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Shadow::Raised</enum>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <layout class="QVBoxLayout" name="left">
+         <item>
+          <layout class="QGridLayout" name="measurements_layout">
+           <item row="0" column="1">
+            <layout class="QVBoxLayout" name="heading_layout">
+             <item>
+              <widget class="QLabel" name="heading_label">
+               <property name="text">
+                <string>Heading (°)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="heading">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>60</height>
+                </size>
+               </property>
+               <property name="segmentStyle">
+                <enum>QLCDNumber::SegmentStyle::Flat</enum>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="0">
+            <layout class="QVBoxLayout" name="left_thruster_layout">
+             <item>
+              <widget class="QLabel" name="left_thruster_label">
+               <property name="text">
+                <string>Left Thruster (%)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="left_thruster">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>60</height>
+                </size>
+               </property>
+               <property name="segmentStyle">
+                <enum>QLCDNumber::SegmentStyle::Flat</enum>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="0" column="2">
+            <layout class="QVBoxLayout" name="battery_percentage_layout">
+             <item>
+              <widget class="QLabel" name="battery_percentage_label">
+               <property name="text">
+                <string>Battery (%)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="battery">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>60</height>
+                </size>
+               </property>
+               <property name="segmentStyle">
+                <enum>QLCDNumber::SegmentStyle::Flat</enum>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="1">
+            <layout class="QVBoxLayout" name="right_thruster_layout">
+             <item>
+              <widget class="QLabel" name="right_thruster_label">
+               <property name="text">
+                <string>Right Thruster (%)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="right_thruster">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>60</height>
+                </size>
+               </property>
+               <property name="segmentStyle">
+                <enum>QLCDNumber::SegmentStyle::Flat</enum>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="2">
+            <layout class="QVBoxLayout" name="heartbeat_status_layout">
+             <item>
+              <widget class="QLabel" name="heartbeat_label">
+               <property name="text">
+                <string>Heartbeat Status</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="heartbeat">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>60</height>
+                </size>
+               </property>
+               <property name="segmentStyle">
+                <enum>QLCDNumber::SegmentStyle::Flat</enum>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="0" column="0">
+            <layout class="QVBoxLayout" name="speed_layout">
+             <item>
+              <widget class="QLabel" name="speed_label">
+               <property name="frameShape">
+                <enum>QFrame::Shape::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Shadow::Plain</enum>
+               </property>
+               <property name="text">
+                <string>Speed (m/s)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="speed">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>60</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Segoe UI</family>
+                 <pointsize>13</pointsize>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="segmentStyle">
+                <enum>QLCDNumber::SegmentStyle::Flat</enum>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="boat_coordinates_layout" stretch="2,1,1">
+           <item>
+            <widget class="QLabel" name="boat_coordinates_label">
+             <property name="text">
+              <string>Boat Coordinates</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="x_coordinates">
+             <property name="text">
+              <string>X: </string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="y_coordinates">
+             <property name="text">
+              <string>Y: </string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QGraphicsView" name="boat_map"/>
+         </item>
+         <item>
+          <widget class="QGraphicsView" name="live_camera_feed">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="right" stretch="0,0,0,0,0,0">
+         <item>
+          <layout class="QGridLayout" name="top_right" columnstretch="0,0">
+           <item row="0" column="1">
+            <widget class="QPushButton" name="manual_override">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>40</width>
+               <height>60</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
+             <property name="text">
+              <string>Automatic/Manual Override</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <layout class="QVBoxLayout" name="set_test_layout_label">
+             <item>
+              <widget class="QLabel" name="set_test_event_label">
+               <property name="text">
+                <string>Set Test Event</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="test_event">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="editable">
+                <bool>false</bool>
+               </property>
+               <property name="currentText">
+                <string>Event 1</string>
+               </property>
+               <property name="maxCount">
+                <number>10</number>
+               </property>
+               <property name="insertPolicy">
+                <enum>QComboBox::InsertPolicy::InsertAtTop</enum>
+               </property>
+               <property name="minimumContentsLength">
+                <number>5</number>
+               </property>
+               <property name="modelColumn">
+                <number>0</number>
+               </property>
+               <item>
+                <property name="text">
+                 <string>Event 1</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Event 2</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Event 3</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Event 4</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Event 5</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="1">
+            <layout class="QVBoxLayout" name="verticalLayout_4">
+             <item>
+              <widget class="QLabel" name="set_origin_label">
+               <property name="text">
+                <string>Set Origin</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_6">
+               <item>
+                <widget class="QDoubleSpinBox" name="set_origin_x">
+                 <property name="buttonSymbols">
+                  <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+                 </property>
+                 <property name="prefix">
+                  <string>X: </string>
+                 </property>
+                 <property name="minimum">
+                  <double>-10000.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>10000.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="set_origin_y">
+                 <property name="buttonSymbols">
+                  <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+                 </property>
+                 <property name="prefix">
+                  <string>Y: </string>
+                 </property>
+                 <property name="minimum">
+                  <double>-10000.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>10000.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="0">
+            <layout class="QVBoxLayout" name="set_waypoint">
+             <item>
+              <widget class="QLabel" name="set_waypoint_label">
+               <property name="text">
+                <string>Set Waypoint/Destination</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_4">
+               <item>
+                <widget class="QDoubleSpinBox" name="set_waypoint_x">
+                 <property name="buttonSymbols">
+                  <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+                 </property>
+                 <property name="prefix">
+                  <string>X: </string>
+                 </property>
+                 <property name="minimum">
+                  <double>-10000.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>10000.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="set_waypoint_y">
+                 <property name="buttonSymbols">
+                  <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+                 </property>
+                 <property name="prefix">
+                  <string>Y: </string>
+                 </property>
+                 <property name="minimum">
+                  <double>-10000.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>10000.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="send_coordinates_reset">
+           <item>
+            <widget class="QPushButton" name="confirm_waypoint">
+             <property name="text">
+              <string>Confirm Waypoint</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="reset">
+             <property name="text">
+              <string>Reset</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="confirm_origin">
+             <property name="text">
+              <string>Confirm Origin</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="middle_right">
+           <item>
+            <widget class="QPushButton" name="return_home">
+             <property name="text">
+              <string>Return Home</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="enable_estop">
+             <property name="layoutDirection">
+              <enum>Qt::LayoutDirection::LeftToRight</enum>
+             </property>
+             <property name="text">
+              <string>Enable E-Stop</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="soft_estop">
+             <property name="autoFillBackground">
+              <bool>false</bool>
+             </property>
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
+             <property name="text">
+              <string>Soft E-Stop</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QPlainTextEdit" name="terminal_console"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="MiscTextLabel">
+           <property name="text">
+            <string>Misc Text Log</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTextBrowser" name="misc_text_log"/>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -24,7 +24,9 @@ reportAssignmentType = "none"
 
 ignore = [
     "**/*.launch.py",
+    "**/ui_*.py",  
 ]
 
 [tool.ruff]
 line-length = 120
+extend-exclude = ["**/ui_*.py"]  
