@@ -1,13 +1,12 @@
-import sys
-from PySide6.QtWidgets import QApplication, QMainWindow
+import sys, time
+from PySide6.QtWidgets import QApplication, QMainWindow, QLCDNumber
 from PySide6.QtCore import QTimer
 from seaweed_dashboard.ui_base_station_dashboard import Ui_BaseStationDashboard
 import threading
 from seaweed_dashboard.ros_node import RosNode
-import rclpy
+import rclpy, rclpy.utilities
 from rclpy.executors import SingleThreadedExecutor
 from seaweed_dashboard.state import DashboardState
-import time
 
 
 class Dashboard(QMainWindow):
@@ -26,17 +25,29 @@ class Dashboard(QMainWindow):
         print("E-stop pressed")
 
     def refresh(self):
-        #acquire-release mechanism with ros
+        #acquire-release mechanism with ROS
         with self.state.lock:
             speed = self.state.speed
             speed_time = self.state.speed_time 
-        
-        if speed is None or speed_time is None:
-            self.ui.speed.display("----")
-        elif time.monotonic() - speed_time > 2:         
-            self.ui.speed.display("----")
+            left_thrust = self.state.left_thrust
+            left_thrust_time = self.state.left_thrust_time
+            right_thrust = self.state.right_thrust
+            right_thrust_time = self.state.right_thrust_time
+            heading = self.state.heading
+            heading_time = self.state.heading_time
+            
+        self.refresh_helper(self.ui.speed, speed, speed_time, 2)
+        self.refresh_helper(self.ui.left_thruster, left_thrust, left_thrust_time, 0)
+        self.refresh_helper(self.ui.right_thruster, right_thrust, right_thrust_time, 0)
+        self.refresh_helper(self.ui.heading, heading, heading_time, 0)
+
+    def refresh_helper(self, lcd: QLCDNumber, value: float | None, value_time: float | None, decimals:int):
+        if value is None or value_time is None:
+            lcd.display("----")
+        elif time.monotonic() - value_time > 2:         
+            lcd.display("----")
         else:
-            self.ui.speed.display(f"{speed:.2f}")
+            lcd.display(f"{value:.{decimals}f}") 
 
 
 def main():
@@ -44,7 +55,7 @@ def main():
 
     rclpy.init()
     with SingleThreadedExecutor() as executor:
-        #Thread starts with Ros Node
+        #Thread starts with ROS Node
         ros_node = RosNode(state)
         executor.add_node(ros_node)
         threader = threading.Thread(target=executor.spin,daemon=True)
@@ -58,7 +69,7 @@ def main():
 
     threader.join()
     ros_node.destroy_node()
-    rclpy.try_shutdown()
+    rclpy.utilities.try_shutdown()
     sys.exit(exit_num)
 
 if __name__ == "__main__":
