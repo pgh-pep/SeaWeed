@@ -35,16 +35,26 @@ class Dashboard(QMainWindow):
             right_thrust_time = self.state.right_thrust_time
             heading = self.state.heading
             heading_time = self.state.heading_time
+            battery = self.state.battery
+            battery_time = self.state.battery_time
             
-        self.refresh_helper(self.ui.speed, speed, speed_time, 2)
-        self.refresh_helper(self.ui.left_thruster, left_thrust, left_thrust_time, 0)
-        self.refresh_helper(self.ui.right_thruster, right_thrust, right_thrust_time, 0)
-        self.refresh_helper(self.ui.heading, heading, heading_time, 0)
+        self.refresh_helper(self.ui.speed, speed, speed_time, 2, 2)
+        self.refresh_helper(self.ui.left_thruster, left_thrust, left_thrust_time, 0, 2)
+        self.refresh_helper(self.ui.right_thruster, right_thrust, right_thrust_time, 0, 2)
+        self.refresh_helper(self.ui.heading, heading, heading_time, 0, 2)
+        self.refresh_helper(self.ui.battery, battery, battery_time, 0, 10)
 
-    def refresh_helper(self, lcd: QLCDNumber, value: float | None, value_time: float | None, decimals:int):
+        heartbeat = [n for n in [speed_time, left_thrust_time, right_thrust_time, heading_time, battery_time] if n is not None]
+        if not heartbeat: 
+            self.ui.heartbeat.display("----")
+        else:
+            self.ui.heartbeat.display(f"{min((time.monotonic() - max(heartbeat)), 999.9):.1f}")
+
+
+    def refresh_helper(self, lcd: QLCDNumber, value: float | None, value_time: float | None, decimals:int, stale_time:int):
         if value is None or value_time is None:
             lcd.display("----")
-        elif time.monotonic() - value_time > 2:         
+        elif time.monotonic() - value_time > stale_time:         
             lcd.display("----")
         else:
             lcd.display(f"{value:.{decimals}f}") 

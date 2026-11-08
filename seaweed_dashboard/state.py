@@ -11,4 +11,5 @@ class DashboardState:
         self.right_thrust_time: float | None = None
         self.heading: float | None = None
         self.heading_time: float | None = None
-    
+        self.battery: float | None = None
+        self.battery_time: float | None = None
