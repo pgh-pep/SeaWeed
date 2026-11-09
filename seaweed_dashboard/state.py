@@ -1,5 +1,6 @@
 import threading
 import queue
+from sensor_msgs.msg import Image
 
 class DashboardState:
     def __init__(self):
@@ -18,3 +19,5 @@ class DashboardState:
         self.y: float | None = None
         self.pose_time: float | None = None
         self.log_queue: queue.Queue[str] = queue.Queue()
+        self.camera_msg: Image | None = None
+        self.camera_time: float | None = None

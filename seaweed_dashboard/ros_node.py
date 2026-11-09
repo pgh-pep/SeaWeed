@@ -1,14 +1,14 @@
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Float64
-from sensor_msgs.msg import BatteryState
+from sensor_msgs.msg import BatteryState, Image
 from rcl_interfaces.msg import Log
 import math
 from seaweed_dashboard.state import DashboardState
 import time
 from tf2_ros import Buffer, TransformListener, TransformException # pyright: ignore[reportAttributeAccessIssue]
 from rclpy.time import Time
-from rclpy.qos import QoSProfile, DurabilityPolicy
+from rclpy.qos import QoSProfile, DurabilityPolicy, ReliabilityPolicy
 
 class RosNode(Node):
     
@@ -29,6 +29,9 @@ class RosNode(Node):
 
         log_qos = QoSProfile(depth = 100, durability = DurabilityPolicy.TRANSIENT_LOCAL)
         self.log_sub = self.create_subscription(Log, "/rosout", self.log_callback, log_qos)
+
+        camera_qos = QoSProfile(depth = 1, reliability = ReliabilityPolicy.RELIABLE)
+        self.camera_sub = self.create_subscription(Image, "/wamv/sensors/cameras/camera_sensor/optical/image_raw", self.camera_callback, camera_qos)
 
        
     def odom_callback(self, msg: Odometry) -> None:
@@ -99,4 +102,10 @@ class RosNode(Node):
             return
         else:
             self.state.log_queue.put(f"[{msg.name}] {msg.msg}")
-        
+
+    def camera_callback(self, msg: Image):
+        with self.state.lock:
+            self.state.camera_msg = msg
+            self.state.camera_time = time.monotonic()
+
+    

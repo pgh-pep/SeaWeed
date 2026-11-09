@@ -1,6 +1,8 @@
 import sys, time
-from PySide6.QtWidgets import QApplication, QMainWindow, QLCDNumber, QLabel
-from PySide6.QtCore import QTimer
+from PySide6.QtWidgets import QApplication, QMainWindow, QLCDNumber, QLabel, QGraphicsScene
+from PySide6.QtCore import QTimer, Qt
+from PySide6.QtGui import QImage, QPixmap
+from sensor_msgs.msg import Image
 from seaweed_dashboard.ui_base_station_dashboard import Ui_BaseStationDashboard
 import threading
 from seaweed_dashboard.ros_node import RosNode
@@ -22,6 +24,10 @@ class Dashboard(QMainWindow):
         self.timer.setInterval(100)
         self.timer.start()
         self.ui.misc_text_log.document().setMaximumBlockCount(500)
+        self.camera_scene = QGraphicsScene(self)
+        self.ui.live_camera_feed.setScene(self.camera_scene)
+        self.camera_item = self.camera_scene.addPixmap(QPixmap())
+        self.last_camera_time = None
 
     def on_estop(self):
         print("E-stop pressed")
@@ -42,6 +48,8 @@ class Dashboard(QMainWindow):
             x = self.state.x
             y = self.state.y
             pose_time = self.state.pose_time
+            camera_msg = self.state.camera_msg
+            camera_time = self.state.camera_time
             
         self.refresh_helper(self.ui.speed, speed, speed_time, 2, 2)
         self.refresh_helper(self.ui.left_thruster, left_thrust, left_thrust_time, 0, 2)
@@ -49,7 +57,7 @@ class Dashboard(QMainWindow):
         self.refresh_helper(self.ui.heading, heading, heading_time, 0, 2)
         self.refresh_helper(self.ui.battery, battery, battery_time, 0, 10)
 
-        heartbeat = [n for n in [speed_time, left_thrust_time, right_thrust_time, heading_time, battery_time, pose_time] if n is not None]
+        heartbeat = [n for n in [speed_time, left_thrust_time, right_thrust_time, heading_time, battery_time, pose_time, camera_time] if n is not None]
         if not heartbeat: 
             self.ui.heartbeat.display("----")
         else:
@@ -65,6 +73,8 @@ class Dashboard(QMainWindow):
                 break
             self.ui.misc_text_log.append(line)
 
+        self.camera_update(camera_msg, camera_time)
+
     def refresh_helper(self, lcd: QLCDNumber, value: float | None, value_time: float | None, decimals:int, stale_time:int):
         if value is None or value_time is None:
             lcd.display("----")
@@ -78,6 +88,29 @@ class Dashboard(QMainWindow):
             label.setText(f"{prefix}----")
         else:
             label.setText(f"{prefix}{value:.1f}")
+
+    def camera_update(self, msg: Image | None, msg_time: float | None):
+        if msg is None or msg_time is None:
+            return
+        
+        if time.monotonic() - msg_time > 2:
+            self.camera_item.setPixmap(QPixmap())
+            return
+
+        if msg_time == self.last_camera_time:
+            return
+        self.last_camera_time = msg_time
+
+        if msg.encoding == "bgr8":
+            the_format = QImage.Format.Format_BGR888
+        elif msg.encoding == "rgb8":
+            the_format = QImage.Format.Format_RGB888
+        else:
+            return
+
+        image = QImage(bytes(msg.data), msg.width, msg.height, msg.step, the_format).copy()
+        self.camera_item.setPixmap(QPixmap.fromImage(image))
+        self.ui.live_camera_feed.fitInView(self.camera_item, Qt.AspectRatioMode.KeepAspectRatio)
 
 
 def main():
