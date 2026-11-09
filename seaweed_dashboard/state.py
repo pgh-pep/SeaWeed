@@ -1,4 +1,5 @@
 import threading
+import queue
 
 class DashboardState:
     def __init__(self):
@@ -16,3 +17,4 @@ class DashboardState:
         self.x: float | None = None
         self.y: float | None = None
         self.pose_time: float | None = None
+        self.log_queue: queue.Queue[str] = queue.Queue()

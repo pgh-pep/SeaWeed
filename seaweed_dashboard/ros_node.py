@@ -2,16 +2,21 @@ from rclpy.node import Node
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Float64
 from sensor_msgs.msg import BatteryState
+from rcl_interfaces.msg import Log
 import math
 from seaweed_dashboard.state import DashboardState
 import time
 from tf2_ros import Buffer, TransformListener, TransformException # pyright: ignore[reportAttributeAccessIssue]
 from rclpy.time import Time
+from rclpy.qos import QoSProfile, DurabilityPolicy
 
 class RosNode(Node):
     
     def __init__(self, state:DashboardState):
-        super().__init__("dashboard_node")   
+        super().__init__("dashboard_node")  
+
+        self.state = state
+
         self.odom_sub = self.create_subscription(Odometry, "/odometry/filtered", self.odom_callback, 10)
         self.left_thurster = self.create_subscription(Float64, "/wamv/thrusters/front_left/thrust", self.left_thruster_callback, 10)
         self.right_thruster = self.create_subscription(Float64, "/wamv/thrusters/front_right/thrust", self.right_thruster_callback, 10)
@@ -22,8 +27,10 @@ class RosNode(Node):
         self.create_timer(0.1, self.tf_callback)
         self.last_tf_stamp = None
 
-        self.state = state
+        log_qos = QoSProfile(depth = 100, durability = DurabilityPolicy.TRANSIENT_LOCAL)
+        self.log_sub = self.create_subscription(Log, "/rosout", self.log_callback, log_qos)
 
+       
     def odom_callback(self, msg: Odometry) -> None:
         linear_speed_x = msg.twist.twist.linear.x
         linear_speed_y = msg.twist.twist.linear.y
@@ -84,3 +91,12 @@ class RosNode(Node):
                 self.state.heading_time = time.monotonic()
 
         self.last_tf_stamp = tf.header.stamp
+
+    def log_callback(self, msg: Log):
+        if msg.level < 30:
+            return
+        elif msg.name == self.get_name():
+            return
+        else:
+            self.state.log_queue.put(f"[{msg.name}] {msg.msg}")
+        

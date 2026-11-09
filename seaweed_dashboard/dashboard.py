@@ -7,6 +7,7 @@ from seaweed_dashboard.ros_node import RosNode
 import rclpy, rclpy.utilities
 from rclpy.executors import SingleThreadedExecutor
 from seaweed_dashboard.state import DashboardState
+import queue
 
 
 class Dashboard(QMainWindow):
@@ -20,6 +21,7 @@ class Dashboard(QMainWindow):
         self.timer.timeout.connect(self.refresh)
         self.timer.setInterval(100)
         self.timer.start()
+        self.ui.misc_text_log.document().setMaximumBlockCount(500)
 
     def on_estop(self):
         print("E-stop pressed")
@@ -55,6 +57,13 @@ class Dashboard(QMainWindow):
 
         self.refresh_label_helper(self.ui.x_coordinates, "X: ", x, pose_time)
         self.refresh_label_helper(self.ui.y_coordinates, "Y: ", y, pose_time)
+
+        while True:
+            try:
+                line = self.state.log_queue.get_nowait()
+            except queue.Empty:
+                break
+            self.ui.misc_text_log.append(line)
 
     def refresh_helper(self, lcd: QLCDNumber, value: float | None, value_time: float | None, decimals:int, stale_time:int):
         if value is None or value_time is None:
