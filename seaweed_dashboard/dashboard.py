@@ -1,5 +1,5 @@
 import sys, time
-from PySide6.QtWidgets import QApplication, QMainWindow, QLCDNumber
+from PySide6.QtWidgets import QApplication, QMainWindow, QLCDNumber, QLabel
 from PySide6.QtCore import QTimer
 from seaweed_dashboard.ui_base_station_dashboard import Ui_BaseStationDashboard
 import threading
@@ -37,6 +37,9 @@ class Dashboard(QMainWindow):
             heading_time = self.state.heading_time
             battery = self.state.battery
             battery_time = self.state.battery_time
+            x = self.state.x
+            y = self.state.y
+            pose_time = self.state.pose_time
             
         self.refresh_helper(self.ui.speed, speed, speed_time, 2, 2)
         self.refresh_helper(self.ui.left_thruster, left_thrust, left_thrust_time, 0, 2)
@@ -44,12 +47,14 @@ class Dashboard(QMainWindow):
         self.refresh_helper(self.ui.heading, heading, heading_time, 0, 2)
         self.refresh_helper(self.ui.battery, battery, battery_time, 0, 10)
 
-        heartbeat = [n for n in [speed_time, left_thrust_time, right_thrust_time, heading_time, battery_time] if n is not None]
+        heartbeat = [n for n in [speed_time, left_thrust_time, right_thrust_time, heading_time, battery_time, pose_time] if n is not None]
         if not heartbeat: 
             self.ui.heartbeat.display("----")
         else:
             self.ui.heartbeat.display(f"{min((time.monotonic() - max(heartbeat)), 999.9):.1f}")
 
+        self.refresh_label_helper(self.ui.x_coordinates, "X: ", x, pose_time)
+        self.refresh_label_helper(self.ui.y_coordinates, "Y: ", y, pose_time)
 
     def refresh_helper(self, lcd: QLCDNumber, value: float | None, value_time: float | None, decimals:int, stale_time:int):
         if value is None or value_time is None:
@@ -58,6 +63,12 @@ class Dashboard(QMainWindow):
             lcd.display("----")
         else:
             lcd.display(f"{value:.{decimals}f}") 
+
+    def refresh_label_helper(self, label: QLabel, prefix: str, value: float | None, value_time: float | None):
+        if value is None or value_time is None or (time.monotonic() - value_time) > 2:
+            label.setText(f"{prefix}----")
+        else:
+            label.setText(f"{prefix}{value:.1f}")
 
 
 def main():
