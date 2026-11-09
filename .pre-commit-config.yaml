@@ -33,6 +33,8 @@ repos:
           - typing_extensions
           - opencv-python==4.9.0.80
           - ultralytics==8.3.201
+          - PySide6-Essentials==6.12.0
+          - pyte==0.8.0
         args: [--level=error]
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.12.3

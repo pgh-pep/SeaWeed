@@ -8,7 +8,7 @@ import termios
 
 import pyte
 from PySide6.QtCore import QEvent, QObject, QSocketNotifier, Qt, QTimer
-from PySide6.QtGui import QFontMetricsF, QGuiApplication
+from PySide6.QtGui import QFontMetricsF, QGuiApplication, QKeyEvent
 from PySide6.QtWidgets import QPlainTextEdit
 
 K = Qt.Key
@@ -119,7 +119,7 @@ class BashTerminal(QObject):
                 self.dirty = True
             return False
 
-        if event.type() == QEvent.Type.KeyPress:
+        if event.type() == QEvent.Type.KeyPress and isinstance(event, QKeyEvent):
             key = event.key()
             modifiers = event.modifiers()
             ctrl = bool(modifiers & Qt.KeyboardModifier.ControlModifier)
@@ -133,7 +133,7 @@ class BashTerminal(QObject):
                 return True
 
             if ctrl and K.Key_A.value <= key <= K.Key_Z.value:
-                data = bytes([key - K.Key_A.value + 1])  # Ctrl+C is byte 3, and so on.
+                data = bytes([key - K.Key_A.value + 1])
             else:
                 data = KEYS.get(key) or event.text().encode()
 

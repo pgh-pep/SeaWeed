@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys, time
 from PySide6.QtWidgets import QApplication, QMainWindow, QLCDNumber, QLabel, QGraphicsScene, QMessageBox
 from PySide6.QtCore import QTimer, Qt
@@ -26,7 +28,6 @@ class Dashboard(QMainWindow):
         self.state = state
         self.ros_node = ros_node
         self.home: tuple[float, float] | None = None
-        # x, y, planner's goal count when sent, time sent
         self.pending_goal: tuple[float, float, int, float] | None = None
         self.timer.timeout.connect(self.refresh)
         self.timer.setInterval(100)
