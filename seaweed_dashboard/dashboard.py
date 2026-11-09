@@ -1,5 +1,5 @@
 import sys, time
-from PySide6.QtWidgets import QApplication, QMainWindow, QLCDNumber, QLabel, QGraphicsScene
+from PySide6.QtWidgets import QApplication, QMainWindow, QLCDNumber, QLabel, QGraphicsScene, QMessageBox
 from PySide6.QtCore import QTimer, Qt
 from PySide6.QtGui import QImage, QPixmap
 from sensor_msgs.msg import Image
@@ -9,17 +9,25 @@ from seaweed_dashboard.ros_node import RosNode
 import rclpy, rclpy.utilities
 from rclpy.executors import SingleThreadedExecutor
 from seaweed_dashboard.state import DashboardState
+from seaweed_dashboard.terminal import BashTerminal
+from seaweed_dashboard.map_view import BoatMap
 import queue
+
+GOAL_ACCEPT_TIMEOUT_S = 10.0
 
 
 class Dashboard(QMainWindow):
-    def __init__(self, state:DashboardState) -> None:
+    def __init__(self, state:DashboardState, ros_node:RosNode) -> None:
         super().__init__()
         self.ui = Ui_BaseStationDashboard()
         self.ui.setupUi(self)
         self.ui.soft_estop.clicked.connect(self.on_estop)
         self.timer = QTimer(self)
         self.state = state
+        self.ros_node = ros_node
+        self.home: tuple[float, float] | None = None
+        # x, y, planner's goal count when sent, time sent
+        self.pending_goal: tuple[float, float, int, float] | None = None
         self.timer.timeout.connect(self.refresh)
         self.timer.setInterval(100)
         self.timer.start()
@@ -28,9 +36,18 @@ class Dashboard(QMainWindow):
         self.ui.live_camera_feed.setScene(self.camera_scene)
         self.camera_item = self.camera_scene.addPixmap(QPixmap())
         self.last_camera_time = None
+        self.map = BoatMap(self.ui.boat_map)
+        self.ui.left.setStretchFactor(self.ui.boat_map, 1)
+        self.ui.left.setStretchFactor(self.ui.live_camera_feed, 1)
+        self.ui.confirm_waypoint.clicked.connect(self.confirm_waypoint)
+        self.ui.confirm_origin.clicked.connect(self.confirm_origin)
+        self.ui.return_home.clicked.connect(self.return_home)
+        self.ui.reset.clicked.connect(self.reset)
+        self.terminal = BashTerminal(self.ui.terminal_console)
+        self.log_action("Dashboard started")
 
     def on_estop(self):
-        print("E-stop pressed")
+        self.log_action("Soft E-Stop pressed")
 
     def refresh(self):
         #acquire-release mechanism with ROS
@@ -50,7 +67,8 @@ class Dashboard(QMainWindow):
             pose_time = self.state.pose_time
             camera_msg = self.state.camera_msg
             camera_time = self.state.camera_time
-            
+            nav_goals_started = self.state.nav_goals_started
+
         self.refresh_helper(self.ui.speed, speed, speed_time, 2, 2)
         self.refresh_helper(self.ui.left_thruster, left_thrust, left_thrust_time, 0, 2)
         self.refresh_helper(self.ui.right_thruster, right_thrust, right_thrust_time, 0, 2)
@@ -74,6 +92,8 @@ class Dashboard(QMainWindow):
             self.ui.misc_text_log.append(line)
 
         self.camera_update(camera_msg, camera_time)
+        self.map.update_boat(x, y, heading, pose_time)
+        self.check_pending_goal(nav_goals_started)
 
     def refresh_helper(self, lcd: QLCDNumber, value: float | None, value_time: float | None, decimals:int, stale_time:int):
         if value is None or value_time is None:
@@ -110,7 +130,79 @@ class Dashboard(QMainWindow):
 
         image = QImage(bytes(msg.data), msg.width, msg.height, msg.step, the_format).copy()
         self.camera_item.setPixmap(QPixmap.fromImage(image))
-        self.ui.live_camera_feed.fitInView(self.camera_item, Qt.AspectRatioMode.KeepAspectRatio)
+        self.ui.live_camera_feed.fitInView(self.camera_item, Qt.AspectRatioMode.IgnoreAspectRatio)
+
+    def log_action(self, text: str):
+        stamp = time.strftime("%H:%M:%S")
+        self.ui.misc_text_log.append(f"[{stamp}] {text}")
+
+    def confirm_waypoint(self):
+        self.send_waypoint("Send waypoint", self.ui.set_waypoint_x.value(), self.ui.set_waypoint_y.value())
+
+    def confirm_origin(self):
+        x = self.ui.set_origin_x.value()
+        y = self.ui.set_origin_y.value()
+        self.home = (x, y)
+        self.map.set_home(x, y)
+        self.log_action(f"Origin set to X: {x:.2f}, Y: {y:.2f}")
+
+    def return_home(self):
+        if self.home is None:
+            self.log_action("Return Home ignored: set an origin first")
+            return
+        self.send_waypoint("Return home", self.home[0], self.home[1])
+
+    def reset(self):
+        self.ui.set_waypoint_x.setValue(0)
+        self.ui.set_waypoint_y.setValue(0)
+        self.ui.set_origin_x.setValue(0)
+        self.ui.set_origin_y.setValue(0)
+        self.map.clear_trail()
+        self.log_action("Coordinate fields and map trail cleared")
+
+    def send_waypoint(self, title: str, x: float, y: float):
+        answer = QMessageBox.question(
+            self,
+            title,
+            f"Send the boat to X: {x:.2f}, Y: {y:.2f}?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+
+        with self.state.lock:
+            nav_busy = self.state.nav_busy
+            goals_started = self.state.nav_goals_started
+
+        if self.pending_goal is not None:
+            self.log_action("Waypoint not sent: still waiting for the planner to answer the last one")
+            return
+        if nav_busy:
+            self.log_action("Waypoint not sent: the boat is still on its current goal")
+            return
+
+        listeners = self.ros_node.send_goal(x, y)
+        if listeners == 0:
+            self.log_action(f"Waypoint X: {x:.2f}, Y: {y:.2f} published, but nothing is listening on /goal_pose")
+            return
+
+        self.pending_goal = (x, y, goals_started, time.monotonic())
+        self.log_action(f"Waypoint X: {x:.2f}, Y: {y:.2f} requested")
+
+    def check_pending_goal(self, goals_started: int):
+        if self.pending_goal is None:
+            return
+
+        x, y, goals_when_sent, sent_time = self.pending_goal
+        if goals_started > goals_when_sent:
+            self.map.set_waypoint(x, y)
+            self.log_action(f"Waypoint X: {x:.2f}, Y: {y:.2f} accepted by the planner")
+            self.pending_goal = None
+        elif time.monotonic() - sent_time > GOAL_ACCEPT_TIMEOUT_S:
+            self.log_action(f"Waypoint X: {x:.2f}, Y: {y:.2f} NOT accepted - the planner never started it")
+            self.pending_goal = None
+
 
 
 def main():
@@ -126,7 +218,7 @@ def main():
 
         #Thread enters Qt Dashboard 
         app = QApplication(sys.argv)
-        window = Dashboard(state)
+        window = Dashboard(state, ros_node)
         window.show()
         exit_num = app.exec()
 

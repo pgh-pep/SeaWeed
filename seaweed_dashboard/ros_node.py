@@ -1,5 +1,7 @@
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
+from geometry_msgs.msg import PoseStamped
+from action_msgs.msg import GoalStatus, GoalStatusArray
 from std_msgs.msg import Float64
 from sensor_msgs.msg import BatteryState, Image
 from rcl_interfaces.msg import Log
@@ -10,8 +12,9 @@ from tf2_ros import Buffer, TransformListener, TransformException # pyright: ign
 from rclpy.time import Time
 from rclpy.qos import QoSProfile, DurabilityPolicy, ReliabilityPolicy
 
+
 class RosNode(Node):
-    
+
     def __init__(self, state:DashboardState):
         super().__init__("dashboard_node")  
 
@@ -32,6 +35,13 @@ class RosNode(Node):
 
         camera_qos = QoSProfile(depth = 1, reliability = ReliabilityPolicy.RELIABLE)
         self.camera_sub = self.create_subscription(Image, "/wamv/sensors/cameras/camera_sensor/optical/image_raw", self.camera_callback, camera_qos)
+
+        self.goal_pub = self.create_publisher(PoseStamped, "/goal_pose", 10)
+
+        nav_status_qos = QoSProfile(depth = 1, durability = DurabilityPolicy.TRANSIENT_LOCAL)
+        self.nav_status_sub = self.create_subscription(GoalStatusArray, "/motion_planner/_action/status", self.nav_status_callback, nav_status_qos)
+        self.seen_goal_ids: set[bytes] = set()
+        self.create_timer(1.0, self.clear_nav)
 
        
     def odom_callback(self, msg: Odometry) -> None:
@@ -107,5 +117,32 @@ class RosNode(Node):
         with self.state.lock:
             self.state.camera_msg = msg
             self.state.camera_time = time.monotonic()
+
+    def nav_status_callback(self, msg: GoalStatusArray):
+        active = (GoalStatus.STATUS_ACCEPTED, GoalStatus.STATUS_EXECUTING, GoalStatus.STATUS_CANCELING)
+        busy = any(goal.status in active for goal in msg.status_list)
+
+        goal_ids = {bytes(goal.goal_info.goal_id.uuid) for goal in msg.status_list}
+        new_goals = len(goal_ids - self.seen_goal_ids)
+        self.seen_goal_ids |= goal_ids
+
+        with self.state.lock:
+            self.state.nav_busy = busy
+            self.state.nav_goals_started += new_goals
+
+    def clear_nav(self):
+        if self.count_publishers("/motion_planner/_action/status") == 0:
+            with self.state.lock:
+                self.state.nav_busy = False
+
+    def send_goal(self, x: float, y: float) -> int:
+        goal = PoseStamped()
+        goal.header.frame_id = "map"
+        goal.header.stamp = self.get_clock().now().to_msg()
+        goal.pose.position.x = x
+        goal.pose.position.y = y
+        goal.pose.orientation.w = 1.0
+        self.goal_pub.publish(goal)
+        return self.goal_pub.get_subscription_count()
 
     

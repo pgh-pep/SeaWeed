@@ -21,3 +21,5 @@ class DashboardState:
         self.log_queue: queue.Queue[str] = queue.Queue()
         self.camera_msg: Image | None = None
         self.camera_time: float | None = None
+        self.nav_busy: bool = False
+        self.nav_goals_started: int = 0
