@@ -1,0 +1,6 @@
+name: robot_to_base
+from_domain: 1   # robot-internal
+to_domain: 0     # shared with base station
+topics:
+  odometry/filtered:
+    type: nav_msgs/msg/Odometry
