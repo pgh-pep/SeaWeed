@@ -1,0 +1,27 @@
+# cmd_vel -> open loop differential thrust.
+#
+#   left  = linear_gain * linear.x - angular_gain * angular.z
+#   right = linear_gain * linear.x + angular_gain * angular.z
+#
+# If either side exceeds thrust_limit, both sides are scaled down together
+# so the turn ratio is kept, then every output is clamped to +/- thrust_limit.
+diff_thrust_node:
+  ros__parameters:
+    cmd_vel_topic: cmd_vel
+
+    front_left_thrust_topic: front_left_thrust
+    front_right_thrust_topic: front_right_thrust
+    back_left_thrust_topic: back_left_thrust
+    back_right_thrust_topic: back_right_thrust
+
+    # Thrust output per unit of cmd_vel. With the teleop scales at 1.0 these
+    # are the thrust values at full stick deflection.
+    linear_gain: 1.0
+    angular_gain: 0.5
+
+    # Global hard limit on the magnitude of every thruster output.
+    thrust_limit: 1.0
+
+    # Zero all thrusters if no cmd_vel arrives within this many seconds.
+    cmd_vel_timeout: 0.5
+    publish_rate: 20.0
