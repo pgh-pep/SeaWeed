@@ -1,6 +1,15 @@
-name: robot_to_base
+name: robot_base_bridge
+# Defaults: robot -> base station. Topics can override from_domain/to_domain
+# to bridge in the other direction.
 from_domain: 1   # robot-internal
 to_domain: 0     # shared with base station
 topics:
+  # Robot -> base station
   odometry/filtered:
     type: nav_msgs/msg/Odometry
+
+  # Base station -> robot
+  joy:
+    type: sensor_msgs/msg/Joy
+    from_domain: 0
+    to_domain: 1
