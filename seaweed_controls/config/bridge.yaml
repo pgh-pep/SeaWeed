@@ -8,6 +8,12 @@ topics:
   odometry/filtered:
     type: nav_msgs/msg/Odometry
 
+  front_right_thrust:
+    type: std_msgs/msg/Float64
+  
+  front_left_thrust:
+    type: std_msgs/msg/Float64
+
   # Base station -> robot
   joy:
     type: sensor_msgs/msg/Joy
