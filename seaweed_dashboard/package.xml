@@ -18,6 +18,8 @@
   <depend>rcl_interfaces</depend>
   <depend>tf2_ros_py</depend>
 
+  <exec_depend>joy</exec_depend>
+
   <!-- Not installed by rosdep. Run these once on each computer:
        sudo apt install python3-pyte
        pip install PySide6-Essentials -->
