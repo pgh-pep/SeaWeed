@@ -19,10 +19,12 @@ class DiffThrustNode(Node):
     def __init__(self):
         super().__init__("diff_thrust_node")
 
-        cmd_vel_topic = self.declare_parameter("cmd_vel_topic", "cmd_vel").value
+        cmd_vel_topic = self.declare_parameter("cmd_vel_topic", "cmd_vel").get_parameter_value().string_value
         self.thrust_pubs = {}
         for name in THRUSTERS:
-            topic = self.declare_parameter(f"{name}_thrust_topic", f"{name}_thrust").value
+            topic = (
+                self.declare_parameter(f"{name}_thrust_topic", f"{name}_thrust").get_parameter_value().string_value
+            )
             self.thrust_pubs[name] = self.create_publisher(Float64, topic, 10)
 
         # Read on every update so they can be tuned live with `ros2 param set`.
@@ -31,7 +33,7 @@ class DiffThrustNode(Node):
         self.declare_parameter("thrust_limit", 1.0)
         self.declare_parameter("cmd_vel_timeout", 0.5)
 
-        publish_rate = self.declare_parameter("publish_rate", 20.0).value
+        publish_rate = self.declare_parameter("publish_rate", 20.0).get_parameter_value().double_value
 
         self.linear_x = 0.0
         self.angular_z = 0.0
@@ -50,14 +52,17 @@ class DiffThrustNode(Node):
     def cmd_is_fresh(self) -> bool:
         if self.last_cmd_time is None:
             return False
-        timeout = self.get_parameter("cmd_vel_timeout").value
+        timeout = self.get_float_param("cmd_vel_timeout")
         age = (self.get_clock().now() - self.last_cmd_time).nanoseconds * 1e-9
         return age <= timeout
 
+    def get_float_param(self, name: str) -> float:
+        return self.get_parameter(name).get_parameter_value().double_value
+
     def mix(self, linear_x: float, angular_z: float) -> Tuple[float, float]:
-        linear_gain = self.get_parameter("linear_gain").value
-        angular_gain = self.get_parameter("angular_gain").value
-        limit = abs(self.get_parameter("thrust_limit").value)
+        linear_gain = self.get_float_param("linear_gain")
+        angular_gain = self.get_float_param("angular_gain")
+        limit = abs(self.get_float_param("thrust_limit"))
 
         left = linear_gain * linear_x - angular_gain * angular_z
         right = linear_gain * linear_x + angular_gain * angular_z
