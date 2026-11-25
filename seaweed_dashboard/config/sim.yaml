@@ -1,0 +1,13 @@
+dashboard_node:
+  ros__parameters:
+    odom_param: /odometry/filtered
+    left_thruster_param: /wamv/thrusters/front_left/thrust
+    right_thruster_param: /wamv/thrusters/front_right/thrust
+    divider_param: 10.0
+    battery_param: /battery
+    camera_sub_param: /wamv/sensors/cameras/camera_sensor/optical/image_raw
+    camera_reliability_param: true
+    goal_pub_param: /goal_pose
+    nav_status_sub_param: /motion_planner/_action/status
+    base_frame_param: wamv/base_link
+    map_frame_param: map

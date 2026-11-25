@@ -12,7 +12,6 @@ from tf2_ros import Buffer, TransformListener, TransformException # pyright: ign
 from rclpy.time import Time
 from rclpy.qos import QoSProfile, DurabilityPolicy, ReliabilityPolicy
 
-
 class RosNode(Node):
 
     def __init__(self, state:DashboardState):
@@ -20,30 +19,55 @@ class RosNode(Node):
 
         self.state = state
 
-        self.odom_sub = self.create_subscription(Odometry, "/odometry/filtered", self.odom_callback, 10)
-        self.left_thurster = self.create_subscription(Float64, "/wamv/thrusters/front_left/thrust", self.left_thruster_callback, 10)
-        self.right_thruster = self.create_subscription(Float64, "/wamv/thrusters/front_right/thrust", self.right_thruster_callback, 10)
-        self.battery = self.create_subscription(BatteryState, "/battery", self.battery_callback, 10)
-        
+        # Speed, Thruster and Battery parameters
+        self.odom_param = self.declare_parameter("odom_param", "/odometry/filtered").get_parameter_value().string_value
+        self.left_thruster_param = self.declare_parameter("left_thruster_param", "/wamv/thrusters/front_left/thrust").get_parameter_value().string_value
+        self.right_thruster_param = self.declare_parameter("right_thruster_param", "/wamv/thrusters/front_right/thrust").get_parameter_value().string_value
+        self.divider_param = self.declare_parameter("divider_param", 10.0).get_parameter_value().double_value # Sim sends +/- 1000, so dividng by 10 to give percent
+        self.battery_param = self.declare_parameter("battery_param", "/battery").get_parameter_value().string_value
+
+        # Camera parameter
+        self.camera_sub_param = self.declare_parameter("camera_sub_param", "/wamv/sensors/cameras/camera_sensor/optical/image_raw").get_parameter_value().string_value
+        self.camera_reliability_param = self.declare_parameter("camera_reliability_param", True).get_parameter_value().bool_value # /debug/yolo is best effor
+
+        # Map and goal parameters
+        self.goal_pub_param = self.declare_parameter("goal_pub_param", "/goal_pose").get_parameter_value().string_value
+        self.nav_status_sub_param = self.declare_parameter("nav_status_sub_param", "/motion_planner/_action/status").get_parameter_value().string_value
+        self.base_frame_param = self.declare_parameter("base_frame_param", "wamv/base_link").get_parameter_value().string_value
+        self.map_frame_param = self.declare_parameter("map_frame_param", "map").get_parameter_value().string_value
+
+        # Speed, Thruster and Battery subscriptions
+        self.odom_sub = self.create_subscription(Odometry, self.odom_param, self.odom_callback, 10)
+        self.left_thurster = self.create_subscription(Float64, self.left_thruster_param, self.left_thruster_callback, 10)
+        self.right_thruster = self.create_subscription(Float64, self.right_thruster_param, self.right_thruster_callback, 10)
+        self.battery = self.create_subscription(BatteryState, self.battery_param, self.battery_callback, 10)
+
+        # Boat position and heading from TF
         self.tf_buffer = Buffer()
         self.transform = TransformListener(self.tf_buffer, self)
         self.create_timer(0.1, self.tf_callback)
         self.last_tf_stamp = None
 
+        # Log subscription
         log_qos = QoSProfile(depth = 100, durability = DurabilityPolicy.TRANSIENT_LOCAL)
         self.log_sub = self.create_subscription(Log, "/rosout", self.log_callback, log_qos)
 
-        camera_qos = QoSProfile(depth = 1, reliability = ReliabilityPolicy.RELIABLE)
-        self.camera_sub = self.create_subscription(Image, "/wamv/sensors/cameras/camera_sensor/optical/image_raw", self.camera_callback, camera_qos)
+        # Camera subscription
+        if self.camera_reliability_param:
+            camera_qos = QoSProfile(depth = 1, reliability = ReliabilityPolicy.RELIABLE)
+        else:
+            camera_qos = QoSProfile(depth = 1, reliability = ReliabilityPolicy.BEST_EFFORT)
+        self.camera_sub = self.create_subscription(Image, self.camera_sub_param, self.camera_callback, camera_qos)
 
-        self.goal_pub = self.create_publisher(PoseStamped, "/goal_pose", 10)
+        # Goal publisher, navigation status checker
+        self.goal_pub = self.create_publisher(PoseStamped, self.goal_pub_param, 10)
 
         nav_status_qos = QoSProfile(depth = 1, durability = DurabilityPolicy.TRANSIENT_LOCAL)
-        self.nav_status_sub = self.create_subscription(GoalStatusArray, "/motion_planner/_action/status", self.nav_status_callback, nav_status_qos)
+        self.nav_status_sub = self.create_subscription(GoalStatusArray, self.nav_status_sub_param, self.nav_status_callback, nav_status_qos)
         self.seen_goal_ids: set[bytes] = set()
         self.create_timer(1.0, self.clear_nav)
+        
 
-       
     def odom_callback(self, msg: Odometry) -> None:
         linear_speed_x = msg.twist.twist.linear.x
         linear_speed_y = msg.twist.twist.linear.y
@@ -56,14 +80,14 @@ class RosNode(Node):
             
 
     def left_thruster_callback(self, msg: Float64):
-        left_thrust = msg.data/10
+        left_thrust = msg.data/self.divider_param
         
         with self.state.lock:
             self.state.left_thrust = left_thrust
             self.state.left_thrust_time = time.monotonic()
 
     def right_thruster_callback(self, msg: Float64):
-        right_thrust = msg.data/10
+        right_thrust = msg.data/self.divider_param
         
         with self.state.lock:
             self.state.right_thrust = right_thrust
@@ -81,7 +105,7 @@ class RosNode(Node):
 
     def tf_callback(self):
         try:
-            tf = self.tf_buffer.lookup_transform("map" ,"wamv/base_link", Time())
+            tf = self.tf_buffer.lookup_transform(self.map_frame_param , self.base_frame_param, Time())
         except TransformException:
             return
 
@@ -131,13 +155,13 @@ class RosNode(Node):
             self.state.nav_goals_started += new_goals
 
     def clear_nav(self):
-        if self.count_publishers("/motion_planner/_action/status") == 0:
+        if self.count_publishers(self.nav_status_sub_param) == 0:
             with self.state.lock:
                 self.state.nav_busy = False
 
     def send_goal(self, x: float, y: float) -> int:
         goal = PoseStamped()
-        goal.header.frame_id = "map"
+        goal.header.frame_id = self.map_frame_param
         goal.header.stamp = self.get_clock().now().to_msg()
         goal.pose.position.x = x
         goal.pose.position.y = y

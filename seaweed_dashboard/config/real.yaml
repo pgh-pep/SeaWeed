@@ -1,0 +1,13 @@
+dashboard_node:
+  ros__parameters: # TODO
+    odom_param: /odometry/filtered # TODO
+    left_thruster_param: /wamv/thrusters/front_left/thrust # TODO
+    right_thruster_param: /wamv/thrusters/front_right/thrust # TODO
+    divider_param: 10.0
+    battery_param: /battery # TODO
+    camera_sub_param: /debug/yolo
+    camera_reliability_param: false # to ask ozzie about changing YOLO to max reliability
+    goal_pub_param: /goal_pose # TODO
+    nav_status_sub_param: /motion_planner/_action/status # TODO
+    base_frame_param: wamv/base_link # TODO
+    map_frame_param: map # TODO
