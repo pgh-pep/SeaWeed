@@ -13,7 +13,8 @@ ament_python_install_package(${PROJECT_NAME})
 # Python Nodes:
 install(PROGRAMS
     ${PROJECT_NAME}/rc_reciever_node.py
+    ${PROJECT_NAME}/uart_bridge_node.py
     DESTINATION lib/${PROJECT_NAME}
 )
 
-ament_auto_package(INSTALL_TO_SHARE launch config)
+ament_auto_package(INSTALL_TO_SHARE launch config rviz)

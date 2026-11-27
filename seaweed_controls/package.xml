@@ -12,6 +12,7 @@
   <depend>seaweed_interfaces</depend>
 
   <depend>rclpy</depend>
+  <exec_depend>imu_filter_madgwick</exec_depend>
   <depend>std_msgs</depend>
 
   <export>
