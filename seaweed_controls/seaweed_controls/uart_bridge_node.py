@@ -4,11 +4,13 @@ import time
 
 import rclpy
 from rclpy.node import Node
+from rclpy.time import Time
 from rclpy.utilities import try_shutdown
 from sensor_msgs.msg import Imu
 from std_msgs.msg import Float32, Int8MultiArray, UInt8
 from uart_bridge import UARTBridge
 from uart_bridge_state import UARTBridgeState
+from uart_clock_sync import UARTClockSync
 
 # IMU (SCH16T) in 20-bit mode
 GYRO_LSB_PER_DPS: float = 1600.0
@@ -45,6 +47,8 @@ class UARTBridgeNode(Node):
             debug_period=debug_period,
             log=self.get_logger().info,
         )
+
+        self.clock_sync: UARTClockSync = UARTClockSync()
 
         # subs
         self.create_subscription(UInt8, "state_cmd", self.state_cb, 10)
@@ -85,7 +89,8 @@ class UARTBridgeNode(Node):
     # UART -> ROS, called from serial thread
     def on_rx(self, d: dict[str, int]) -> None:
         imu = Imu()
-        imu.header.stamp = self.get_clock().now().to_msg()
+        host_ns = self.get_clock().now().nanoseconds
+        imu.header.stamp = Time(nanoseconds=self.clock_sync.to_host_ns(d["stamp_ms"], host_ns)).to_msg()
         imu.header.frame_id = self.imu_frame
         imu.orientation_covariance[0] = -1.0  # no estimate
         imu.angular_velocity.x = d["gyro_x"] * GYRO_TO_RADS
