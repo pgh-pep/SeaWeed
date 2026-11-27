@@ -23,7 +23,8 @@ class UARTBridgeNode(Node):
         # ros params
         port: str = self.declare_parameter("port", "/dev/ttyACM1").value
         timeout: float = self.declare_parameter("timeout", 0.5).value
-        tx_period: float = self.declare_parameter("cmd_tx_period", 0.02).value  # 50 Hz
+        # 50 Hz tx, note that rx is processed as packets come in, freq determined by stm
+        tx_period: float = self.declare_parameter("cmd_tx_period", 0.02).value
         self.imu_frame: str = self.declare_parameter("imu_frame", "imu_frame").get_parameter_value().string_value
         debug: bool = self.declare_parameter("debug", True).value
         debug_period: float = self.declare_parameter("debug_period", 0.2).value
