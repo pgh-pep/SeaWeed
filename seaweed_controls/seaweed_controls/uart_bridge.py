@@ -7,14 +7,38 @@ import serial
 from uart_bridge_state import REST, RX_PACKET_FIELDS, SOFT_ESTOP, UARTBridgeState
 
 # packet_rx_t (jetson -> board)
-# 7 bytes: state, fl, fr, bl, br, launch_action, launcher_angle
-RX_FORMAT: str = "<B4bBB"
+# 8 bytes: state, fl, fr, bl, br, launch_action, launcher_angle (degrees)
+RX_FORMAT: str = "<B4bBH"
 RX_FIELDS: list[str] = ["state", "fl", "fr", "bl", "br", "launch_action", "launcher_angle"]
 
 # packet_tx_t (board -> jetson)
-# 47 bytes, following RX_PACKET_FIELDS
-TX_FORMAT: str = "<I6iH3iBHH"
+# 49 bytes, following RX_PACKET_FIELDS
+TX_FORMAT: str = "<I6iH3iBHi"
 TX_SIZE: int = struct.calcsize(TX_FORMAT)
+
+# enum names for logging, match common_types.h
+STATE_NAMES: dict[int, str] = {1: "SOFT_ESTOP", 2: "MANUAL", 3: "AUTONOMOUS", 4: "STATIONKEEPING"}
+ACTION_NAMES: dict[int, str] = {1: "REST", 2: "FIRE_CANNON", 3: "FIRE_PUMP"}
+
+
+def enum_name(names: dict[int, str], v: int) -> str:
+    return names.get(v, f"UNKNOWN({v})")
+
+
+def format_tx(p: dict[str, int]) -> str:
+    return (
+        f"{enum_name(STATE_NAMES, p['state'])} | "
+        f"thr fl {p['fl']:4d} fr {p['fr']:4d} bl {p['bl']:4d} br {p['br']:4d} | "
+        f"{enum_name(ACTION_NAMES, p['launch_action'])} @ {p['launcher_angle']} deg"
+    )
+
+
+def format_rx(d: dict[str, int]) -> str:
+    return (
+        f"t {d['stamp_ms']} ms | {d['voltage'] / 1000:.2f} V {d['current'] / 1000:.2f} A | "
+        f"gyro [{d['gyro_x']} {d['gyro_y']} {d['gyro_z']}] "
+        f"accel [{d['accel_x']} {d['accel_y']} {d['accel_z']}]"
+    )
 
 
 def crc16(data: bytes, poly: int = 0x1021, crc: int = 0xFFFF) -> int:
@@ -96,6 +120,7 @@ class UARTBridge:
         self.debug: bool = debug
         self.debug_period: float = debug_period
         self.log: Callable[[str], object] = log
+        self.stale: list[str] = []  # inputs replaced by defaults in last payload
         self._stop: threading.Event = threading.Event()
         self.thread: threading.Thread = threading.Thread(target=self.run, daemon=True)
 
@@ -122,7 +147,13 @@ class UARTBridge:
                 la, ang = s.launch_action, s.launcher_angle
             else:
                 la, ang = REST, 0
-        return struct.pack(RX_FORMAT, st, *map(clamp, th), la, max(0, min(255, int(ang))))
+            # track which inputs fell back to defaults, for logging
+            self.stale = [
+                name
+                for name, t in (("state", s.state_time), ("thrusters", s.thruster_time), ("launch", s.launch_time))
+                if not fresh(t)
+            ]
+        return struct.pack(RX_FORMAT, st, *map(clamp, th), la, int(ang) % 360)
 
     def run(self) -> None:
         while not self._stop.is_set():
@@ -189,9 +220,11 @@ class UARTBridge:
                 last_dbg = now
                 with s.lock:
                     age = "NEVER" if s.rx_time is None else f"{time.time() - s.rx_time:.2f}s ago"
+                    stale = ", ".join(self.stale) if self.stale else "none"
                     self.log(
-                        f"\n--- sent {s.tx_count} | rx ok {s.rx_ok} bad {s.rx_bad} "
+                        f"\n--- tx {s.tx_count} | rx ok {s.rx_ok} bad {s.rx_bad} "
                         f"| last rx ctr {s.rx_counter} ({age})\n"
-                        f"  sent : {sent}\n"
-                        f"  recv : {recv or '(nothing yet)'}"
+                        f"  sent : {format_tx(sent) if sent else '(nothing yet)'}\n"
+                        f"  stale: {stale}\n"
+                        f"  recv : {format_rx(recv) if recv else '(nothing yet)'}"
                     )

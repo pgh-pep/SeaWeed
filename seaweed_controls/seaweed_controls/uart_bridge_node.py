@@ -23,7 +23,7 @@ class UARTBridgeNode(Node):
         super().__init__("uart_bridge_node")
 
         # ros params
-        port: str = self.declare_parameter("port", "/dev/ttyACM1").value
+        port: str = self.declare_parameter("port", "/dev/ttyACM0").value
         timeout: float = self.declare_parameter("timeout", 0.5).value
         # 50 Hz tx, note that rx is processed as packets come in, freq determined by stm
         tx_period: float = self.declare_parameter("cmd_tx_period", 0.02).value
